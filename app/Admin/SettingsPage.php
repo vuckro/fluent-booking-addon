@@ -15,6 +15,9 @@ final class SettingsPage
     {
         add_action('admin_menu', function () {
             $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
+            add_filter('admin_body_class', static function ($classes) use ($hook) {
+                return get_current_screen()->id === $hook ? $classes . ' fba-admin' : $classes;
+            });
             add_action('admin_enqueue_scripts', static function ($screen) use ($hook) {
                 if ($screen !== $hook) { return; }
                 wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION);
