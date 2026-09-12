@@ -131,7 +131,7 @@ final class SettingsPage
             echo '<div class="notice notice-error inline"><p>' . esc_html($error->getMessage()) . '</p></div></div>'; return;
         }
         if (isset($_GET['saved'])) { echo '<div class="notice notice-success inline"><p>Réglages enregistrés.</p></div>'; }
-        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Participants</h3><p>Limitez le nombre de participants par demande de réservation.</p></div><span class="fba-badge">Expérimental</span></header>';
+        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Participants</h3><p>Gérez les réservations individuelles ou en groupe et leurs limites.</p></div><span class="fba-badge">Expérimental</span></header>';
         echo '<form class="fba-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field('waaskit_fb_save_' . $scope . '_' . $id);
         foreach (['action' => 'waaskit_fb_save', 'scope' => $scope, 'object_id' => $id, 'revision' => $stored['revision']] as $key => $value) {
@@ -141,15 +141,18 @@ final class SettingsPage
         foreach (Schema::fields() as $key => $field) {
             $overridden = array_key_exists($key, $stored['values']);
             $value = $overridden ? $stored['values'][$key] : $effective[$key]['value'];
-            $label = $field['label'];
+            if ($field['type'] === 'profile') {
+                echo '<tr><td colspan="2" class="fba-profile-cell"><h3>Réservation en groupe</h3><p class="description">Choisissez les informations à demander, les catégories de participants et les places disponibles.</p><label class="fba-field" for="mode-booking_profile">Réglages utilisés<select id="mode-booking_profile" name="modes[booking_profile]">';
+                echo '<option value="inherit"' . selected($overridden, false, false) . '>' . ($scope === 'site' ? 'Utiliser les valeurs par défaut' : 'Utiliser les réglages hérités') . '</option><option value="override"' . selected($overridden, true, false) . '>Personnaliser pour ce contexte</option></select></label><p class="description">La personnalisation remplace l’ensemble des réglages de réservation en groupe pour ce contexte.</p><fieldset class="fba-profile-controls"><legend class="screen-reader-text">Réglages de réservation en groupe</legend>';
+                ProfileForm::render($value);
+                echo '</fieldset></td></tr>';
+                continue;
+            }
+            $label = $key === 'enabled' ? 'Appliquer une limite supplémentaire' : 'Personnes maximum par réservation';
             echo '<tr><th scope="row"><label for="value-' . esc_attr($key) . '">' . esc_html($label) . '</label></th><td>';
             echo '<label class="screen-reader-text" for="mode-' . esc_attr($key) . '">Application : ' . esc_html($label) . '</label><select id="mode-' . esc_attr($key) . '" name="modes[' . esc_attr($key) . ']">';
-            echo '<option value="inherit"' . selected($overridden, false, false) . '>Hériter</option><option value="override"' . selected($overridden, true, false) . '>Définir ici</option></select> ';
-            if ($field['type'] === 'profile') {
-                ProfileForm::render($value);
-                echo '</td></tr>';
-                continue;
-            } elseif ($field['type'] === 'bool') {
+            echo '<option value="inherit"' . selected($overridden, false, false) . '>Utiliser le réglage hérité</option><option value="override"' . selected($overridden, true, false) . '>Personnaliser ici</option></select> ';
+            if ($field['type'] === 'bool') {
                 echo '<select id="value-' . esc_attr($key) . '" name="values[' . esc_attr($key) . ']"><option value="0"' . selected($value, false, false) . '>Désactivé</option><option value="1"' . selected($value, true, false) . '>Activé</option></select>';
             } else {
                 echo '<input class="small-text" type="number" id="value-' . esc_attr($key) . '" name="values[' . esc_attr($key) . ']" min="0" max="1000" value="' . esc_attr((string) $value) . '">';
@@ -158,9 +161,9 @@ final class SettingsPage
             $source = ['produit' => 'valeurs par défaut', 'site' => 'réglages globaux', 'agenda' => 'calendrier', 'événement' => 'cet événement'][$effective[$key]['source']] ?? $effective[$key]['source'];
             echo '<p class="description">Valeur effective : ' . esc_html($display . ' · ' . $source) . '</p></td></tr>';
         }
-        echo '</tbody></table><p class="description fba-help">Choisissez « Définir ici » pour appliquer une valeur. « Hériter » ignore la valeur saisie. Le maximum 0 n’ajoute aucune limite.</p>';
+        echo '</tbody></table><p class="description fba-help">Les réglages hérités restent gérés au niveau supérieur. Choisissez « Personnaliser » pour les modifier ici. Pour la limite supplémentaire, 0 signifie aucune limite ajoutée.</p>';
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
-        echo '</form><footer class="fba-card-footer">Nouvelles demandes uniquement, hors modifications et reports. Ne remplace pas la capacité de la séance.</footer></section>';
+        echo '</form><footer class="fba-card-footer">Les changements s’appliquent aux nouvelles réservations. Les réservations déjà enregistrées conservent leurs informations.</footer></section>';
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
         }

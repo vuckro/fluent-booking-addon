@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.10** — développement local, cible fonctionnelle en cours.
+Version **4.0.0-alpha.11** — développement local, cible fonctionnelle en cours.
 
 Extension générique de FluentBooking : participants typés, règles, capacités et tarification. Aucun réglage Cooms Cookies n’est codé en dur.
 

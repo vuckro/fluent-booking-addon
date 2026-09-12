@@ -1,3 +1,12 @@
+# 4.0.0-alpha.11 — administration plus lisible
+
+- Regroupement en Participants, Catégories et tarifs, Places disponibles.
+- Cases à cocher alignées sur le style FluentBooking, thèmes clair/sombre et navigation clavier.
+- Réglages de groupe sur toute la largeur, options avancées repliées, prix masqués quand non utilisés.
+- Sélection des accompagnateurs par catégorie, génération des identifiants des nouvelles catégories.
+- Réglages hérités non modifiables tant que la personnalisation n’est pas sélectionnée.
+- Aucun changement du moteur de réservation ou du stockage.
+
 # 4.0.0-alpha.10 — modules en cours de développement
 
 - Profil de participants typés, règles d’âge/accompagnement et champs configurables.
