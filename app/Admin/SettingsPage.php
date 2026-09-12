@@ -4,6 +4,7 @@ namespace WaasKit\FluentBooking\Admin;
 use WaasKit\FluentBooking\Configuration\Schema;
 use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
 use WaasKit\FluentBooking\Plugin;
+use WaasKit\FluentBooking\Integrations\FluentBooking\NativeSettings;
 use FluentBooking\App\Models\Calendar;
 use FluentBooking\App\Models\CalendarSlot;
 use FluentBooking\App\Services\PermissionManager;
@@ -15,6 +16,14 @@ final class SettingsPage
     {
         add_action('admin_menu', function () {
             $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
+            add_action('load-' . $hook, static function () {
+                if (NativeSettings::supported() && current_user_can('manage_options')
+                    && !isset($_GET['scope'])
+                    && !isset($_GET['object_id']) && !isset($_GET['tab'])) {
+                    wp_safe_redirect(NativeSettings::url());
+                    exit;
+                }
+            });
             add_action('admin_enqueue_scripts', static function ($current) use ($hook) {
                 if ($current !== $hook) { return; }
                 $base = plugins_url('assets/admin/', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php');
@@ -84,6 +93,9 @@ final class SettingsPage
             echo '<a class="nav-tab' . ($diagnostics ? ' nav-tab-active' : '') . '" href="' . esc_url(add_query_arg('tab', 'diagnostics', $this->url($scope, $id))) . '"' . ($diagnostics ? ' aria-current="page"' : '') . '>Diagnostics</a>';
         }
         echo '</nav>';
+        if (NativeSettings::supported() && current_user_can('manage_options')) {
+            echo '<p><a class="button" href="' . esc_url(NativeSettings::url()) . '">Ouvrir les modules dans les paramètres FluentBooking</a></p>';
+        }
         if ($diagnostics) { echo '<div class="fba-panel fba-diagnostics">'; $this->diagnostics(); echo '</div></div>'; return; }
         echo '<div class="fba-layout">';
         $this->navigation($scope, $id);

@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.0-alpha.3
+
+- Réglages globaux intégrés à Paramètres → Modules via le formulaire générique natif FluentBooking.
+- Champs, boutons, styles et sauvegarde natifs, sans JavaScript ou CSS supplémentaire sur cet écran.
+- Même stockage et contrôle de révision que la page contextuelle.
+- Raccourci Modules vers l'écran natif avec cœur/Pro 2.4.x ; repli conservé.
+- Liens vers les surcharges par calendrier/événement et diagnostics.
+- Tests de lecture, sauvegarde, héritage, permissions et erreurs via les hooks et endpoints natifs.
+
 ## 4.0.0-alpha.2
 
 - Nom affiché : Fluent Booking Addon ; sous-menu « Modules ».

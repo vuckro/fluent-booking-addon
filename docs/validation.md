@@ -36,3 +36,14 @@ Le workflow CI exécute la syntaxe et les tests unitaires PHP 8.1–8.4. Les int
 Après la réorganisation : 12 assertions unitaires, 16 d’intégration et 14 contrôles HTTP réussis. Les contrôles HTTP couvrent les quatre contextes d’écran, le chargement CSS/JS et leur absence du tableau de bord général WordPress, ainsi que les protections de sauvegarde. Les données temporaires et la session de test ont été retirées.
 
 Les règles, le stockage et les permissions sont inchangés. La structure responsive est fournie ; aucune inspection visuelle par navigateur n’a été réalisée pour cette mise à jour.
+
+## Paramètres natifs alpha.3
+
+- 12 assertions unitaires et 25 assertions d'intégration réussies sur PHP 8.2.29, WordPress 7.1, FluentBooking et Pro 2.4.0.
+- Le menu envoyé à l'application native contient Modules et la route existante `configure-integrations` avec `settings_key=waaskit_addon` ; Pro est actif.
+- GET/POST des endpoints REST natifs vérifiés : schéma et valeurs, écriture/relecture, refus de révision obsolète, limite invalide, accès anonyme et nonce invalide.
+- L'écran FluentBooking ne charge aucun CSS/JavaScript de présentation de l'add-on.
+- Le raccourci Modules redirige vers l'URL native. Les accès explicites au global contextuel, au calendrier et aux diagnostics restent disponibles.
+- Données de test retirées et sessions temporaires révoquées.
+
+Le composant Vue générique, sa route, ses champs supportés et ses appels REST ont été vérifiés dans le bundle installé. Le rendu effectif dans un navigateur, les transitions entre rubriques et le mobile restent à confirmer visuellement. Aucun résultat de capture visuelle n'est revendiqué. L'intégration concerne les réglages globaux ; les réglages contextuels utilisent toujours la page WordPress.

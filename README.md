@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.2** : nouvelle fondation, issue de l'historique de `fluent-booking-guests`.
+Version **4.0.0-alpha.3** : nouvelle fondation, issue de l'historique de `fluent-booking-guests`.
 
 Cette version est destinée à la validation locale. Elle ne remplace pas encore les fonctionnalités de participants sans e-mail et de tarification de la version 3.
 
@@ -23,13 +23,16 @@ Tout est désactivé par défaut. Le plugin n'altère ni les montants ni les cha
 1. Utiliser une installation de test sauvegardée avec FluentBooking 2.4.0.
 2. Décompresser le ZIP dans `wp-content/plugins/fluent-booking-addon`.
 3. Activer **Fluent Booking Addon**.
-4. Ouvrir **FluentBooking → Modules** et choisir le contexte à configurer.
+4. Ouvrir **FluentBooking → Paramètres → Modules** pour les réglages globaux natifs (Pro 2.4.x). Le raccourci WordPress **Modules** ouvre aussi cet écran.
+5. Utiliser le lien **Réglages par calendrier et événement** pour les surcharges contextuelles.
 
 Un clone Git peut être relié au dossier des plugins par un lien symbolique pour le développement. Le site WordPress, sa base, les clés et les licences ne font pas partie du dépôt. Un `git push` publie le code ; il ne synchronise pas la base WordPress.
 
 Ne pas activer simultanément l'ancienne version et celle-ci. Le fichier principal historique est conservé, mais une installation ayant un autre nom de dossier nécessite un remplacement explicite. Aucun mécanisme de mise à jour automatique n'est fourni.
 
 ## Configuration
+
+Les réglages globaux sont intégrés au formulaire générique natif de FluentBooking. Celui-ci fournit le design, les champs et le bouton d'enregistrement. Choisir « Hériter des valeurs par défaut » pour l'activation ou laisser le maximum vide pour hériter ; `0` désactive explicitement la limite supplémentaire. Cette intégration requiert Pro 2.4.x. Sans cette paire compatible, la page WordPress demeure disponible.
 
 La navigation latérale regroupe les événements sous leur calendrier et indique le contexte sélectionné. Le panneau central rassemble les réglages du module Participants. L’onglet Diagnostics contient les versions et la simulation de migration, séparées des réglages courants.
 
@@ -45,7 +48,7 @@ PHP 8.1 minimum. Tests unitaires sans WordPress :
 php tests/unit.php
 ```
 
-Tests d'intégration sur un site jetable accessible en localhost, avec au moins un événement natif et un administrateur :
+Tests d'intégration sur un site jetable accessible en localhost, avec FluentBooking et Pro 2.4.0, au moins un événement natif et un administrateur :
 
 ```sh
 WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
@@ -61,6 +64,6 @@ Recette locale : WordPress 7.1, FluentBooking 2.4.0, Pro 2.4.0. Le socle n'exige
 
 ## Suite
 
-Prototypes de participants sans e-mail, chaîne de paiement réelle, capacité concurrente des réservations et intégration d'un panneau dans l'administration native. L'interface actuelle utilise une page WordPress contextuelle ; elle ne modifie pas le JavaScript compilé de FluentBooking.
+Prototypes de participants sans e-mail, chaîne de paiement réelle, capacité concurrente des réservations et intégration contextuelle aux paramètres des calendriers/événements. Les réglages globaux utilisent désormais un écran natif ; les surcharges restent sur la page WordPress contextuelle. Aucun JavaScript compilé de FluentBooking n'est modifié.
 
 Licence GPL-2.0-or-later. Historique 3.3.6 conservé dans Git au tag `archive/pre-rewrite-2026-09-12`.

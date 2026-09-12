@@ -64,6 +64,31 @@ try {
     $staleCache = false;
     try { $store->save('site', 0, [], $before['revision']); } catch (RuntimeException $e) { $staleCache = true; }
     check($staleCache, 'cached options cannot hide another writer');
+    $native = new \WaasKit\FluentBooking\Integrations\FluentBooking\NativeSettings($store);
+    $menu = $native->menu([]);
+    check($menu['waaskit_addon']['route']['name'] === 'configure-integrations', 'native menu reuses existing Vue route');
+    check($native->fields()['fields']['enabled']['type'] === 'select', 'native form schema exposes supported controls');
+    $nativeState = $native->settings();
+    $native->save(['_revision' => $nativeState['_revision'], 'enabled' => 'off', 'max_participants' => '0']);
+    check($store->read('site')['values'] === ['enabled' => false, 'max_participants' => 0], 'native settings preserve false and zero');
+    $rejected = false;
+    try { $native->save($nativeState); } catch (RuntimeException $e) { $rejected = true; }
+    check($rejected, 'native form rejects stale revisions');
+    $nativeState = $native->settings();
+    $rejected = false;
+    try { $native->save(array_merge($nativeState, ['max_participants' => '-1'])); } catch (InvalidArgumentException $e) { $rejected = true; }
+    check($rejected, 'native form validates participant limit');
+    $native->save(array_merge($nativeState, ['enabled' => 'inherit', 'max_participants' => '']));
+    check($store->read('site')['values'] === [], 'native blank value restores inheritance');
+    wp_set_current_user(0);
+    check($native->menu([]) === [], 'native menu hidden without global permission');
+    $rejected = false;
+    try { $native->settings(); } catch (RuntimeException $e) { $rejected = true; }
+    check($rejected, 'native settings authorize reads');
+    $rejected = false;
+    try { $native->save($nativeState); } catch (RuntimeException $e) { $rejected = true; }
+    check($rejected, 'native settings authorize writes');
+
 } finally {
     $wpdb->query('ROLLBACK');
     wp_cache_flush();
