@@ -22,7 +22,8 @@ final class SettingsPage
                 if ($screen !== $hook) { return; }
                 wp_enqueue_script('waaskit-fb-theme', plugins_url('assets/admin/theme.js', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION, false);
                 wp_enqueue_script('fba-profile', plugins_url('assets/admin/profile.js', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION, true);
-                wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION);
+                $cssVersion = Plugin::VERSION . '.' . filemtime(dirname(__DIR__, 2) . '/assets/admin/settings.css');
+                wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], $cssVersion);
             });
         }, 30);
         add_filter('fluent_booking/admin_menu_items', [$this, 'menuItems']);

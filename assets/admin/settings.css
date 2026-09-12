@@ -137,3 +137,9 @@ body.fba-admin .fba-settings .fba-check input[type=checkbox]:focus-visible { out
 body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):is(:hover,:focus,:active) { background:var(--fba-sunk); color:var(--fba-text); border-color:var(--fba-strong); box-shadow:none; outline:none; }
 body.fba-admin .fba-settings .button.button-primary:not(:disabled):is(:hover,:focus,:active) { background:var(--fba-accent); color:var(--fba-contrast); border-color:var(--fba-accent); }
 body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; box-shadow:none; }
+
+/* Keep WordPress fallback states neutral too, including its .hover/.focus classes. */
+.fba-settings .button { --wp-admin-theme-color:var(--fba-text, #253241); --wp-admin-theme-color-darker-10:var(--fba-strong, #808b9c); --wp-admin-theme-color-darker-20:var(--fba-strong, #808b9c); --wp-admin-theme-color--rgb:37,50,65; --wp-admin-border-width-focus:0px; }
+html.fba-dark .fba-settings .button { --wp-admin-theme-color--rgb:217,218,220; }
+.wp-core-ui .fba-settings .button:not(.button-link):is(:hover,:focus,:active,.hover,.focus):not(:disabled) { background:var(--fba-sunk); border-color:var(--fba-strong); color:var(--fba-text); box-shadow:none; }
+.wp-core-ui .fba-settings .button.button-primary:is(:hover,:focus,:active,.hover,.focus):not(:disabled) { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); }

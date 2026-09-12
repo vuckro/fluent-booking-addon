@@ -1,3 +1,8 @@
+# 4.0.0-alpha.14 — couleurs de repli WordPress
+
+- Variables de couleur WordPress neutralisées uniquement sur les boutons du module, y compris les classes hover/focus.
+- Version du CSS liée à sa date de modification pour renouveler le cache à chaque retouche.
+
 # 4.0.0-alpha.13 — états et alignement des boutons
 
 - Couleurs neutres au survol, au focus et au clic, prioritaires sur les styles WordPress.
