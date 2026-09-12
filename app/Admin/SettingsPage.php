@@ -77,7 +77,7 @@ final class SettingsPage
         $scope = isset($_GET['scope']) && is_string($_GET['scope']) ? sanitize_key(wp_unslash($_GET['scope'])) : 'site';
         $id = isset($_GET['object_id']) && is_scalar($_GET['object_id']) ? absint($_GET['object_id']) : 0;
         $diagnostics = isset($_GET['tab']) && $_GET['tab'] === 'diagnostics' && current_user_can('manage_options');
-        echo '<div class="wrap fba-dashboard"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Organisez vos modules et adaptez leurs réglages à chaque agenda.</p></div>';
+        echo '<div class="wrap fba-dashboard"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Organisez vos modules et adaptez leurs réglages à chaque calendrier.</p></div>';
         echo '<a class="fba-credit" href="https://github.com/vuckro/fluent-booking-addon">Version alpha par WaasKit <span aria-hidden="true">↗</span></a></header>';
         echo '<nav class="nav-tab-wrapper" aria-label="Navigation de l’extension"><a class="nav-tab' . (!$diagnostics ? ' nav-tab-active' : '') . '" href="' . esc_url($this->url($scope, $id)) . '"' . (!$diagnostics ? ' aria-current="page"' : '') . '>Modules et réglages</a>';
         if (current_user_can('manage_options')) {
@@ -88,14 +88,14 @@ final class SettingsPage
         echo '<div class="fba-layout">';
         $this->navigation($scope, $id);
         echo '<main class="fba-content" id="fba-settings">';
-        if (!self::allowed($scope, $id)) { echo '<div class="fba-panel"><h2>Choisir un agenda</h2><p>Sélectionnez un agenda ou un événement accessible dans la navigation.</p></div></main></div></div>'; return; }
+        if (!self::allowed($scope, $id)) { echo '<div class="fba-panel"><h2>Choisir un calendrier</h2><p>Sélectionnez un calendrier ou un événement accessible dans la navigation.</p></div></main></div></div>'; return; }
         $title = $scope === 'site' ? 'Réglages globaux' : ($scope === 'calendar' ? Calendar::find($id)->title : CalendarSlot::find($id)->title);
         $description = match ($scope) {
-            'site' => 'Ces valeurs s’appliquent aux agendas et événements qui en héritent.',
-            'calendar' => 'Ces valeurs s’appliquent aux événements de cet agenda, sauf réglage spécifique.',
-            default => 'Personnalisez cet événement ou conservez les valeurs héritées de son agenda.',
+            'site' => 'Ces valeurs s’appliquent aux calendriers et événements qui en héritent.',
+            'calendar' => 'Ces valeurs s’appliquent aux événements de ce calendrier, sauf réglage spécifique.',
+            default => 'Personnalisez cet événement ou conservez les valeurs héritées de son calendrier.',
         };
-        echo '<div class="fba-context"><p class="fba-eyebrow">' . esc_html(match ($scope) { 'site' => 'Tous les agendas', 'calendar' => 'Agenda', default => 'Événement' }) . '</p><h2>' . esc_html($title) . '</h2><p>' . esc_html($description) . '</p></div>';
+        echo '<div class="fba-context"><p class="fba-eyebrow">' . esc_html(match ($scope) { 'site' => 'Tous les calendriers', 'calendar' => 'Calendrier', default => 'Événement' }) . '</p><h2>' . esc_html($title) . '</h2><p>' . esc_html($description) . '</p></div>';
         if (isset($_GET['saved'])) { echo '<div class="notice notice-success inline" role="status"><p>Réglages enregistrés.</p></div>'; }
         try {
             $stored = $this->store->read($scope, $id);
@@ -124,7 +124,7 @@ final class SettingsPage
                 echo '<input type="number" id="value-' . esc_attr($key) . '" aria-describedby="effective-' . esc_attr($key) . '" name="values[' . esc_attr($key) . ']" min="0" max="1000" value="' . esc_attr((string) $value) . '">';
             }
             $display = is_bool($effective[$key]['value']) ? ($effective[$key]['value'] ? 'activé' : 'désactivé') : (string) $effective[$key]['value'];
-            $source = ['produit' => 'valeurs par défaut', 'site' => 'réglages globaux', 'agenda' => 'agenda', 'événement' => 'cet événement'][$effective[$key]['source']] ?? $effective[$key]['source'];
+            $source = ['produit' => 'valeurs par défaut', 'site' => 'réglages globaux', 'agenda' => 'calendrier', 'événement' => 'cet événement'][$effective[$key]['source']] ?? $effective[$key]['source'];
             echo '</div></div><p class="fba-effective" id="effective-' . esc_attr($key) . '">Valeur effective : <strong>' . esc_html($display) . '</strong> · ' . esc_html($source) . '</p></div></div>';
         }
         echo '<details class="fba-help"><summary>Ce que couvre ce module</summary><p>Cette première règle limite les nouvelles demandes prises en charge. Elle ne remplace pas le nombre de places de la séance et ne s’applique pas aux modifications ou aux reports.</p></details></section>';
@@ -134,7 +134,7 @@ final class SettingsPage
     }
     private function navigation(string $scope, int $id): void
     {
-        echo '<aside class="fba-sidebar"><nav aria-label="Agendas et événements"><h2>Contexte des réglages</h2><p class="description">Global → agenda → événement</p>';
+        echo '<aside class="fba-sidebar"><nav aria-label="Calendriers et événements"><h2>Contexte des réglages</h2><p class="description">Global → calendrier → événement</p>';
         if (self::allowed('site', 0)) { $this->contextLink('Réglages globaux', 'site', 0, $scope === 'site'); }
         $currentCalendar = $scope === 'calendar_event' && self::allowed($scope, $id) ? (int) CalendarSlot::find($id)->calendar_id : ($scope === 'calendar' ? $id : 0);
         $groups = 0;
@@ -148,13 +148,13 @@ final class SettingsPage
             if (!$canEdit && !$visible) { continue; }
             $open = $currentCalendar === (int) $calendar->id || ($currentCalendar === 0 && $groups === 0);
             $groups++;
-            echo '<details class="fba-agenda"' . ($open ? ' open' : '') . '><summary>' . esc_html($calendar->title ?: 'Agenda #' . $calendar->id) . '<span class="fba-count" aria-label="' . esc_attr(count($visible) . ' événements accessibles') . '">' . count($visible) . '</span></summary><div class="fba-agenda-links">';
-            if ($canEdit) { $this->contextLink('Réglages de l’agenda', 'calendar', (int) $calendar->id, $scope === 'calendar' && $id === (int) $calendar->id); }
+            echo '<details class="fba-agenda"' . ($open ? ' open' : '') . '><summary>' . esc_html($calendar->title ?: 'Calendrier #' . $calendar->id) . '<span class="fba-count" aria-label="' . esc_attr(count($visible) . ' événements accessibles') . '">' . count($visible) . '</span></summary><div class="fba-agenda-links">';
+            if ($canEdit) { $this->contextLink('Réglages du calendrier', 'calendar', (int) $calendar->id, $scope === 'calendar' && $id === (int) $calendar->id); }
             foreach ($visible as $event) { $this->contextLink($event->title, 'calendar_event', (int) $event->id, $scope === 'calendar_event' && $id === (int) $event->id); }
             if (!$visible) { echo '<p class="description">Aucun événement accessible.</p>'; }
             echo '</div></details>';
         }
-        if (!$groups) { echo '<p class="description">Aucun agenda accessible.</p>'; }
+        if (!$groups) { echo '<p class="description">Aucun calendrier accessible.</p>'; }
         echo '</nav></aside>';
     }
     private function contextLink(string $label, string $scope, int $id, bool $active): void

@@ -7,7 +7,7 @@ Cette version est destinée à la validation locale. Elle ne remplace pas encore
 ## Disponible
 
 - Architecture PHP avec namespace WaasKit et chargement PSR-4, sans dépendance de production à installer.
-- Configuration globale, par agenda et par événement dans **FluentBooking → Modules**.
+- Configuration globale, par calendrier et par événement dans **FluentBooking → Modules**.
 - Héritage explicite, valeurs effectives et provenance ; `false` et `0` sont conservés.
 - Stockage versionné : option WordPress globale et métadonnées natives contextualisées.
 - Droits des gestionnaires vérifiés via les permissions FluentBooking ; nonces sur les écritures.
@@ -31,9 +31,9 @@ Ne pas activer simultanément l'ancienne version et celle-ci. Le fichier princip
 
 ## Configuration
 
-La navigation latérale regroupe les événements sous leur agenda et indique le contexte sélectionné. Le panneau central rassemble les réglages du module Participants. L’onglet Diagnostics contient les versions et la simulation de migration, séparées des réglages courants.
+La navigation latérale regroupe les événements sous leur calendrier et indique le contexte sélectionné. Le panneau central rassemble les réglages du module Participants. L’onglet Diagnostics contient les versions et la simulation de migration, séparées des réglages courants.
 
-Sélectionner **Hériter** pour supprimer une surcharge, ou **Définir ici** pour enregistrer la valeur choisie. Le niveau global hérite des valeurs du produit ; un événement hérite de son agenda, puis du site.
+Sélectionner **Hériter** pour supprimer une surcharge, ou **Définir ici** pour enregistrer la valeur choisie. Le niveau global hérite des valeurs du produit ; un événement hérite de son calendrier, puis du site.
 
 La règle `max_participants` est expérimentale. Elle compte les personnes représentées par les données natives au passage dans `BookingService::createBooking`. Elle ne valide pas les participants auparavant écartés par FluentBooking et ne gère ni l'âge, ni les rôles, ni une capacité de séance. Les modifications, reports, imports directs et écritures SQL ne sont pas couverts. Ne pas employer cette règle comme garantie de jauge en production.
 

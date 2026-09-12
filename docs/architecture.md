@@ -8,9 +8,9 @@ Le registre accepte des implémentations du contrat `Rule`, avec un identifiant 
 
 ## Données
 
-Clé `waaskit_fluent_booking_config` : enveloppe `{schema, revision, values}`. Au niveau site, option non autoloadée. Au niveau agenda/événement, métadonnées natives `calendar` et `calendar_event`. Le schéma rejette les clés inconnues, les types approximatifs et les entiers hors limites.
+Clé `waaskit_fluent_booking_config` : enveloppe `{schema, revision, values}`. Au niveau site, option non autoloadée. Au niveau calendrier/événement, métadonnées natives `calendar` et `calendar_event`. Le schéma rejette les clés inconnues, les types approximatifs et les entiers hors limites.
 
-Résolution : valeurs du produit → site → agenda → événement. Une clé absente hérite ; une clé présente avec `false` ou `0` surcharge. Aucune écriture dans les réglages natifs historiques, aucune conversion de facturation.
+Résolution : valeurs du produit → site → calendrier → événement. Une clé absente hérite ; une clé présente avec `false` ou `0` surcharge. Aucune écriture dans les réglages natifs historiques, aucune conversion de facturation.
 
 Les écritures prennent un verrou via l'unicité de `option_name`, relisent la révision sans réutiliser un cache d'option périmé, puis vérifient la persistance. Ce verrou concerne la configuration, pas les places. Il ne couvre que les écritures via cet adaptateur.
 

@@ -3,7 +3,7 @@
 ## 4.0.0-alpha.2
 
 - Nom affiché : Fluent Booking Addon ; sous-menu « Modules ».
-- Tableau de bord natif avec navigation globale, agendas repliables et événements.
+- Tableau de bord natif avec navigation globale, calendriers repliables et événements.
 - Panneau Participants, provenance des valeurs et aide contextuelle.
 - Diagnostics séparés des réglages courants.
 - Mention discrète « Version alpha par WaasKit » liée au dépôt de l’extension.
@@ -12,7 +12,7 @@
 
 ## 4.0.0-alpha.1
 
-- Nouveau socle PSR-4 avec configuration globale/agenda/événement.
+- Nouveau socle PSR-4 avec configuration globale/calendrier/événement.
 - Héritage, provenance, validation stricte, révisions et verrouillage des écritures.
 - Administration contextuelle avec permissions FluentBooking et nonces WordPress.
 - Registre extensible et exemple de limite de participants via le service natif.
