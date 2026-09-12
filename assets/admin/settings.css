@@ -81,3 +81,14 @@ html.fba-dark .fba-admin .fba-settings a { color:#8fb0ff; }
 /* Reserve space only; scrolling remains driven by page content. */
 html.fba-page { scrollbar-gutter:stable; }
 .fba-admin .fba-navigation .fba-logo:hover,.fba-admin .fba-navigation .fba-logo:focus-visible { background:transparent; }
+.fba-settings > details[open] > summary { margin-bottom:16px; color:var(--fba-text); }
+.fba-settings .fba-diagnostics { padding:20px; border:1px solid var(--fba-line); border-radius:8px; background:var(--fba-sunk); }
+.fba-settings .fba-diagnostics section + section { margin-top:24px; padding-top:20px; border-top:1px solid var(--fba-line); }
+.fba-settings .fba-diagnostics p { margin:8px 0 16px; }
+.fba-settings .fba-system-list { margin:0; }
+.fba-settings .fba-system-list > div { display:grid; grid-template-columns:minmax(140px,1fr) 2fr; gap:16px; padding:10px 0; }
+.fba-settings .fba-system-list > div + div { border-top:1px solid var(--fba-line); }
+.fba-settings .fba-system-list dt { font-weight:600; color:var(--fba-text); }
+.fba-settings .fba-system-list dd { margin:0; overflow-wrap:anywhere; }
+.fba-settings .fba-diagnostics ul { margin-bottom:0; overflow-wrap:anywhere; }
+@media(max-width:480px) { .fba-settings .fba-system-list > div { grid-template-columns:1fr; gap:4px; } }

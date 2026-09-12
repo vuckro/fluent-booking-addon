@@ -113,7 +113,7 @@ final class SettingsPage
         if (isset($_GET['context']) && is_string($_GET['context']) && preg_match('/^(site|calendar|calendar_event):([0-9]+)$/D', $_GET['context'], $match)) {
             $scope = $match[1]; $id = (int) $match[2];
         }
-        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Gérez vos modules et leurs réglages.</p></div><a href="https://github.com/vuckro/fluent-booking-addon">Version alpha par WaasKit ↗</a></header>';
+        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Gérez vos modules et leurs réglages.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
         echo '<h2>Modules</h2>';
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
@@ -185,11 +185,11 @@ final class SettingsPage
 
     private function diagnostics(): void
     {
-        echo '<h2>État de l’installation</h2><p>Versions installées et compatibilité de l’extension.</p><ul class="fba-system-list">';
+        echo '<div class="fba-diagnostics"><section><h3>État de l’installation</h3><p>Versions installées et compatibilité de l’extension.</p><dl class="fba-system-list">';
         foreach (['WordPress' => get_bloginfo('version'), 'PHP' => PHP_VERSION, 'FluentBooking' => defined('FLUENT_BOOKING_VERSION') ? FLUENT_BOOKING_VERSION : 'absent', 'Pro' => defined('FLUENT_BOOKING_PRO_VERSION') ? FLUENT_BOOKING_PRO_VERSION : 'absent', 'Compatibilité du socle' => Plugin::compatible() ? '2.4.x détectée ; recette exécutée sur 2.4.0' : 'non prise en charge'] as $name => $value) {
-            echo '<li>' . esc_html($name . ' : ' . $value) . '</li>';
+            echo '<div><dt>' . esc_html($name) . '</dt><dd>' . esc_html($value) . '</dd></div>';
         }
-        echo '</ul><h2>Migration historique — simulation uniquement</h2><p>Aucune ancienne option ne modifie automatiquement les nouvelles règles ou les paiements.</p><ul>';
+        echo '</dl></section><section><h3>Migration historique — simulation uniquement</h3><p>Aucune ancienne option ne modifie automatiquement les nouvelles règles ou les paiements.</p><ul>';
         $found = false;
         foreach (CalendarSlot::all() as $event) {
             $settings = is_array($event->settings) ? $event->settings : [];
@@ -199,6 +199,6 @@ final class SettingsPage
             echo '<li>' . esc_html($event->title . ' (#' . $event->id . ') : ' . wp_json_encode($legacy)) . ' — correspondance à valider ; aucune conversion.</li>';
         }
         if (!$found) { echo '<li>Aucun ancien réglage détecté.</li>'; }
-        echo '</ul>';
+        echo '</ul></section></div>';
     }
 }
