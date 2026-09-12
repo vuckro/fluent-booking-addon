@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.0-alpha.9
+
+- Texte, bordures, flèches et options des sélecteurs lisibles en mode sombre, y compris au survol et au focus.
+- Lien WaasKit dans un nouvel onglet et diagnostics aérés.
+- Synthèse du fonctionnement et du périmètre actuel.
+
 ## 4.0.0-alpha.8
 
 - Titre Modules lisible en mode sombre.
