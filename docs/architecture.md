@@ -7,6 +7,7 @@
 - `Configuration/Schema.php` : valeurs autorisées, défauts, résolution des niveaux.
 - `Integrations/FluentBooking/ConfigurationStore.php` : option globale et métadonnées natives, révisions et exclusion des écritures simultanées.
 - `Integrations/FluentBooking/ParticipantLimitAdapter.php` : raccordement au filtre natif BookingService et comptage de ses données normalisées.
+- `Integrations/FluentBooking/GuestFields.php` : limite du composant public natif et validation des invités avant leur traitement par le contrôleur.
 - `Rules/` : règles pures, sans accès au réseau, à la base ou au paiement.
 - `Integrations/FluentBooking/ConfigurationApi.php` : export authentifié en lecture seule.
 - `Integrations/FluentBooking/RetiredProfiles.php` et `Infrastructure/Privacy.php` : protections et confidentialité des seules données historiques des alphas retirées.

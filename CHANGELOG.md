@@ -1,3 +1,11 @@
+# 4.0.0-alpha.17
+
+- Limite transmise au composant public natif des invités, sans modifier les questions enregistrées.
+- Contrôle de la demande publique avant filtrage/troncature des invités : dépassement, identité incomplète, doublon d’e-mail.
+- Refus d’une demande tronquée au lieu de supprimer silencieusement des participants.
+- Guide contextuel avec liens directs aux questions et paiements ; explication du comptage natif des événements de groupe.
+- Tests ciblés sur l’événement 2 : places, maximum, quantité/prix natifs et restauration des données utilisateur.
+
 # 4.0.0-alpha.16
 
 - Une seule décision en langage courant remplace les deux menus d’héritage.

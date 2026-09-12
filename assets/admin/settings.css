@@ -119,3 +119,6 @@ html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
 .fba-settings .fba-maximum { margin:12px 0 0 28px; padding:16px; background:var(--fba-sunk); border-radius:6px; }
 .fba-settings .fba-maximum[hidden] { display:none; }
 .fba-settings .fba-maximum label { display:inline-block; margin-right:10px; font-weight:600; }
+.fba-settings .fba-native-guide { margin-top:24px; }
+.fba-settings .fba-guide-body { padding:6px 24px 20px; }
+.fba-settings .fba-guide-body > p + p { padding-top:16px; border-top:1px solid var(--fba-line); }

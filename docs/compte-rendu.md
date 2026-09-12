@@ -1,3 +1,5 @@
+> Alpha.17 : voir [le point sur les invités](invites-et-evolutions.md) pour le contrôle public, les places et le prix natifs. Le bilan ci-dessous décrit le nettoyage du socle.
+
 # Base simplifiée — 4.0.0-alpha.16
 
 ## Décision

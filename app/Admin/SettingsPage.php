@@ -105,10 +105,34 @@ final class SettingsPage
         SettingsForm::render($scope, $stored['values'], $effective, $parent);
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
         echo '</form><footer class="fba-card-footer">Cette limite complète la capacité des créneaux définie dans FluentBooking. Elle ne change ni les prix, ni les paiements, ni les réservations existantes. Les modifications et reports ne sont pas couverts.</footer></section>';
+        $this->guestGuidance($scope, $id);
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
         }
         echo '</div>';
+    }
+
+    private function guestGuidance(string $scope, int $id): void
+    {
+        echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Invités, places et prix</h3><p>Les réglages associés se trouvent dans l’événement FluentBooking.</p></div></header><div class="fba-guide-body">';
+        if ($scope !== 'calendar_event') {
+            echo '<p>Pour autoriser des invités, sélectionnez un événement ci-dessus, puis cochez <strong>Invités supplémentaires</strong> dans ses questions.</p></div></section>';
+            return;
+        }
+        $event = CalendarSlot::find($id);
+        $base = admin_url('admin.php?page=fluent-booking#/calendars/' . (int) $event->calendar_id . '/slot-settings/' . $id . '/');
+        $enabled = false;
+        foreach ($event->getMeta('booking_fields', []) as $field) {
+            if (($field['name'] ?? '') === 'guests') { $enabled = !empty($field['enabled']); }
+        }
+        echo '<p><strong>1. Autoriser les invités</strong><br>Cochez <strong>Invités supplémentaires</strong> dans les questions de l’événement. État actuel : ' . ($enabled ? 'activé' : 'désactivé') . '. <a href="' . esc_url($base . 'question-settings') . '">Ouvrir les questions</a>.</p>';
+        if ($event->isMultiGuestEvent()) {
+            echo '<p><strong>2. Compter les places</strong><br>Sur cet événement de groupe, FluentBooking compte déjà <strong>une place par personne</strong>, réservant compris. La capacité est de <strong>' . (int) $event->getMaxBookingPerSlot() . ' personnes par créneau</strong>. Une réservation pour 2 personnes utilise 2 places ; la limite ci-dessus contrôle uniquement le nombre de personnes dans une même demande.</p>';
+            echo '<p><strong>3. Définir le prix</strong><br>Pour un tarif identique par personne, utilisez le prix natif de l’événement : FluentBooking le multiplie par le nombre de participants. <a href="' . esc_url($base . 'payment-settings') . '">Ouvrir les paiements</a>.</p>';
+        } else {
+            echo '<p><strong>Places et prix</strong><br>Cet événement n’est pas un événement de groupe. Ses invités ne sont pas comptés comme des places individuelles. Utilisez un événement de groupe pour réserver une place et appliquer un tarif par personne.</p>';
+        }
+        echo '<details><summary>Informations demandées aux invités</summary><p>Le formulaire natif de groupe exige un nom et une adresse e-mail distincte pour chaque personne. Les rendre facultatifs, les masquer ou ajouter un âge nécessitera un formulaire de participants spécifique ; ces options ne sont pas encore disponibles dans cette version.</p></details></div></section>';
     }
 
     private function navigation(string $scope, int $id): void

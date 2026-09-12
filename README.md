@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.16** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
+Version **4.0.0-alpha.17** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
 
 Un seul module : limiter les personnes par demande de réservation, sans modifier les paiements ou les capacités natives. Les fonctions expérimentales de groupe, tarifs et jauges des alphas précédentes ont été retirées.
 
@@ -12,6 +12,7 @@ Cette alpha n’est pas un remplacement fonctionnel de la 3.3.6 ni une version c
 - [Fonctionnement des réglages](docs/fonctionnement.md)
 - [Architecture et maintenance](docs/architecture.md)
 - [Validation](docs/validation.md)
+- [Invités : logique actuelle et champs à faire évoluer](docs/invites-et-evolutions.md)
 - [Migration et données historiques](docs/migration.md)
 
 ## Vérifier et distribuer
@@ -20,6 +21,7 @@ Cette alpha n’est pas un remplacement fonctionnel de la 3.3.6 ni une version c
 php tests/unit.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/booking-service.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-logic.php
 python3 scripts/package.py
 ```
 

@@ -28,7 +28,17 @@ final class ParticipantLimitAdapter
                 return new \WP_Error('waaskit_incompatible', 'Réservation indisponible : compatibilité à vérifier.', ['status' => 503]);
             }
             $count = is_array($data['email'] ?? null) ? count($data['email']) : 1 + count((array) ($input['additional_guests'] ?? []));
-            $error = $this->registry->validate(['participant_count' => $count], $settings);
+            $requested = max($count, (int) ($input['_fba_requested_count'] ?? $count));
+            $error = $this->registry->validate(['participant_count' => $requested], $settings);
+            if ($error === null && $requested > $count) {
+                $error = 'Il ne reste pas assez de places pour toutes les personnes indiquées. Choisissez un autre créneau.';
+            }
+            if ($error === null && is_array($data['email'] ?? null)) {
+                $emails = array_map('strtolower', $data['email']);
+                if (count(array_unique($emails)) !== count($emails)) {
+                    $error = 'FluentBooking demande une adresse e-mail différente pour chaque participant, y compris le réservant.';
+                }
+            }
             return $error === null ? $data : new \WP_Error('waaskit_rule_refused', $error, ['status' => 422]);
         } catch (\Throwable $error) {
             return new \WP_Error('waaskit_configuration_error', 'Configuration de réservation à vérifier.', ['status' => 503]);

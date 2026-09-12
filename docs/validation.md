@@ -1,4 +1,4 @@
-# Validation alpha.16
+# Validation alpha.17
 
 ## Exécuté localement
 
@@ -8,6 +8,14 @@
 - Syntaxe PHP et JavaScript, intégrité du ZIP et absence des anciens moteurs dans celui-ci.
 
 FluentBooking/Pro 2.4.0, WordPress 7.1, PHP Local 8.2.29. Les écritures des tests sont annulées par transaction. Le test BookingService bloque e-mails et HTTP. Aucun paiement ni réservation de test n’est conservé.
+
+## Vérifications ciblées supplémentaires
+
+16 assertions sur l’événement 2 : limite publique 2, questions natives inchangées, saisie validée avant troncature, création native de 2 places sur 5, refus du troisième participant et des e-mails dupliqués, commande native 20 × 2 = 40, limite 1, restitution exacte des réglages et absence de réservations de test.
+
+La page publique a été lue par HTTP : le champ invités reçoit la limite actuellement enregistrée (1). Une requête HTTP volontairement incomplète, donc incapable de créer une réservation, avec un invité a reçu HTTP 422 et le message de limite. Ce contrôle ne remplace pas une recette visuelle du composant Svelte.
+
+Les tests ne prouvent pas une exclusion atomique entre deux réservations concurrentes : cette version conserve le moteur de capacité natif.
 
 ## À vérifier avant production
 
