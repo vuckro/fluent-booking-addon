@@ -20,7 +20,10 @@ final class Privacy
     {
         $rows=Booking::where('email',$email)->orderBy('id')->offset((max(1,$page)-1)*50)->limit(50)->get(); $data=[];
         foreach($rows as $booking) {
-            $q=$booking->getMeta(RetiredProfiles::META,[]); if(!$q) {continue;}
+            $q=$booking->getMeta(RetiredProfiles::META,[]);
+            $new=$booking->getMeta(\WaasKit\FluentBooking\Guests\BookingAdapter::META,[]);
+            if(!empty($new['guests'])) {$q['participants']=array_merge($q['participants']??[],$new['guests']);}
+            if(!$q) {continue;}
             $data[]=['group_id'=>'fba-participants','group_label'=>'Participants','item_id'=>'fba-booking-'.$booking->id,
                 'data'=>[['name'=>'Participants','value'=>wp_json_encode($q['participants'],JSON_UNESCAPED_UNICODE)]]];
         }
@@ -30,6 +33,11 @@ final class Privacy
     {
         $rows=Booking::where('email',$email)->orderBy('id')->offset((max(1,$page)-1)*50)->limit(50)->get(); $removed=false;
         foreach($rows as $booking) {
+            $new=$booking->getMeta(\WaasKit\FluentBooking\Guests\BookingAdapter::META,[]);
+            if(!empty($new['guests'])) {
+                foreach($new['guests'] as &$guest) {$guest['name']='';$guest['email']='';$guest['fields']=[];} unset($guest);
+                Helper::updateBookingMeta($booking->id,\WaasKit\FluentBooking\Guests\BookingAdapter::META,$new);$removed=true;
+            }
             $q=$booking->getMeta(RetiredProfiles::META,[]);if(!$q) {continue;}
             foreach($q['participants'] as &$person) {$person['name']='';$person['email']='';$person['birth_date']='';$person['fields']=[];}
             unset($person);

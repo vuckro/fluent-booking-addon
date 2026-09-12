@@ -1,3 +1,5 @@
+> Alpha.18 : 18 assertions supplémentaires dans `tests/guest-options.php` et un test DOM dans `tests/guests-dom.cjs`. Voir [le guide des invités](invites-et-evolutions.md).
+
 # Validation alpha.17
 
 ## Exécuté localement

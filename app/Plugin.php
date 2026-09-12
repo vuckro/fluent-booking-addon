@@ -8,7 +8,7 @@ use WaasKit\FluentBooking\Rules\ParticipantLimit;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.17';
+    public const VERSION = '4.0.0-alpha.18';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -37,6 +37,7 @@ final class Plugin
         (new \WaasKit\FluentBooking\Infrastructure\Privacy())->register();
         (new \WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationApi($store))->register();
         (new \WaasKit\FluentBooking\Integrations\FluentBooking\RetiredProfiles($store))->register();
+        (new \WaasKit\FluentBooking\Guests\BookingAdapter($store))->register();
         (new \WaasKit\FluentBooking\Integrations\FluentBooking\GuestFields($store))->register();
         (new \WaasKit\FluentBooking\Integrations\FluentBooking\ParticipantLimitAdapter($store, $registry))->register();
     }

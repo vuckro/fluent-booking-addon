@@ -122,3 +122,9 @@ html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
 .fba-settings .fba-native-guide { margin-top:24px; }
 .fba-settings .fba-guide-body { padding:6px 24px 20px; }
 .fba-settings .fba-guide-body > p + p { padding-top:16px; border-top:1px solid var(--fba-line); }
+.fba-settings .fba-guest-options { padding-top:24px; border-top:1px solid var(--fba-line); }
+.fba-settings .fba-extra-field { margin:16px 0; padding:16px; border:1px solid var(--fba-line); border-radius:6px; }
+.fba-settings .fba-extra-field label { display:block; margin-bottom:12px; }
+.fba-settings .fba-extra-field input[type=text],.fba-settings .fba-extra-field textarea,.fba-settings .fba-extra-field select { display:block; width:100%; max-width:540px; background:var(--fba-surface); color:var(--fba-text); border:1px solid var(--fba-line); border-radius:6px; }
+.fba-settings .fba-extra-field [hidden] { display:none; }
+.fba-settings .fba-choice input[type=checkbox] { flex-shrink:0; margin-top:3px; accent-color:var(--fba-accent); }

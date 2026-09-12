@@ -25,6 +25,7 @@ final class ConfigurationStore
     {
         $this->checkScope($scope, $id);
         Schema::validate($values);
+        if ($scope !== 'calendar_event' && array_key_exists('guest_options', $values)) { throw new \InvalidArgumentException('Les options invités se règlent sur un événement.'); }
         // add_option is backed by a unique option_name: serialize writers per scope.
         $lock = self::KEY . '_lock_' . $scope . '_' . $id;
         if (!add_option($lock, time(), '', false)) {

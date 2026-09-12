@@ -9,6 +9,7 @@ final class Schema
         return [
             'enabled' => ['type' => 'bool', 'default' => false, 'label' => 'Activer les règles de cet add-on'],
             'max_participants' => ['type' => 'int', 'default' => 0, 'min' => 0, 'max' => 1000, 'label' => 'Maximum de participants par demande (0 = sans limite supplémentaire)'],
+            'guest_options' => ['type'=>'guests','default'=>[]],
             // Read-only compatibility with alpha.10–14; never exposed as an editable module.
             'booking_profile' => ['type' => 'archive', 'default' => []],
         ];
@@ -21,6 +22,10 @@ final class Schema
                 throw new \InvalidArgumentException('Réglage inconnu : ' . $key);
             }
             $field = $fields[$key];
+            if ($field['type'] === 'guests') {
+                if (!is_array($value)) { throw new \InvalidArgumentException('Options invités invalides.'); }
+                \WaasKit\FluentBooking\Guests\Options::validate($value);
+            }
             if ($field['type'] === 'archive') {
                 if (!is_array($value)) { throw new \InvalidArgumentException('Profil invalide.'); }
             }

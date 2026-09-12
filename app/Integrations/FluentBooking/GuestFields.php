@@ -46,10 +46,11 @@ final class GuestFields
     public function validatePosted(array $posted, $event): ?\WP_Error
     {
         $maximum = $this->maximum((int) $event->id);
-        if ($maximum <= 0) { return null; }
+        $custom = $this->store->read('calendar_event', (int) $event->id)['values']['guest_options']['enabled'] ?? false;
+        if ($maximum <= 0 && !$custom) { return null; }
         $guests = $posted['guests'] ?? [];
         if (!is_array($guests)) { return new \WP_Error('fba_guests', 'La liste des invités est invalide.'); }
-        if (1 + count($guests) > $maximum) {
+        if ($maximum > 0 && 1 + count($guests) > $maximum) {
             return new \WP_Error('fba_maximum', $maximum === 1 ? 'Cette réservation est limitée à une personne, sans invité.' : sprintf('Cette réservation est limitée à %d personnes au total, vous compris.', $maximum));
         }
         if (!$event->isMultiGuestEvent()) { return null; }

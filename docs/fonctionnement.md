@@ -20,4 +20,4 @@ Sélectionnez un événement. Dans le bloc Invités, places et prix, ouvrez les 
 
 Pour un événement de groupe, FluentBooking crée une réservation native par personne : une réservation pour 2 utilise 2 places sur les 5 du créneau. Le prix natif est également multiplié par le nombre de personnes. Ne pas ajouter un second débit de places.
 
-Les nom et e-mail distinct requis par le groupe natif restent obligatoires. Leur masquage ou leur caractère facultatif, les champs par invité et les règles tarifaires différenciées ne sont pas encore disponibles.
+Les noms et e-mails distincts restent obligatoires. Les options de l’événement permettent maintenant d’ajouter des questions par invité et de choisir entre tarif par personne et tarif forfaitaire. Voir [le guide invités](invites-et-evolutions.md).

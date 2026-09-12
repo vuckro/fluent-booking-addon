@@ -10,7 +10,7 @@ $remove = static function (): void {
     // Native booking records and historical payment data remain untouched.
     foreach (['fcal_meta'=>['key'=>'waaskit_fluent_booking_config'], 'fcal_booking_meta'=>['meta_key'=>'fba_party_v1']] as $suffix=>$where) {
         $table = $wpdb->prefix . $suffix;
-        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) === $table) { $wpdb->delete($table,$where); }
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) === $table) { $wpdb->delete($table,$where); if ($suffix === 'fcal_booking_meta') { $wpdb->delete($table, ['meta_key'=>'fba_guests_v1']); } }
     }
 };
 if (is_multisite()) {

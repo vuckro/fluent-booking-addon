@@ -1,3 +1,12 @@
+# 4.0.0-alpha.18
+
+- Options propres à chaque événement de groupe : contrôle des places par personne et multiplication du prix indépendants.
+- Questions supplémentaires par invité : liste de choix, texte et nombre, avec caractère obligatoire configurable.
+- Récapitulatif public du nombre de personnes et du prix dès l’ajout d’un invité.
+- Validation serveur, réponses figées en métadonnées, outils de confidentialité et prix conservés avec la réservation.
+- Contrôle d’admission sérialisé par créneau sur les réservations natives ; aucune nouvelle table de stock.
+- Prise en charge limitée à Stripe/hors ligne et tarif unique à deux décimales ; coupons et reports non pris en charge dans le mode personnalisé.
+
 # 4.0.0-alpha.17
 
 - Limite transmise au composant public natif des invités, sans modifier les questions enregistrées.

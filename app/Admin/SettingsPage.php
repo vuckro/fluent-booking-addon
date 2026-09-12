@@ -60,6 +60,10 @@ final class SettingsPage
             if (!Plugin::compatible()) { throw new \RuntimeException('Version FluentBooking non prise en charge.'); }
             $stored = $this->store->read($scope, $id);
             $values = SettingsForm::parse(wp_unslash($_POST), $scope, $stored['values'], $this->store->effective($scope, $id));
+            if ($scope === 'calendar_event') {
+                $values['guest_options'] = GuestOptionsForm::parse(wp_unslash($_POST));
+                if ($values['guest_options']['enabled'] && !CalendarSlot::find($id)->isMultiGuestEvent()) { throw new \InvalidArgumentException('Choisissez un événement de groupe pour ces options invités.'); }
+            }
             $revision = filter_var($_POST['revision'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
             if ($revision === false || $revision === null) { throw new \InvalidArgumentException('Révision invalide.'); }
             $this->store->save($scope, $id, $values, $revision);
@@ -103,6 +107,7 @@ final class SettingsPage
             ? $this->store->effective('calendar', (int) CalendarSlot::find($id)->calendar_id)
             : $this->store->effective('site');
         SettingsForm::render($scope, $stored['values'], $effective, $parent);
+        if ($scope === 'calendar_event' && CalendarSlot::find($id)->isMultiGuestEvent()) { GuestOptionsForm::render(\WaasKit\FluentBooking\Guests\Options::validate($stored['values']['guest_options'] ?? [])); }
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
         echo '</form><footer class="fba-card-footer">Cette limite complète la capacité des créneaux définie dans FluentBooking. Elle ne change ni les prix, ni les paiements, ni les réservations existantes. Les modifications et reports ne sont pas couverts.</footer></section>';
         $this->guestGuidance($scope, $id);
@@ -128,11 +133,11 @@ final class SettingsPage
         echo '<p><strong>1. Autoriser les invités</strong><br>Cochez <strong>Invités supplémentaires</strong> dans les questions de l’événement. État actuel : ' . ($enabled ? 'activé' : 'désactivé') . '. <a href="' . esc_url($base . 'question-settings') . '">Ouvrir les questions</a>.</p>';
         if ($event->isMultiGuestEvent()) {
             echo '<p><strong>2. Compter les places</strong><br>Sur cet événement de groupe, FluentBooking compte déjà <strong>une place par personne</strong>, réservant compris. La capacité est de <strong>' . (int) $event->getMaxBookingPerSlot() . ' personnes par créneau</strong>. Une réservation pour 2 personnes utilise 2 places ; la limite ci-dessus contrôle uniquement le nombre de personnes dans une même demande.</p>';
-            echo '<p><strong>3. Définir le prix</strong><br>Pour un tarif identique par personne, utilisez le prix natif de l’événement : FluentBooking le multiplie par le nombre de participants. <a href="' . esc_url($base . 'payment-settings') . '">Ouvrir les paiements</a>.</p>';
+            echo '<p><strong>3. Définir le prix</strong><br>Définissez le tarif de base dans FluentBooking, puis choisissez ci-dessus si ce prix doit être multiplié par le nombre de personnes. Sans personnalisation, FluentBooking conserve son comportement natif. <a href="' . esc_url($base . 'payment-settings') . '">Ouvrir les paiements</a>.</p>';
         } else {
             echo '<p><strong>Places et prix</strong><br>Cet événement n’est pas un événement de groupe. Ses invités ne sont pas comptés comme des places individuelles. Utilisez un événement de groupe pour réserver une place et appliquer un tarif par personne.</p>';
         }
-        echo '<details><summary>Informations demandées aux invités</summary><p>Le formulaire natif de groupe exige un nom et une adresse e-mail distincte pour chaque personne. Les rendre facultatifs, les masquer ou ajouter un âge nécessitera un formulaire de participants spécifique ; ces options ne sont pas encore disponibles dans cette version.</p></details></div></section>';
+        echo '<details><summary>Informations demandées aux invités</summary><p>Le formulaire natif de groupe exige un nom et une adresse e-mail distincte pour chaque personne. Vous pouvez ajouter une catégorie, un âge ou une question libre dans les options ci-dessus. Le nom et l’e-mail restent obligatoires dans ce mode natif.</p></details></div></section>';
     }
 
     private function navigation(string $scope, int $id): void
