@@ -1,3 +1,9 @@
+# 4.0.0-alpha.13 — états et alignement des boutons
+
+- Couleurs neutres au survol, au focus et au clic, prioritaires sur les styles WordPress.
+- Repère clavier fin et neutre, couleurs clair/sombre conservées.
+- Centrage du contenu des boutons et alignement du sélecteur de contexte avec son bouton.
+
 # 4.0.0-alpha.12 — conteneur allégé
 
 - Fond du conteneur principal retiré ; cartes conservées sur le fond de page.

@@ -10,8 +10,9 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings p { line-height:1.6; }
 .fba-settings .fba-header p { margin:6px 0 0; color:var(--fba-muted); }
 .fba-settings .fba-header > a { font-size:12px; text-decoration:none; white-space:nowrap; }
-.fba-settings .fba-context { margin-bottom:24px; }
-.fba-settings .fba-context > label { margin-right:10px; font-weight:600; }
+.fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:24px; }
+.fba-settings .fba-context > .description { flex-basis:100%; margin:0; }
+.fba-settings .fba-context > label { margin-right:2px; font-weight:600; }
 .fba-settings .fba-context select { width:340px; max-width:100%; }
 .fba-settings .description { color:var(--fba-muted); font-size:12px; }
 .fba-settings .fba-card { background:var(--fba-surface); border:1px solid var(--fba-line); border-radius:8px; overflow:hidden; }
@@ -28,7 +29,7 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings .form-table select { min-width:132px; }
 .fba-settings .form-table .small-text { width:132px; }
 .fba-settings .form-table .description { margin-top:9px; }
-.fba-settings .button { min-height:40px; padding:3px 16px; border-radius:6px; border-color:var(--fba-line); background:var(--fba-surface); color:var(--fba-text); }
+.fba-settings .button { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; vertical-align:middle; min-height:40px; line-height:1.4; padding:8px 16px; border-radius:6px; border-color:var(--fba-line); background:var(--fba-surface); color:var(--fba-text); }
 .fba-settings .button:hover { border-color:#8793a3; background:var(--fba-sunk); }
 .fba-settings .button-primary { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); }
 .fba-settings .button-primary:hover { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); filter:brightness(.94); }
@@ -131,3 +132,8 @@ body.fba-admin .fba-settings .fba-check input[type=checkbox]:focus-visible { out
 .fba-settings .fba-profile { max-width:none; }
 @media (forced-colors:active) { body.fba-admin .fba-settings .fba-check input[type=checkbox] { appearance:auto; } body.fba-admin .fba-settings .fba-check input[type=checkbox]::after { content:none; } }
 .fba-settings .fba-profile-cell > .fba-field select { width:100%; }
+
+/* Outrank WordPress button state rules without changing other admin screens. */
+body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):is(:hover,:focus,:active) { background:var(--fba-sunk); color:var(--fba-text); border-color:var(--fba-strong); box-shadow:none; outline:none; }
+body.fba-admin .fba-settings .button.button-primary:not(:disabled):is(:hover,:focus,:active) { background:var(--fba-accent); color:var(--fba-contrast); border-color:var(--fba-accent); }
+body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; box-shadow:none; }
