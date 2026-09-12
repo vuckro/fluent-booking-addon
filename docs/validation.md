@@ -64,3 +64,7 @@ Les sections précédentes décrivent les versions historiques ; l'intégration 
 ## Header et thème alpha.7
 
 Syntaxe PHP et JS, 18 assertions d’intégration, contrôles HTTP des deux headers et 7 contrôles de sauvegarde réussis. Le script de thème est testé dans un environnement simulé : préférence existante, changement clair/sombre, clés partagées, événements storage, mode système et stockage indisponible. Ces contrôles ne constituent pas une recette visuelle ni un essai réel multi-onglets dans un navigateur.
+
+## Finitions alpha.8
+
+Syntaxe PHP/JS et diff vérifiés. Test simulé du thème avant DOMContentLoaded puis du bouton, du stockage partagé et du mode système. Contrôles HTTP des deux headers réussis. Le rendu visuel, le défilement et l’absence de flash restent à confirmer dans un navigateur.

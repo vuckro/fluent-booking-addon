@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.7** — base minimale pour validation locale.
+Version **4.0.0-alpha.8** — base minimale pour validation locale.
 
 ## Ce qui est disponible
 

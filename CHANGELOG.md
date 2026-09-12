@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0-alpha.8
+
+- Titre Modules lisible en mode sombre.
+- Thème chargé dans le head avant le contenu pour éviter le flash clair.
+- Marges du logo alignées sur les 30 px natifs, retrait du fond au survol.
+- Espace de défilement stable sans barre forcée.
+
 ## 4.0.0-alpha.7
 
 - Header aligné sur les dimensions, icônes SVG et palette FluentBooking 2.4.0.

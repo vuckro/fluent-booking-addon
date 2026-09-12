@@ -1,12 +1,12 @@
 /* Presentation only. All selectors stay within the add-on's single screen. */
 /* Palette aligned with FluentBooking 2.4.0; page background requested by the user. */
 body.fba-admin { --fba-bg:#f4f5fa; --fba-surface:#fff; --fba-sunk:#f9fafb; --fba-text:#2f3448; --fba-muted:#565865; --fba-line:#eaecf0; --fba-strong:#808b9c; --fba-accent:#253241; --fba-contrast:#fff; --fba-wash:#f0f0f1; background:var(--fba-bg); }
-body.fba-admin.fba-dark { color-scheme:dark; --fba-bg:#11171d; --fba-surface:#1c2732; --fba-sunk:#151d26; --fba-text:#f5f6f7; --fba-muted:#c1c7d1; --fba-line:#2c3c4e; --fba-strong:#5e7490; --fba-accent:#d9dadc; --fba-contrast:#2f3448; --fba-wash:#253241; }
-.fba-admin.fba-dark #wpfooter { color:var(--fba-muted); }
+html.fba-dark body.fba-admin { color-scheme:dark; --fba-bg:#11171d; --fba-surface:#1c2732; --fba-sunk:#151d26; --fba-text:#f5f6f7; --fba-muted:#c1c7d1; --fba-line:#2c3c4e; --fba-strong:#5e7490; --fba-accent:#d9dadc; --fba-contrast:#2f3448; --fba-wash:#253241; }
+html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings { max-width:1060px; margin:24px auto; padding:28px; background:var(--fba-surface); border-radius:8px; color:var(--fba-text); }
 .fba-settings .fba-header { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:30px; }
 .fba-settings h1 { color:var(--fba-text); font-size:24px; font-weight:600; padding:0; }
-.fba-settings h2 { font-size:18px; margin:0 0 18px; }
+.fba-settings h2 { color:var(--fba-text); font-size:18px; margin:0 0 18px; }
 .fba-settings p { line-height:1.6; }
 .fba-settings .fba-header p { margin:6px 0 0; color:var(--fba-muted); }
 .fba-settings .fba-header > a { font-size:12px; text-decoration:none; white-space:nowrap; }
@@ -53,13 +53,13 @@ body.fba-admin.fba-dark { color-scheme:dark; --fba-bg:#11171d; --fba-surface:#1c
  .fba-settings .fba-card-footer { padding:16px 18px; }
 }
 /* Native header dimensions and icons, scoped to the standalone Modules page. */
-.fba-admin .fba-navigation { display:flex; align-items:center; justify-content:space-between; margin-left:-20px; padding:12px 20px; min-height:64px; box-sizing:border-box; background:var(--fba-surface); border-bottom:1px solid var(--fba-line); }
+.fba-admin .fba-navigation { display:flex; align-items:center; justify-content:space-between; margin-left:-20px; padding:12px 30px; min-height:64px; box-sizing:border-box; background:var(--fba-surface); border-bottom:1px solid var(--fba-line); }
 .fba-admin .fba-navigation a { color:var(--fba-muted); text-decoration:none; font-weight:500; font-size:14px; }
 .fba-admin .fba-logo { flex:1; line-height:0; }
 .fba-admin .fba-logo img { height:32px; width:auto; padding:2px 0; box-sizing:border-box; }
 .fba-admin .fba-logo-dark,.fba-admin .fcal_dark_icon { display:none; }
-.fba-admin.fba-dark .fba-logo-light,.fba-admin.fba-dark .fcal_light_icon { display:none; }
-.fba-admin.fba-dark .fba-logo-dark,.fba-admin.fba-dark .fcal_dark_icon { display:inline-block; }
+html.fba-dark .fba-admin .fba-logo-light,html.fba-dark .fba-admin .fcal_light_icon { display:none; }
+html.fba-dark .fba-admin .fba-logo-dark,html.fba-dark .fba-admin .fcal_dark_icon { display:inline-block; }
 .fba-admin .fba-navigation-links { display:flex; flex:1; justify-content:center; gap:8px; padding:0 16px; }
 .fba-admin .fba-navigation-links a { display:inline-flex; align-items:center; height:36px; padding:0 12px; border-radius:8px; white-space:nowrap; }
 .fba-admin .fba-navigation-actions { display:flex; flex:1; align-items:center; justify-content:flex-end; }
@@ -71,9 +71,13 @@ body.fba-admin.fba-dark { color-scheme:dark; --fba-bg:#11171d; --fba-surface:#1c
 .fba-admin .fba-navigation :is(a,button):focus { box-shadow:none; outline:none; }
 .fba-admin .fba-navigation :is(a,button):focus-visible { background:var(--fba-wash); }
 .fba-settings summary:focus-visible { text-decoration:underline; }
-.fba-admin.fba-dark .fba-settings a { color:#8fb0ff; }
+html.fba-dark .fba-admin .fba-settings a { color:#8fb0ff; }
 @media(max-width:992px) {
  .fba-admin .fba-navigation { flex-wrap:wrap; gap:12px; }
  .fba-admin .fba-navigation-links { order:3; flex-basis:100%; justify-content:flex-start; flex-wrap:wrap; padding:0; }
 }
 @media(max-width:782px) { .fba-admin .fba-navigation { margin-left:-10px; padding:12px 16px; } }
+
+/* Reserve space only; scrolling remains driven by page content. */
+html.fba-page { scrollbar-gutter:stable; }
+.fba-admin .fba-navigation .fba-logo:hover,.fba-admin .fba-navigation .fba-logo:focus-visible { background:transparent; }

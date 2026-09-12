@@ -1,7 +1,9 @@
 /* Share FluentBooking's theme preference without its global notice-removal script. */
 (() => {
-    const button = document.querySelector('.fba-theme-toggle');
-    if (!button) return;
+    // Run in the head so the saved theme is applied before the first paint.
+    const root = document.documentElement;
+    root.classList.add('fba-page');
+    let button;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     let mode = 'light';
     const read = () => {
@@ -14,7 +16,8 @@
     const apply = value => {
         mode = value;
         const dark = value === 'dark' || (value === 'system' && media.matches);
-        document.body.classList.toggle('fba-dark', dark);
+        root.classList.toggle('fba-dark', dark);
+        if (!button) return;
         button.setAttribute('aria-pressed', String(dark));
         button.setAttribute('aria-label', dark ? 'Activer le mode clair' : 'Activer le mode sombre');
     };
@@ -23,18 +26,25 @@
     if (channel) channel.onmessage = event => {
         if (['light', 'dark', 'system'].includes(event.data?.mode)) apply(event.data.mode);
     };
-    button.addEventListener('click', () => {
-        const next = document.body.classList.contains('fba-dark') ? 'light' : 'dark';
+    const bind = () => {
+        button = document.querySelector('.fba-theme-toggle');
+        if (!button) return;
+        apply(mode);
+        button.addEventListener('click', () => {
+        const next = root.classList.contains('fba-dark') ? 'light' : 'dark';
         try {
             localStorage.setItem('fluent_theme_mode', next);
             localStorage.setItem('fcal_color_mode', next);
         } catch {}
         apply(next);
         channel?.postMessage({mode: next});
-    });
+        });
+    };
     window.addEventListener('storage', event => {
         if (['fluent_theme_mode', 'fcal_color_mode', null].includes(event.key)) apply(read());
     });
     media.addEventListener('change', () => { if (mode === 'system') apply(mode); });
     apply(read());
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, {once: true});
+    else bind();
 })();
