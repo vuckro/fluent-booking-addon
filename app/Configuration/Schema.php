@@ -9,6 +9,7 @@ final class Schema
         return [
             'enabled' => ['type' => 'bool', 'default' => false, 'label' => 'Activer les règles de cet add-on'],
             'max_participants' => ['type' => 'int', 'default' => 0, 'min' => 0, 'max' => 1000, 'label' => 'Maximum de participants par demande (0 = sans limite supplémentaire)'],
+            'booking_profile' => ['type' => 'profile', 'default' => [], 'label' => 'Participants, tarifs et capacités'],
         ];
     }
     public static function validate(array $values): array
@@ -19,6 +20,10 @@ final class Schema
                 throw new \InvalidArgumentException('Réglage inconnu : ' . $key);
             }
             $field = $fields[$key];
+            if ($field['type'] === 'profile') {
+                if (!is_array($value)) { throw new \InvalidArgumentException('Profil invalide.'); }
+                \WaasKit\FluentBooking\Domain\BookingProfile::validate($value);
+            }
             if ($field['type'] === 'bool' && !is_bool($value)) {
                 throw new \InvalidArgumentException('Valeur booléenne requise : ' . $key);
             }

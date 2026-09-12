@@ -1,3 +1,13 @@
+# 4.0.0-alpha.10 — modules en cours de développement
+
+- Profil de participants typés, règles d’âge/accompagnement et champs configurables.
+- Formulaire frontend et adaptateur au service natif, métadonnées de groupe.
+- Capacités par événement et partagées, retenues persistantes et protection concurrente.
+- Prix serveur en centimes, commandes natives, arrondis et arguments Stripe Checkout.
+- Copie/import de profil, exports REST autorisés, confidentialité WordPress.
+- Tests locaux de création, prix, annulation et concurrence.
+- Périmètre encore incomplet et non validé en navigateur/Stripe : voir docs/implementation-modules.md.
+
 # Changelog
 
 ## 4.0.0-alpha.9

@@ -21,6 +21,7 @@ final class SettingsPage
             add_action('admin_enqueue_scripts', static function ($screen) use ($hook) {
                 if ($screen !== $hook) { return; }
                 wp_enqueue_script('waaskit-fb-theme', plugins_url('assets/admin/theme.js', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION, false);
+                wp_enqueue_script('fba-profile', plugins_url('assets/admin/profile.js', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION, true);
                 wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION);
             });
         }, 30);
@@ -83,9 +84,13 @@ final class SettingsPage
             $input = isset($_POST['values']) && is_array($_POST['values']) ? wp_unslash($_POST['values']) : [];
             $values = [];
             foreach (Schema::fields() as $key => $field) {
-                $mode = $modes[$key] ?? null;
+                $mode = $modes[$key] ?? ($field['type'] === 'profile' ? 'inherit' : null);
                 if (!in_array($mode, ['inherit', 'override'], true)) { throw new \InvalidArgumentException('Mode de réglage invalide.'); }
                 if ($mode === 'inherit') { continue; }
+                if ($field['type'] === 'profile') {
+                    $values[$key] = ProfileForm::parse(isset($_POST['profile']) && is_array($_POST['profile']) ? wp_unslash($_POST['profile']) : []);
+                    continue;
+                }
                 $raw = $input[$key] ?? null;
                 if (!is_string($raw)) { throw new \InvalidArgumentException('Valeur invalide.'); }
                 if ($field['type'] === 'bool') {
@@ -136,11 +141,15 @@ final class SettingsPage
         foreach (Schema::fields() as $key => $field) {
             $overridden = array_key_exists($key, $stored['values']);
             $value = $overridden ? $stored['values'][$key] : $effective[$key]['value'];
-            $label = $key === 'enabled' ? 'Activation des règles' : 'Maximum de participants';
+            $label = $field['label'];
             echo '<tr><th scope="row"><label for="value-' . esc_attr($key) . '">' . esc_html($label) . '</label></th><td>';
             echo '<label class="screen-reader-text" for="mode-' . esc_attr($key) . '">Application : ' . esc_html($label) . '</label><select id="mode-' . esc_attr($key) . '" name="modes[' . esc_attr($key) . ']">';
             echo '<option value="inherit"' . selected($overridden, false, false) . '>Hériter</option><option value="override"' . selected($overridden, true, false) . '>Définir ici</option></select> ';
-            if ($field['type'] === 'bool') {
+            if ($field['type'] === 'profile') {
+                ProfileForm::render($value);
+                echo '</td></tr>';
+                continue;
+            } elseif ($field['type'] === 'bool') {
                 echo '<select id="value-' . esc_attr($key) . '" name="values[' . esc_attr($key) . ']"><option value="0"' . selected($value, false, false) . '>Désactivé</option><option value="1"' . selected($value, true, false) . '>Activé</option></select>';
             } else {
                 echo '<input class="small-text" type="number" id="value-' . esc_attr($key) . '" name="values[' . esc_attr($key) . ']" min="0" max="1000" value="' . esc_attr((string) $value) . '">';
@@ -189,6 +198,7 @@ final class SettingsPage
         foreach (['WordPress' => get_bloginfo('version'), 'PHP' => PHP_VERSION, 'FluentBooking' => defined('FLUENT_BOOKING_VERSION') ? FLUENT_BOOKING_VERSION : 'absent', 'Pro' => defined('FLUENT_BOOKING_PRO_VERSION') ? FLUENT_BOOKING_PRO_VERSION : 'absent', 'Compatibilité du socle' => Plugin::compatible() ? '2.4.x détectée ; recette exécutée sur 2.4.0' : 'non prise en charge'] as $name => $value) {
             echo '<div><dt>' . esc_html($name) . '</dt><dd>' . esc_html($value) . '</dd></div>';
         }
+        echo '<div><dt>Retenues de places à examiner</dt><dd>' . (int) (new \WaasKit\FluentBooking\Infrastructure\CapacityStore())->orphanCount() . '</dd></div>';
         echo '</dl></section><section><h3>Migration historique — simulation uniquement</h3><p>Aucune ancienne option ne modifie automatiquement les nouvelles règles ou les paiements.</p><ul>';
         $found = false;
         foreach (CalendarSlot::all() as $event) {

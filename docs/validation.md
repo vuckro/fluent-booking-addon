@@ -1,3 +1,5 @@
+> Mise à jour alpha.10 : voir [le point d’étape des modules](implementation-modules.md). Le contenu ci-dessous décrit le socle antérieur ; les nouveaux modules et leurs limites sont détaillés dans ce document.
+
 # Rapport de validation — 12 septembre 2026
 
 ## Environnement observé

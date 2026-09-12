@@ -1,3 +1,5 @@
+> Mise à jour alpha.10 : voir [le point d’étape des modules](implementation-modules.md). Le contenu ci-dessous décrit le socle antérieur ; les nouveaux modules et leurs limites sont détaillés dans ce document.
+
 # Ajouter une règle
 
 Créer une classe implémentant `WaasKit\FluentBooking\Rules\Rule` : `id()` renvoie un identifiant unique, `validate($context, $settings)` renvoie `null` ou un motif de refus. Le contexte fourni actuellement contient `participant_count`.

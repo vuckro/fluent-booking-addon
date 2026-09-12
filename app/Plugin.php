@@ -8,7 +8,7 @@ use WaasKit\FluentBooking\Rules\ParticipantLimit;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.9';
+    public const VERSION = '4.0.0-alpha.10';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -34,6 +34,9 @@ final class Plugin
         $registry->add(new ParticipantLimit());
         do_action('waaskit_fluent_booking/register_rules', $registry);
         (new SettingsPage($store))->register();
+        (new \WaasKit\FluentBooking\Infrastructure\Privacy())->register();
+        (new \WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationApi($store))->register();
+        (new \WaasKit\FluentBooking\Integrations\FluentBooking\BookingModules($store, new \WaasKit\FluentBooking\Infrastructure\CapacityStore()))->register();
         add_filter('fluent_booking/booking_data', static function ($data, $event, $fields, $input) use ($store, $registry) {
             if (is_wp_error($data)) { return $data; }
             try {

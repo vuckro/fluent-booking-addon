@@ -1,3 +1,5 @@
+> Mise à jour alpha.10 : voir [le point d’étape des modules](implementation-modules.md). Le contenu ci-dessous décrit le socle antérieur ; les nouveaux modules et leurs limites sont détaillés dans ce document.
+
 # Fonctionnement et périmètre — alpha.9
 
 ## Utilisation

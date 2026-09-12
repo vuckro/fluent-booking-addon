@@ -2,9 +2,9 @@
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parent.parent
-output = root / 'dist' / 'fluent-booking-addon-4.0.0-alpha.9.zip'
+output = root / 'dist' / 'fluent-booking-addon-4.0.0-alpha.10.zip'
 output.parent.mkdir(exist_ok=True)
-files = [root / name for name in ['wk-fluent-multireservation.php', 'autoload.php', 'README.md', 'CHANGELOG.md']]
+files = [root / name for name in ['wk-fluent-multireservation.php', 'autoload.php', 'uninstall.php', 'README.md', 'CHANGELOG.md']]
 files += sorted((root / 'app').rglob('*.php'))
 files += sorted(path for path in (root / 'assets').rglob('*') if path.is_file())
 files += sorted((root / 'docs').glob('*.md'))
