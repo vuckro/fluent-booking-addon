@@ -56,3 +56,7 @@ Les sections précédentes décrivent les versions historiques ; l'intégration 
 - 7 contrôles HTTP : affichage authentifié sans redirection native, sauvegarde, relecture, refus de révision obsolète, nonce invalide, cible inexistante et accès anonyme.
 - Syntaxe PHP validée. Configuration HTTP restaurée et session temporaire révoquée.
 - Aucune recette visuelle par navigateur effectuée ; rendu basé uniquement sur les composants standards WordPress.
+
+## Présentation alpha.5
+
+18 assertions d’intégration et 7 contrôles HTTP relancés avec succès. Syntaxe PHP et diff validés. La configuration HTTP est restaurée et la session révoquée. La présentation repose sur les captures fournies ; pas d’inspection visuelle par navigateur.

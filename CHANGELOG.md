@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.0-alpha.5
+
+- Présentation légère inspirée de FluentBooking : fond clair, carte blanche, contrôles alignés et bouton sombre.
+- Une seule feuille CSS isolée, responsive et sans framework ni JavaScript.
+- Fonctionnement, stockage et protections inchangés.
+
 ## 4.0.0-alpha.4
 
 - Retrait de l’intégration aux paramètres FluentBooking et du prototype contextuel non livré.

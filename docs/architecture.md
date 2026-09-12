@@ -35,3 +35,7 @@ Représentation des participants sans e-mail, instantané des règles d'un dossi
 Une seule page WordPress sous Fluent Booking → Modules. Un sélecteur de contexte, une table de formulaire native et des diagnostics repliés. Aucun asset CSS/JS propre, route Vue, adaptateur de paramètres natifs ni redirection. L'essai alpha.3 et le prototype contextuel interrompu sont retirés.
 
 Les données et les protections de configuration sont conservées. Les API FluentBooking restent utilisées uniquement pour les modèles, métadonnées, permissions et le hook de validation des demandes. Retirer l'intégration visuelle ne signifie pas supprimer cette dépendance fonctionnelle.
+
+## Présentation alpha.5
+
+La page unique reçoit une feuille CSS isolée sous `.fba-settings`, chargée uniquement sur son écran WordPress. Carte blanche, espacements, contrôles et responsive ; aucun framework, JavaScript ou retour dans les paramètres internes FluentBooking. Le traitement des formulaires reste inchangé.

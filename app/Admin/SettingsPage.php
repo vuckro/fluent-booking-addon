@@ -14,8 +14,11 @@ final class SettingsPage
     public function register(): void
     {
         add_action('admin_menu', function () {
-            add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
-
+            $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
+            add_action('admin_enqueue_scripts', static function ($screen) use ($hook) {
+                if ($screen !== $hook) { return; }
+                wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION);
+            });
         }, 30);
         add_action('admin_post_waaskit_fb_save', [$this, 'save']);
     }
@@ -74,7 +77,7 @@ final class SettingsPage
         if (isset($_GET['context']) && is_string($_GET['context']) && preg_match('/^(site|calendar|calendar_event):([0-9]+)$/D', $_GET['context'], $match)) {
             $scope = $match[1]; $id = (int) $match[2];
         }
-        echo '<div class="wrap"><h1>Fluent Booking Addon</h1><p><a href="https://github.com/vuckro/fluent-booking-addon">Version alpha par WaasKit</a></p>';
+        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Gérez vos modules et leurs réglages.</p></div><a href="https://github.com/vuckro/fluent-booking-addon">Version alpha par WaasKit ↗</a></header>';
         echo '<h2>Modules</h2>';
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
@@ -87,8 +90,8 @@ final class SettingsPage
             echo '<div class="notice notice-error inline"><p>' . esc_html($error->getMessage()) . '</p></div></div>'; return;
         }
         if (isset($_GET['saved'])) { echo '<div class="notice notice-success inline"><p>Réglages enregistrés.</p></div>'; }
-        echo '<h3>Participants</h3><p>Limite supplémentaire par demande de réservation. Global → calendrier → événement.</p>';
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Participants</h3><p>Limitez le nombre de participants par demande de réservation.</p></div><span class="fba-badge">Expérimental</span></header>';
+        echo '<form class="fba-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field('waaskit_fb_save_' . $scope . '_' . $id);
         foreach (['action' => 'waaskit_fb_save', 'scope' => $scope, 'object_id' => $id, 'revision' => $stored['revision']] as $key => $value) {
             echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
@@ -110,18 +113,18 @@ final class SettingsPage
             $source = ['produit' => 'valeurs par défaut', 'site' => 'réglages globaux', 'agenda' => 'calendrier', 'événement' => 'cet événement'][$effective[$key]['source']] ?? $effective[$key]['source'];
             echo '<p class="description">Valeur effective : ' . esc_html($display . ' · ' . $source) . '</p></td></tr>';
         }
-        echo '</tbody></table><p class="description">Choisissez « Définir ici » pour appliquer une valeur. « Hériter » ignore la valeur saisie. Le maximum 0 n’ajoute aucune limite.</p>';
+        echo '</tbody></table><p class="description fba-help">Choisissez « Définir ici » pour appliquer une valeur. « Hériter » ignore la valeur saisie. Le maximum 0 n’ajoute aucune limite.</p>';
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
-        echo '</form><p>Module expérimental : nouvelles demandes uniquement, hors modifications et reports. Ne remplace pas la capacité de la séance.</p>';
+        echo '</form><footer class="fba-card-footer">Nouvelles demandes uniquement, hors modifications et reports. Ne remplace pas la capacité de la séance.</footer></section>';
         if (current_user_can('manage_options')) {
-            echo '<hr><details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
+            echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
         }
         echo '</div>';
     }
 
     private function navigation(string $scope, int $id): void
     {
-        echo '<form method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">Réglages de </label><select id="fba-context" name="context">';
+        echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">Réglages de </label><select id="fba-context" name="context">';
         if (self::allowed('site', 0)) { $this->contextOption('Tous les calendriers', 'site', 0, $scope, $id); }
         $events = [];
         foreach (CalendarSlot::all() as $event) { $events[(int) $event->calendar_id][] = $event; }
@@ -136,7 +139,7 @@ final class SettingsPage
                 }
             }
         }
-        echo '</select> <button class="button" type="submit">Afficher</button></form>';
+        echo '</select> <button class="button" type="submit">Afficher</button><p class="description">Les événements héritent de leur calendrier, puis des réglages globaux.</p></form>';
     }
 
     private function contextOption(string $label, string $scope, int $id, string $currentScope, int $currentId): void

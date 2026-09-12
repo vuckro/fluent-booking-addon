@@ -34,3 +34,7 @@ Les noms des calendriers et événements existants sont des contenus utilisateur
 ## Suite proposée
 
 Conserver cette interface minimale. Définir ensuite un seul besoin métier prioritaire, ses règles et ses cas de test avant d'ajouter du code. La priorité est de valider le comportement de réservation attendu ; aucun nouveau tableau de bord ou moteur de modules n'est nécessaire à ce stade.
+
+## Ajustement visuel alpha.5
+
+À la demande suivante, la page minimale est habillée avec une feuille CSS légère : fond clair, carte blanche, espacement des champs et bouton sombre. Le sélecteur et les deux réglages restent identiques. Aucun retour de l’intégration aux paramètres FluentBooking, aucun JavaScript ni framework. Les tests d’intégration et HTTP ont été relancés ; aucune recette visuelle par navigateur n’est revendiquée.
