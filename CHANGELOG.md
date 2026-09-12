@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.0-alpha.6
+
+- Bandeau de navigation sur Modules avec logo FluentBooking et liens vers ses écrans.
+- Lien Modules ajouté au header natif via le filtre admin_menu_items.
+- Aucun montage de l’application FluentBooking sur la sous-page.
+
 ## 4.0.0-alpha.5
 
 - Présentation légère inspirée de FluentBooking : fond clair, carte blanche, contrôles alignés et bouton sombre.

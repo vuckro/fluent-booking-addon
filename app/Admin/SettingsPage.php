@@ -23,8 +23,39 @@ final class SettingsPage
                 wp_enqueue_style('waaskit-fb-admin', plugins_url('assets/admin/settings.css', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), [], Plugin::VERSION);
             });
         }, 30);
+        add_filter('fluent_booking/admin_menu_items', [$this, 'menuItems']);
         add_action('admin_post_waaskit_fb_save', [$this, 'save']);
     }
+    public function menuItems(array $items): array
+    {
+        if (!is_admin() || !current_user_can('read')) { return $items; }
+        $items[] = ['key' => 'waaskit-modules', 'label' => __('Modules', 'waaskit-fluent-booking'),
+            'permalink' => admin_url('admin.php?page=waaskit-fluent-booking')];
+        return $items;
+    }
+
+    private function header(): void
+    {
+        $base = admin_url('admin.php?page=fluent-booking#/');
+        $items = [
+            ['key' => 'dashboard', 'label' => __('Dashboard', 'fluent-booking'), 'permalink' => $base],
+            ['key' => 'calendars', 'label' => __('Calendars', 'fluent-booking'), 'permalink' => $base . 'calendars'],
+            ['key' => 'scheduled-events', 'label' => __('Bookings', 'fluent-booking'), 'permalink' => $base . 'scheduled-events'],
+            ['key' => 'availability', 'label' => __('Availability', 'fluent-booking'), 'permalink' => $base . 'availability'],
+        ];
+        $assets = \FluentBooking\App\App::getInstance()['url.assets'];
+        echo '<nav class="fba-navigation" aria-label="FluentBooking"><a class="fba-logo" href="' . esc_url($base) . '"><img src="' . esc_url($assets . 'images/logo.svg') . '" alt="FluentBooking"></a><div class="fba-navigation-links">';
+        foreach (apply_filters('fluent_booking/admin_menu_items', $items) as $item) {
+            $active = $item['key'] === 'waaskit-modules';
+            echo '<a href="' . esc_url($item['permalink']) . '"' . ($active ? ' aria-current="page"' : '') . '>' . esc_html($item['label']) . '</a>';
+        }
+        echo '</div>';
+        if (PermissionManager::userCan('manage_all_data')) {
+            echo '<a class="fba-navigation-settings" href="' . esc_url($base . 'settings/general-settings') . '"><span class="dashicons dashicons-admin-generic" aria-hidden="true"></span> ' . esc_html__('Settings', 'fluent-booking') . '</a>';
+        }
+        echo '</nav>';
+    }
+
     public static function allowed(string $scope, int $id): bool
     {
         if ($scope === 'site') { return $id === 0 && current_user_can('manage_options'); }
@@ -75,6 +106,7 @@ final class SettingsPage
     }
     public function render(): void
     {
+        $this->header();
         $scope = isset($_GET['scope']) && is_string($_GET['scope']) ? sanitize_key(wp_unslash($_GET['scope'])) : 'site';
         $id = isset($_GET['object_id']) && is_scalar($_GET['object_id']) ? absint($_GET['object_id']) : 0;
         if (isset($_GET['context']) && is_string($_GET['context']) && preg_match('/^(site|calendar|calendar_event):([0-9]+)$/D', $_GET['context'], $match)) {

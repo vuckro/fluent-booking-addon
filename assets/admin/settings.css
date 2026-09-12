@@ -49,3 +49,17 @@ body.fba-admin { background:#f4f5fa; }
  .fba-settings .form-table select,.fba-settings .form-table .small-text { min-width:0; width:46%; }
  .fba-settings .fba-card-footer { padding:16px 18px; }
 }
+/* Standalone navigation: native logo and menu links, without mounting the SPA. */
+.fba-admin .fba-navigation { display:flex; align-items:center; gap:24px; margin-left:-20px; padding:14px 24px; background:#fff; border-bottom:1px solid #e9ecf2; }
+.fba-admin .fba-navigation a { color:#646d7e; text-decoration:none; font-weight:600; font-size:13px; }
+.fba-admin .fba-logo img { display:block; width:150px; height:auto; }
+.fba-admin .fba-navigation-links { display:flex; flex:1; justify-content:center; flex-wrap:wrap; gap:6px; }
+.fba-admin .fba-navigation-links a,.fba-admin .fba-navigation-settings { padding:10px 12px; border-radius:6px; }
+.fba-admin .fba-navigation a:hover,.fba-admin .fba-navigation [aria-current=page] { background:#f0f1f3; color:#253241; }
+.fba-admin .fba-navigation-settings { white-space:nowrap; }
+.fba-admin .fba-navigation a:focus-visible { outline:1px solid #646d7e; outline-offset:1px; }
+@media(max-width:782px) {
+ .fba-admin .fba-navigation { margin-left:-10px; padding:14px 16px; flex-wrap:wrap; gap:12px; }
+ .fba-admin .fba-navigation-links { order:3; flex-basis:100%; justify-content:flex-start; }
+ .fba-admin .fba-navigation-settings { margin-left:auto; }
+}

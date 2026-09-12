@@ -39,3 +39,7 @@ Les données et les protections de configuration sont conservées. Les API Fluen
 ## Présentation alpha.5
 
 La page unique reçoit une feuille CSS isolée sous `.fba-settings`, chargée uniquement sur son écran WordPress. Carte blanche, espacements, contrôles et responsive ; aucun framework, JavaScript ou retour dans les paramètres internes FluentBooking. Le traitement des formulaires reste inchangé.
+
+## Navigation alpha.6
+
+Le filtre `fluent_booking/admin_menu_items` ajoute Modules au header natif en administration. La sous-page affiche son propre bandeau PHP léger avec le logo fourni par FluentBooking, les routes natives et le même filtre de liens. Le template natif complet contient le point de montage de la SPA : il n’est donc pas chargé sur Modules. Le lien Paramètres respecte `manage_all_data`. Styles isolés, navigation mobile sur plusieurs lignes, aucun JavaScript ajouté.
