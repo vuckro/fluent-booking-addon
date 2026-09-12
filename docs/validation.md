@@ -60,3 +60,7 @@ Les sections précédentes décrivent les versions historiques ; l'intégration 
 ## Présentation alpha.5
 
 18 assertions d’intégration et 7 contrôles HTTP relancés avec succès. Syntaxe PHP et diff validés. La configuration HTTP est restaurée et la session révoquée. La présentation repose sur les captures fournies ; pas d’inspection visuelle par navigateur.
+
+## Header et thème alpha.7
+
+Syntaxe PHP et JS, 18 assertions d’intégration, contrôles HTTP des deux headers et 7 contrôles de sauvegarde réussis. Le script de thème est testé dans un environnement simulé : préférence existante, changement clair/sombre, clés partagées, événements storage, mode système et stockage indisponible. Ces contrôles ne constituent pas une recette visuelle ni un essai réel multi-onglets dans un navigateur.

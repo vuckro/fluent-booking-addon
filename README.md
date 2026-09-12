@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.6** — base minimale pour validation locale.
+Version **4.0.0-alpha.7** — base minimale pour validation locale.
 
 ## Ce qui est disponible
 
@@ -12,9 +12,9 @@ Une seule page **Fluent Booking → Modules**, avec les composants standards Wor
 
 Choisir **Définir ici** pour appliquer une valeur ou **Hériter** pour utiliser le niveau supérieur. En mode Hériter, la valeur saisie est ignorée. Le maximum `0` n'ajoute aucune limite. Les valeurs effectives et leur provenance sont affichées après sauvegarde.
 
-Aucune intégration dans les paramètres internes de FluentBooking, une seule feuille CSS limitée à cette page, aucun JavaScript propre à l'extension. Pro n'est pas requis pour ce socle.
+Aucune intégration dans les paramètres internes de FluentBooking, une seule feuille CSS limitée à cette page, un petit script pour le thème clair/sombre. Pro n'est pas requis pour ce socle.
 
-Un bandeau reprend le logo et les liens de navigation FluentBooking. Le lien Modules est également présent dans le header natif ; notre sous-page reste indépendante de son application JavaScript.
+Un bandeau reprend le logo et les liens de navigation FluentBooking. Le lien Modules est également présent dans le header natif ; notre sous-page reste indépendante de son application JavaScript. Les icônes et la palette reprennent FluentBooking 2.4.0 ; la préférence clair/sombre est partagée avec FluentBooking.
 
 ## Socle conservé
 

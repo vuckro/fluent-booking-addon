@@ -43,3 +43,9 @@ La page unique reçoit une feuille CSS isolée sous `.fba-settings`, chargée un
 ## Navigation alpha.6
 
 Le filtre `fluent_booking/admin_menu_items` ajoute Modules au header natif en administration. La sous-page affiche son propre bandeau PHP léger avec le logo fourni par FluentBooking, les routes natives et le même filtre de liens. Le template natif complet contient le point de montage de la SPA : il n’est donc pas chargé sur Modules. Le lien Paramètres respecte `manage_all_data`. Styles isolés, navigation mobile sur plusieurs lignes, aucun JavaScript ajouté.
+
+## Thème et header alpha.7
+
+Dimensions, SVG et couleurs sont repris des sources installées FluentBooking 2.4.0. Cette adaptation isolée reste à vérifier lors d’une mise à jour native ; elle ne prétend pas suivre automatiquement toutes les évolutions CSS.
+
+Le script léger `theme.js` partage `fluent_theme_mode`, `fcal_color_mode` et le canal `fluent_theme_changed:<origin>` avec FluentBooking. Il prend en charge light/dark/system et les changements entre onglets. Il ne charge pas `global_admin.js`, qui supprime les notifications WordPress. Les classes et styles du thème restent limités à Modules. Les SVG du header proviennent du template GPL FluentBooking.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0-alpha.7
+
+- Header aligné sur les dimensions, icônes SVG et palette FluentBooking 2.4.0.
+- Bouton clair/sombre fonctionnel et préférence partagée avec FluentBooking.
+- Couleurs du formulaire adaptées au thème sombre.
+- Suppression du double contour de focus ; une seule bordure neutre.
+
 ## 4.0.0-alpha.6
 
 - Bandeau de navigation sur Modules avec logo FluentBooking et liens vers ses écrans.
