@@ -1,53 +1,21 @@
-> Mise à jour alpha.10 : voir [le point d’étape des modules](implementation-modules.md). Le contenu ci-dessous décrit le socle antérieur ; les nouveaux modules et leurs limites sont détaillés dans ce document.
+# Architecture
 
-# Décisions d'architecture
+- `Plugin.php` : démarrage, compatibilité et enregistrement des composants.
+- `Admin/SettingsPage.php` : page, contexte autorisé, sauvegarde et diagnostics.
+- `Admin/SettingsForm.php` : les deux options, leur vocabulaire et validation de saisie.
+- `Admin/Header.php` : navigation et ressources visuelles FluentBooking.
+- `Configuration/Schema.php` : valeurs autorisées, défauts, résolution des niveaux.
+- `Integrations/FluentBooking/ConfigurationStore.php` : option globale et métadonnées natives, révisions et exclusion des écritures simultanées.
+- `Integrations/FluentBooking/ParticipantLimitAdapter.php` : raccordement au filtre natif BookingService et comptage de ses données normalisées.
+- `Rules/` : règles pures, sans accès au réseau, à la base ou au paiement.
+- `Integrations/FluentBooking/ConfigurationApi.php` : export authentifié en lecture seule.
+- `Integrations/FluentBooking/RetiredProfiles.php` et `Infrastructure/Privacy.php` : protections et confidentialité des seules données historiques des alphas retirées.
+- `assets/admin/` : styles isolés, synchronisation du thème et petit enrichissement du formulaire. Aucun framework ni compilation frontend.
 
-## Démarrage et responsabilités
+## Contrat de maintenance
 
-Le point d'entrée historique charge uniquement l'autoloader et `Plugin`. Les classes métier (`Configuration/Schema`, `Rules`) ne lisent ni superglobales, ni objets FluentBooking. L'adaptateur `ConfigurationStore` utilise les API WordPress et les helpers natifs. `Admin/SettingsPage` traite les permissions, le formulaire et l'affichage.
+Les clés `enabled` et `max_participants` et le schéma 1 restent compatibles. `booking_profile` n’est plus une fonctionnalité : cette clé historique reste lisible et immuable afin de ne pas perdre les données d’une ancienne alpha.
 
-Le registre accepte des implémentations du contrat `Rule`, avec un identifiant unique et un résultat explicite. L'ordre d'enregistrement détermine l'ordre des validations ; la première erreur arrête la validation. Aucun moteur universel de règles ni table supplémentaire n'est nécessaire pour ce socle.
+Ne pas ajouter de tarification à la règle de limite. Ne pas charger l’application JavaScript de FluentBooking sur cette page. Ne pas modifier les fichiers du plugin natif. Toute dépendance à ses modèles, URLs ou assets doit être testée sur la version ciblée.
 
-## Données
-
-Clé `waaskit_fluent_booking_config` : enveloppe `{schema, revision, values}`. Au niveau site, option non autoloadée. Au niveau calendrier/événement, métadonnées natives `calendar` et `calendar_event`. Le schéma rejette les clés inconnues, les types approximatifs et les entiers hors limites.
-
-Résolution : valeurs du produit → site → calendrier → événement. Une clé absente hérite ; une clé présente avec `false` ou `0` surcharge. Aucune écriture dans les réglages natifs historiques, aucune conversion de facturation.
-
-Les écritures prennent un verrou via l'unicité de `option_name`, relisent la révision sans réutiliser un cache d'option périmé, puis vérifient la persistance. Ce verrou concerne la configuration, pas les places. Il ne couvre que les écritures via cet adaptateur.
-
-## Contrats natifs vérifiés dans 2.4.0
-
-- `Helper::getMeta($group, $id, $key)` et `Helper::updateMeta(...)` pour les réglages contextuels.
-- `PermissionManager::canWriteCalendar` et `canUpdateCalendarEvent` pour les gestionnaires ; administration globale limitée à `manage_options`.
-- `fluent_booking/booking_data` fournit les données préparées, l'événement, les champs et les données d'entrée ; `BookingService::createBooking` reconnaît un retour `WP_Error` avant création.
-
-Un hook partagé ne garantit pas que toutes les entrées natives l'utilisent. L'exemple de limite est documenté avec cette restriction. La disponibilité d'un menu natif ne constitue pas une preuve de montage d'un composant tiers : le socle emploie une page WordPress contextuelle.
-
-## Compatibilité et retrait
-
-Hors FluentBooking 2.4.x, les nouvelles écritures de réglages sont désactivées. Si le service natif reste disponible, les créations concernées par une configuration activée sont refusées via le hook. Si FluentBooking manque ou si le plugin est désactivé, ce hook ne peut offrir aucune protection. Le retrait exige donc de mettre en sécurité les événements dépendants.
-
-## Décisions reportées
-
-Représentation des participants sans e-mail, instantané des règles d'un dossier de réservation, prix par catégorie, paiement, réconciliation et allocation atomique des places. Ces éléments ne sont pas implémentés dans une fondation de configuration et doivent suivre des prototypes natifs complets.
-
-## Administration minimale alpha.4
-
-Une seule page WordPress sous Fluent Booking → Modules. Un sélecteur de contexte, une table de formulaire native et des diagnostics repliés. Aucun asset CSS/JS propre, route Vue, adaptateur de paramètres natifs ni redirection. L'essai alpha.3 et le prototype contextuel interrompu sont retirés.
-
-Les données et les protections de configuration sont conservées. Les API FluentBooking restent utilisées uniquement pour les modèles, métadonnées, permissions et le hook de validation des demandes. Retirer l'intégration visuelle ne signifie pas supprimer cette dépendance fonctionnelle.
-
-## Présentation alpha.5
-
-La page unique reçoit une feuille CSS isolée sous `.fba-settings`, chargée uniquement sur son écran WordPress. Carte blanche, espacements, contrôles et responsive ; aucun framework, JavaScript ou retour dans les paramètres internes FluentBooking. Le traitement des formulaires reste inchangé.
-
-## Navigation alpha.6
-
-Le filtre `fluent_booking/admin_menu_items` ajoute Modules au header natif en administration. La sous-page affiche son propre bandeau PHP léger avec le logo fourni par FluentBooking, les routes natives et le même filtre de liens. Le template natif complet contient le point de montage de la SPA : il n’est donc pas chargé sur Modules. Le lien Paramètres respecte `manage_all_data`. Styles isolés, navigation mobile sur plusieurs lignes, aucun JavaScript ajouté.
-
-## Thème et header alpha.7
-
-Dimensions, SVG et couleurs sont repris des sources installées FluentBooking 2.4.0. Cette adaptation isolée reste à vérifier lors d’une mise à jour native ; elle ne prétend pas suivre automatiquement toutes les évolutions CSS.
-
-Le script léger `theme.js` partage `fluent_theme_mode`, `fcal_color_mode` et le canal `fluent_theme_changed:<origin>` avec FluentBooking. Il prend en charge light/dark/system et les changements entre onglets. Il ne charge pas `global_admin.js`, qui supprime les notifications WordPress. Les classes et styles du thème restent limités à Modules. Les SVG du header proviennent du template GPL FluentBooking.
+Les données saisies sont validées côté serveur même sans JavaScript. Les contrôles de permission et nonce restent au point d’entrée d’écriture. Le magasin contrôle la révision et vérifie la lecture après sauvegarde.

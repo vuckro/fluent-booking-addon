@@ -8,7 +8,7 @@ use WaasKit\FluentBooking\Rules\ParticipantLimit;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.14';
+    public const VERSION = '4.0.0-alpha.15';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -23,7 +23,7 @@ final class Plugin
         if (!self::compatible()) {
             add_action('admin_notices', static function () {
                 if (current_user_can('manage_options')) {
-                    echo '<div class="notice notice-error"><p>' . esc_html__('WaasKit nécessite FluentBooking 2.4.x. Vérifiez les événements dépendants avant de poursuivre.', 'waaskit-fluent-booking') . '</p></div>';
+                    echo '<div class="notice notice-error"><p>' . esc_html__('Fluent Booking Addon nécessite FluentBooking 2.4.x. Vérifiez les événements dépendants avant de poursuivre.', 'waaskit-fluent-booking') . '</p></div>';
                 }
             });
             // Fail closed when the native service is available, only for configured events.
@@ -36,22 +36,7 @@ final class Plugin
         (new SettingsPage($store))->register();
         (new \WaasKit\FluentBooking\Infrastructure\Privacy())->register();
         (new \WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationApi($store))->register();
-        (new \WaasKit\FluentBooking\Integrations\FluentBooking\BookingModules($store, new \WaasKit\FluentBooking\Infrastructure\CapacityStore()))->register();
-        add_filter('fluent_booking/booking_data', static function ($data, $event, $fields, $input) use ($store, $registry) {
-            if (is_wp_error($data)) { return $data; }
-            try {
-                $effective = $store->effective('calendar_event', (int) $event->id);
-                $settings = array_map(static fn($entry) => $entry['value'], $effective);
-                if (!$settings['enabled']) { return $data; }
-                if (!self::compatible()) {
-                    return new \WP_Error('waaskit_incompatible', 'Réservation indisponible : compatibilité à vérifier.', ['status' => 503]);
-                }
-                $count = is_array($data['email'] ?? null) ? count($data['email']) : 1 + count((array) ($input['additional_guests'] ?? []));
-                $error = $registry->validate(['participant_count' => $count], $settings);
-                return $error === null ? $data : new \WP_Error('waaskit_rule_refused', $error, ['status' => 422]);
-            } catch (\Throwable $error) {
-                return new \WP_Error('waaskit_configuration_error', 'Configuration de réservation à vérifier.', ['status' => 503]);
-            }
-        }, 100, 4);
+        (new \WaasKit\FluentBooking\Integrations\FluentBooking\RetiredProfiles($store))->register();
+        (new \WaasKit\FluentBooking\Integrations\FluentBooking\ParticipantLimitAdapter($store, $registry))->register();
     }
 }

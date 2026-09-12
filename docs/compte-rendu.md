@@ -1,40 +1,46 @@
-# Compte rendu — base minimale
-
-12 septembre 2026 · 4.0.0-alpha.4
+# Base simplifiée — 4.0.0-alpha.15
 
 ## Décision
 
-Revenir à une seule page **Fluent Booking → Modules**, utilisant la présentation standard WordPress. L'intégration dans les paramètres internes de FluentBooking a été supprimée, ainsi que le prototype contextuel commencé puis interrompu.
+Conserver un seul module : une limite de personnes par demande de réservation, appliquée au parcours natif FluentBooking. Les fonctions expérimentales ne sont plus proposées ni exécutées.
 
-## Ce qui a été retiré
+## Retiré du code livré
 
-- Adaptateur NativeSettings, hooks de formulaire natif, entrée dans les paramètres FluentBooking et redirections.
-- Navigation de tableau de bord, panneaux personnalisés, onglets et liens entre deux interfaces.
-- CSS et JavaScript de présentation propres à l'extension.
-- Dépendance à Pro pour afficher les réglages.
+- Formulaire de groupe et son adaptateur JavaScript au formulaire Svelte natif.
+- Catégories, champs personnalisés, âges et accompagnateurs.
+- Tarifs par catégorie, calculs et adaptations des commandes/Stripe.
+- Jauges partagées, retenues de places et verrou MySQL de capacité.
+- Import de profils, devis REST et API des participants expérimentaux.
+- Tests propres à ces moteurs retirés et styles de leur éditeur.
 
-## Ce qui reste
+L’historique Git garde ces travaux, sans les embarquer dans le plugin courant.
 
-Un sélecteur de contexte (global, calendrier, événement), deux réglages (activation et maximum de participants), un bouton Enregistrer et des diagnostics repliés.
+## Conservé et amélioré
 
-Le socle PHP conserve le stockage versionné, l'héritage, la validation des valeurs, les permissions, les nonces et la protection contre les sauvegardes concurrentes. Les valeurs false et 0 restent explicites. Aucune configuration existante n'a été effacée ou migrée.
+- Une seule page Modules, avec navigation FluentBooking, modes clair/sombre et styles isolés.
+- Deux options : appliquer la limite et choisir un maximum. « Niveau supérieur » explique l’héritage ; le nombre devient inactif lorsqu’il est hérité.
+- Résumé du réglage enregistré et origine distincte de l’activation et du maximum.
+- Accès à la gestion des calendriers ; accès à la page publique du contexte sélectionné lorsque FluentBooking la fournit, dans un nouvel onglet. Une page publique désactivée est signalée, sans être activée automatiquement.
+- Contrôle serveur, permissions natives, nonce, validation stricte et protection contre les sauvegardes concurrentes.
+- Diagnostics repliés, export de configuration REST authentifié en lecture seule.
+- Séparation du header, du formulaire et du raccordement à BookingService pour faciliter les prochaines modifications.
 
-L'extension dépend toujours de FluentBooking pour les calendriers, événements, métadonnées, permissions et le contrôle expérimental des nouvelles demandes. Aucun fichier du plugin FluentBooking n'a été modifié.
+## Données et mise à jour
 
-## Ce qu'il faut savoir
+Avant modification, le site local ne contenait aucun profil expérimental enregistré/actif, aucune métadonnée de participants et aucune retenue de capacité. Aucune donnée utilisateur n’a été supprimée.
 
-Il s'agit d'une fondation alpha, pas d'une réécriture fonctionnellement complète de la version 3. La limite de participants est expérimentale et ne garantit pas la capacité disponible d'une séance. Les participants sans e-mail, prix, paiements, reports et migration ne sont pas livrés.
+Pour les autres installations, les profils historiques sont conservés en lecture seule, y compris lors d’une sauvegarde des limites simples. Un profil encore activé bloque les nouvelles demandes concernées : il faut vérifier les anciens engagements avant de supprimer manuellement sa configuration. La modification d’horaires et la réactivation des anciennes réservations enrichies restent protégées. L’export/effacement de leurs données par l’e-mail du réservant est conservé. La table historique n’est plus créée ni utilisée pour de nouvelles retenues.
 
-Les noms des calendriers et événements existants sont des contenus utilisateurs : ils n'ont pas été renommés.
+## Limites actuelles
 
-## Vérifications
+- Alpha : les contrôles locaux ne constituent pas une certification de stabilité en production.
+- Recette locale sur FluentBooking 2.4.0 ; garde de compatibilité 2.4.x. PHP 8.1 minimum.
+- Le module complète les limites natives : il ne gère pas la capacité cumulée d’une séance, les tarifs ou les paiements.
+- La limite intervient à la création via BookingService. Les modifications, reports, SQL direct et intégrations contournant ce service ne sont pas couverts par la limite simple.
+- Ce n’est pas un remplacement fonctionnel de la version 3.3.6. Pas de migration automatique des anciennes options.
+- Le header reprend des ressources natives mais reste une présentation propre à l’extension ; vérifier son rendu à chaque mise à jour majeure de FluentBooking.
+- Recette visuelle au navigateur restant à faire. Aucun paiement réel n’a été testé.
 
-12 assertions unitaires, 18 assertions d'intégration et 7 contrôles HTTP réussis sur le site Local. Les données temporaires ont été restaurées et la session révoquée. Syntaxe PHP vérifiée. Aucun paiement ni réservation de test créé. Pas de contrôle visuel dans un navigateur.
+## Suite conseillée
 
-## Suite proposée
-
-Conserver cette interface minimale. Définir ensuite un seul besoin métier prioritaire, ses règles et ses cas de test avant d'ajouter du code. La priorité est de valider le comportement de réservation attendu ; aucun nouveau tableau de bord ou moteur de modules n'est nécessaire à ce stade.
-
-## Ajustement visuel alpha.5
-
-À la demande suivante, la page minimale est habillée avec une feuille CSS légère : fond clair, carte blanche, espacement des champs et bouton sombre. Le sélecteur et les deux réglages restent identiques. Aucun retour de l’intégration aux paramètres FluentBooking, aucun JavaScript ni framework. Les tests d’intégration et HTTP ont été relancés ; aucune recette visuelle par navigateur n’est revendiquée.
+Valider ce seul parcours en conditions réelles de test avant une version stable. Ajouter ensuite une fonction à la fois, avec un besoin explicite, une interface simple et sa recette complète. Les prix doivent rester natifs tant qu’une intégration de paiement complète n’est pas validée.

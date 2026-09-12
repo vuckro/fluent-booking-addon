@@ -10,7 +10,7 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings p { line-height:1.6; }
 .fba-settings .fba-header p { margin:6px 0 0; color:var(--fba-muted); }
 .fba-settings .fba-header > a { font-size:12px; text-decoration:none; white-space:nowrap; }
-.fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:24px; }
+.fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
 .fba-settings .fba-context > .description { flex-basis:100%; margin:0; }
 .fba-settings .fba-context > label { margin-right:2px; font-weight:600; }
 .fba-settings .fba-context select { width:340px; max-width:100%; }
@@ -29,10 +29,13 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings .form-table select { min-width:132px; }
 .fba-settings .form-table .small-text { width:132px; }
 .fba-settings .form-table .description { margin-top:9px; }
-.fba-settings .button { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; vertical-align:middle; min-height:40px; line-height:1.4; padding:8px 16px; border-radius:6px; border-color:var(--fba-line); background:var(--fba-surface); color:var(--fba-text); }
-.fba-settings .button:hover { border-color:#8793a3; background:var(--fba-sunk); }
-.fba-settings .button-primary { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); }
-.fba-settings .button-primary:hover { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); filter:brightness(.94); }
+/* Scope both normal and interaction states above WordPress admin specificity. */
+body.fba-admin .fba-settings .button { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; vertical-align:middle; gap:6px; min-height:40px; line-height:1.4; padding:8px 16px; border-radius:6px; border-color:var(--fba-line); background:var(--fba-surface); color:var(--fba-text); --wp-admin-theme-color:var(--fba-text); --wp-admin-theme-color-darker-10:var(--fba-strong); --wp-admin-theme-color-darker-20:var(--fba-strong); --wp-admin-theme-color--rgb:37,50,65; --wp-admin-border-width-focus:0px; }
+html.fba-dark .fba-settings .button { --wp-admin-theme-color--rgb:217,218,220; }
+body.fba-admin .fba-settings .button:not(:disabled):is(:hover,:focus,:active,.hover,.focus) { background:var(--fba-sunk); border-color:var(--fba-strong); color:var(--fba-text); box-shadow:none; outline:none; }
+body.fba-admin .fba-settings .button.button-primary,
+body.fba-admin .fba-settings .button.button-primary:not(:disabled):is(:hover,:focus,:active,.hover,.focus) { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); }
+body.fba-admin .fba-settings .button:not(:disabled):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; box-shadow:none; }
 .fba-settings :is(select,input,.button,summary):focus { border-color:var(--fba-strong); box-shadow:none; outline:none; }
 .fba-settings :is(select,input,.button,summary):focus-visible { outline:none; box-shadow:none; border-color:var(--fba-strong); }
 .fba-settings .fba-help { margin:0; padding-top:16px; border-top:1px solid var(--fba-line); }
@@ -97,49 +100,12 @@ html.fba-page { scrollbar-gutter:stable; }
 body.fba-admin .fba-settings select:is(:hover,:focus,:focus-visible) { color:var(--fba-text); background-color:var(--fba-surface); border-color:var(--fba-strong); }
 body.fba-admin .fba-settings select option { color:var(--fba-text); background-color:var(--fba-surface); }
 html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23c1c7d1' stroke-width='1.5' d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); }
-.fba-profile { max-width: 760px; }
-.fba-profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
-.fba-profile-grid label, .fba-profile details label { display: flex; flex-direction: column; gap: 6px; }
-.fba-settings .fba-profile input:not([type=checkbox]), .fba-settings .fba-profile select, .fba-settings .fba-profile textarea { width: 100%; max-width: 100%; color: var(--fba-text); background-color: var(--fba-surface); border: 1px solid var(--fba-line); border-radius: 6px; }
-.fba-profile .fba-check { display: block; margin: 12px 0; }
-.fba-type { border: 1px solid var(--fba-line); border-radius: 6px; padding: 16px; margin: 24px 0; }
-.fba-type legend { font-weight: 600; padding: 0 6px; }
-@media (max-width: 782px) { .fba-profile-grid { grid-template-columns: 1fr; } }
-/* FluentBooking-style controls; native inputs retain keyboard and form behavior. */
-.fba-settings .fba-profile-section { margin:24px 0; padding-top:20px; border-top:1px solid var(--fba-line); }
-.fba-settings .fba-profile-section h4 { margin:0 0 6px; font-size:15px; color:var(--fba-text); }
-.fba-settings .fba-profile-section > p { margin:0 0 16px; color:var(--fba-muted); }
-.fba-settings .fba-field { display:flex; flex-direction:column; gap:7px; margin:12px 0; }
-.fba-settings .fba-profile-grid .fba-field { margin:0; }
-.fba-settings .fba-profile .description { display:block; margin:0; font-weight:400; }
-.fba-settings .fba-profile .fba-check { display:flex; align-items:flex-start; gap:10px; margin:18px 0; cursor:pointer; }
-.fba-settings .fba-check-title { display:block; line-height:20px; }
-.fba-settings .fba-check .description { margin-top:4px; }
-body.fba-admin .fba-settings .fba-check input[type=checkbox] { appearance:none; -webkit-appearance:none; flex:0 0 20px; width:20px; height:20px; min-width:20px; margin:0; border:1px solid var(--fba-line); border-radius:4px; background:var(--fba-surface); box-shadow:none; position:relative; cursor:pointer; }
-body.fba-admin .fba-settings .fba-check input[type=checkbox]::before { content:none; }
-body.fba-admin .fba-settings .fba-check input[type=checkbox]:checked { background:var(--fba-accent); border-color:var(--fba-accent); }
-body.fba-admin .fba-settings .fba-check input[type=checkbox]:checked::after { content:""; position:absolute; left:6px; top:2px; width:5px; height:9px; border:solid var(--fba-contrast); border-width:0 2px 2px 0; transform:rotate(45deg); }
-body.fba-admin .fba-settings .fba-check input[type=checkbox]:hover { border-color:var(--fba-strong); }
-body.fba-admin .fba-settings .fba-check input[type=checkbox]:focus-visible { outline:2px solid var(--fba-strong); outline-offset:2px; }
-.fba-settings .fba-profile [hidden] { display:none !important; }
-.fba-settings .fba-type > details { margin:12px 0; }
-.fba-settings .fba-type > .button { margin-top:12px; }
-.fba-settings .fba-profile-cell > h3 { margin-bottom:8px; }
-.fba-settings .fba-profile-controls { border:0; padding:0; margin:0; min-width:0; }
-.fba-settings .fba-profile-controls:disabled { opacity:.65; }
-.fba-settings .fba-profile-controls:disabled input { cursor:default; }
-.fba-settings .fba-profile-cell > .fba-field { max-width:360px; }
-.fba-settings .fba-profile { max-width:none; }
-@media (forced-colors:active) { body.fba-admin .fba-settings .fba-check input[type=checkbox] { appearance:auto; } body.fba-admin .fba-settings .fba-check input[type=checkbox]::after { content:none; } }
-.fba-settings .fba-profile-cell > .fba-field select { width:100%; }
-
-/* Outrank WordPress button state rules without changing other admin screens. */
-body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):is(:hover,:focus,:active) { background:var(--fba-sunk); color:var(--fba-text); border-color:var(--fba-strong); box-shadow:none; outline:none; }
-body.fba-admin .fba-settings .button.button-primary:not(:disabled):is(:hover,:focus,:active) { background:var(--fba-accent); color:var(--fba-contrast); border-color:var(--fba-accent); }
-body.fba-admin .fba-settings .button:not(.button-link):not(:disabled):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; box-shadow:none; }
-
-/* Keep WordPress fallback states neutral too, including its .hover/.focus classes. */
-.fba-settings .button { --wp-admin-theme-color:var(--fba-text, #253241); --wp-admin-theme-color-darker-10:var(--fba-strong, #808b9c); --wp-admin-theme-color-darker-20:var(--fba-strong, #808b9c); --wp-admin-theme-color--rgb:37,50,65; --wp-admin-border-width-focus:0px; }
-html.fba-dark .fba-settings .button { --wp-admin-theme-color--rgb:217,218,220; }
-.wp-core-ui .fba-settings .button:not(.button-link):is(:hover,:focus,:active,.hover,.focus):not(:disabled) { background:var(--fba-sunk); border-color:var(--fba-strong); color:var(--fba-text); box-shadow:none; }
-.wp-core-ui .fba-settings .button.button-primary:is(:hover,:focus,:active,.hover,.focus):not(:disabled) { background:var(--fba-accent); border-color:var(--fba-accent); color:var(--fba-contrast); }
+/* Context links and the two settings share the same light/dark palette. */
+.fba-settings .fba-context-links { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.fba-settings .fba-context-help { margin:12px 0 24px; }
+.fba-settings .fba-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.fba-settings .fba-effective { padding:14px 0; border-top:1px solid var(--fba-line); color:var(--fba-text); }
+.fba-settings input:disabled { opacity:.6; cursor:not-allowed; }
+.fba-settings .fba-form select { max-width:100%; }
+.fba-settings .fba-form :is(select,input):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; }
+html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }

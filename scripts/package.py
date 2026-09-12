@@ -1,8 +1,11 @@
 """Build a distributable archive without development files or local data."""
+import re
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parent.parent
-output = root / 'dist' / 'fluent-booking-addon-4.0.0-alpha.14.zip'
+version = re.search(r' \* Version: ([^\n]+)', (root / 'wk-fluent-multireservation.php').read_text()).group(1)
+assert f"VERSION = '{version}'" in (root / 'app/Plugin.php').read_text(), 'Version mismatch'
+output = root / 'dist' / f'fluent-booking-addon-{version}.zip'
 output.parent.mkdir(exist_ok=True)
 files = [root / name for name in ['wk-fluent-multireservation.php', 'autoload.php', 'uninstall.php', 'README.md', 'CHANGELOG.md']]
 files += sorted((root / 'app').rglob('*.php'))

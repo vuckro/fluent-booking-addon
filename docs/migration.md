@@ -1,6 +1,6 @@
 # Migration et exploitation
 
-La version 4.0.0-alpha.1 inventorie `fbgrp_one_per_spot`, `fbgrp_price_per_guest` et `fbgrp_hide_guest_email` sans modifier ces données. L'inventaire est visible uniquement aux administrateurs dans les diagnostics. Il n'exécute aucune migration et ne touche pas aux réservations ni aux commandes.
+La version actuelle inventorie `fbgrp_one_per_spot`, `fbgrp_price_per_guest` et `fbgrp_hide_guest_email` sans modifier ces données. L'inventaire est visible uniquement aux administrateurs dans les diagnostics. Il n'exécute aucune migration et ne touche pas aux réservations ni aux commandes.
 
 La facturation par personne ne peut pas être déduite d'un ancien prix seulement visuel. Une migration future devra produire des correspondances explicites et conserver les instantanés appliqués aux réservations.
 
@@ -22,3 +22,7 @@ En cas d'arrêt brutal de PHP pendant une écriture, un verrou peut persister. V
 Le ZIP doit contenir le point d'entrée, `autoload.php`, `app/`, README et documentation. Exclure `.git`, les fichiers de tests, les sauvegardes et les secrets. L'identité WordPress comprend le dossier et le fichier principal : conserver le fichier historique ne règle pas à lui seul un changement de dossier.
 
 L'interface de cette alpha est en français. Le domaine de traduction est déclaré ; la couverture gettext complète et les catalogues de traduction restent à finaliser avant distribution multilingue.
+
+## Profils alpha.10–14 retirés
+
+Les profils sont conservés et non modifiables dans cette base. Un profil activé suspend les nouvelles réservations concernées. Sauvegarder les données et vérifier les réservations, paiements et retenues historiques avant toute suppression manuelle de cette clé. Aucune suppression de profil ni réouverture automatique n’est effectuée. Les outils de confidentialité restent accessibles pour les données liées à l’e-mail du réservant.

@@ -1,3 +1,11 @@
+# 4.0.0-alpha.15
+
+- Retrait des moteurs expérimentaux de participants, tarifs et capacités et de leurs formulaires/APIs.
+- Réglages réduits à deux options explicites, résumé de l’héritage et accès aux calendriers natifs/publics.
+- Séparation header, formulaire et adaptateur de limite ; retrait des assets inutilisés.
+- Conservation des anciennes données et protection contre une reprise silencieuse des réservations expérimentales.
+- Correction de la colonne utilisée pour la suppression volontaire des métadonnées historiques à la désinstallation.
+
 # 4.0.0-alpha.14 — couleurs de repli WordPress
 
 - Variables de couleur WordPress neutralisées uniquement sur les boutons du module, y compris les classes hover/focus.

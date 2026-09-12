@@ -8,7 +8,7 @@ $remove = static function (): void {
     delete_option('fba_db_version');
     delete_option('waaskit_fluent_booking_config');
     // Native booking records and historical payment data remain untouched.
-    foreach (['fcal_meta'=>['key'=>'waaskit_fluent_booking_config'], 'fcal_booking_meta'=>['key'=>'fba_party_v1']] as $suffix=>$where) {
+    foreach (['fcal_meta'=>['key'=>'waaskit_fluent_booking_config'], 'fcal_booking_meta'=>['meta_key'=>'fba_party_v1']] as $suffix=>$where) {
         $table = $wpdb->prefix . $suffix;
         if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) === $table) { $wpdb->delete($table,$where); }
     }

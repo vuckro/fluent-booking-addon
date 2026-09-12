@@ -54,7 +54,7 @@ try {
     }
     ob_start(); $_GET = ['scope' => 'calendar_event', 'object_id' => (string) $event->id];
     (new SettingsPage($store))->render(); $html = ob_get_clean();
-    check(str_contains($html, 'Valeur effective') && str_contains($html, 'waaskit_fb_save') && str_contains($html, '<h2>Modules</h2>'), 'contextual admin renders configuration');
+    check(str_contains($html, 'Réglage actuellement enregistré') && str_contains($html, 'waaskit_fb_save') && str_contains($html, '<h2>Modules</h2>'), 'contextual admin renders configuration');
     ob_start(); $_GET['tab'] = 'diagnostics'; (new SettingsPage($store))->render(); $diagnostics = ob_get_clean();
     check(str_contains($diagnostics, 'simulation uniquement') && str_contains($diagnostics, '<details><summary>Diagnostics</summary>'), 'diagnostics collapsed below settings');
     check(Plugin::compatible(), 'native version contract passes');
@@ -66,6 +66,19 @@ try {
     check($staleCache, 'cached options cannot hide another writer');
     check(!has_filter('fluent_booking/get_client_settings_waaskit_addon'), 'native settings integration removed');
     check(!has_action('fluent_booking/save_client_settings_waaskit_addon'), 'native settings save hook removed');
+
+    check(str_contains($html, 'Gérer les calendriers') && !str_contains($html, 'name="profile['), 'admin exposes native calendar navigation without experimental options');
+    check(!class_exists('WaasKit\\FluentBooking\\Integrations\\FluentBooking\\BookingModules'), 'experimental runtime removed');
+    $current = $store->read('site');
+    $current['values']['booking_profile'] = ['enabled' => true, 'types' => [['id' => 'historical']]];
+    update_option(ConfigurationStore::KEY, $current, false);
+    $store->save('site', 0, ['enabled' => false], $current['revision']);
+    check($store->read('site')['values']['booking_profile'] === $current['values']['booking_profile'], 'saving basic limits preserves retired configuration');
+    $refusal = apply_filters('fluent_booking/booking_data', $data, $event, [], []);
+    check(is_wp_error($refusal) && $refusal->get_error_code() === 'fba_retired_profile', 'active retired profile cannot silently accept native booking');
+    $blocked = false;
+    try { $store->save('site', 0, ['booking_profile' => []], $current['revision'] + 1); } catch (RuntimeException $e) { $blocked = true; }
+    check($blocked, 'retired profile cannot be overwritten');
 
 } finally {
     $wpdb->query('ROLLBACK');

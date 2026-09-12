@@ -30,7 +30,6 @@ final class ConfigurationStore
         if (!add_option($lock, time(), '', false)) {
             throw new \RuntimeException('Une écriture est déjà en cours. Réessayer ; si le verrou persiste, contacter un administrateur.');
         }
-        $capacity = null;
         try {
             // Another request may have committed since this request first read options.
             if ($scope === 'site') {
@@ -42,17 +41,13 @@ final class ConfigurationStore
             if ($current['revision'] !== $revision) {
                 throw new \RuntimeException('Les réglages ont changé. Recharger la page avant de les modifier.');
             }
-            if (array_key_exists('booking_profile', $values) || array_key_exists('booking_profile', $current['values'])) {
-                $capacity = new \WaasKit\FluentBooking\Infrastructure\CapacityStore();
-                $capacity->lock();
-                // Keep pool assignment stable for existing holds. Rates and labels may change;
-                    // booked parties keep their immutable snapshots.
-                    $before = \WaasKit\FluentBooking\Domain\BookingProfile::validate($current['values']['booking_profile'] ?? []);
-                    $after = \WaasKit\FluentBooking\Domain\BookingProfile::validate($values['booking_profile'] ?? []);
-                    $affected = $scope === 'calendar_event' ? [$id] : ($scope === 'calendar' ? CalendarSlot::where('calendar_id', $id)->pluck('id')->all() : CalendarSlot::query()->pluck('id')->all());
-                    if ($before['pool'] !== $after['pool'] && $capacity->hasLiveReservations($affected)) {
-                        throw new \RuntimeException('La jauge partagée ne peut pas être changée tant que des réservations ou retenues sont actives.');
-                    }
+            // Retired settings remain immutable: changing basic limits must not erase them.
+            if (array_key_exists('booking_profile', $values)
+                && $values['booking_profile'] !== ($current['values']['booking_profile'] ?? null)) {
+                throw new \RuntimeException('Les anciens profils expérimentaux ne sont plus modifiables.');
+            }
+            if (array_key_exists('booking_profile', $current['values'])) {
+                $values['booking_profile'] = $current['values']['booking_profile'];
             }
             $next = ['schema'  => Schema::VERSION, 'revision' => $revision + 1, 'values' => $values];
             if ($scope === 'site') {
@@ -64,7 +59,6 @@ final class ConfigurationStore
                 throw new \RuntimeException('La sauvegarde n’a pas pu être vérifiée.');
             }
         } finally {
-            if ($capacity) { $capacity->unlock(); }
             delete_option($lock);
         }
     }

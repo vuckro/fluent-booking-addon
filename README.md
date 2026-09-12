@@ -1,37 +1,30 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.14** — développement local, cible fonctionnelle en cours.
+Version **4.0.0-alpha.15** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
 
-Extension générique de FluentBooking : participants typés, règles, capacités et tarification. Aucun réglage Cooms Cookies n’est codé en dur.
+Un seul module : limiter les personnes par demande de réservation, sans modifier les paiements ou les capacités natives. Les fonctions expérimentales de groupe, tarifs et jauges des alphas précédentes ont été retirées.
 
-## Modules
+Dans **Fluent Booking → Modules**, sélectionner tous les calendriers, un calendrier ou un événement. Choisir si la limite s’applique, puis son maximum. Les réglages sont hérités du niveau supérieur sauf personnalisation explicite. Le résumé indique les valeurs enregistrées et leur provenance. Le bouton de consultation publique apparaît si la page du calendrier est activée dans FluentBooking.
 
-La page **Fluent Booking → Modules** conserve sa présentation légère et ses thèmes clair/sombre. Chaque contexte hérite du niveau global, puis du calendrier, avec remplacement du profil à l’événement.
+Cette alpha n’est pas un remplacement fonctionnel de la 3.3.6 ni une version certifiée pour la production. Les modifications et reports ne sont pas couverts. Les tarifs et paiements restent entièrement gérés par FluentBooking.
 
-Le nouveau profil, désactivé par défaut, propose les types de participants, noms, e-mail facultatif, règles d’âge/accompagnement, tarifs et jauges partagées. La réservation native principale porte les participants en métadonnées. Le stock est protégé par une retenue persistante et un verrou MySQL.
+- [Compte rendu : conservé, retiré, limites et suite](docs/compte-rendu.md)
+- [Fonctionnement des réglages](docs/fonctionnement.md)
+- [Architecture et maintenance](docs/architecture.md)
+- [Validation](docs/validation.md)
+- [Migration et données historiques](docs/migration.md)
 
-Les montants sont calculés côté serveur et transmis aux commandes natives. Les chemins Stripe et hors ligne sont adaptés ; aucun paiement réel n’a été exécuté pendant le développement.
-
-## État de livraison
-
-**Le périmètre demandé n’est pas entièrement livré.** Coupons avec tarifs par type, acomptes, modifications/reports, mappings CRM prêts à l’emploi et migration historique restent à développer. Les parcours non couverts sont refusés quand nécessaire. La recette navigateur et Stripe de test reste requise.
-
-Voir le [point d’étape et la matrice complète](docs/implementation-modules.md) avant d’activer le profil. Cette alpha ne remplace pas fonctionnellement la version 3.3.6 et n’est pas une version de production.
-
-## Installation et tests
-
-PHP 8.1+, WordPress, FluentBooking 2.4.x. Recette sur FluentBooking/Pro 2.4.0. Les tarifs nécessitent Pro et un moyen de paiement natif configuré. MySQL doit autoriser `GET_LOCK` ; ouvrir Modules avec un compte administrateur initialise la table de capacités.
+## Vérifier et distribuer
 
 ```sh
 php tests/unit.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
-WAASKIT_WP_PATH=/chemin/wordpress php tests/modules-integration.php
-WAASKIT_WP_PATH=/chemin/wordpress php tests/capacity-concurrency.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/booking-service.php
 python3 scripts/package.py
 ```
 
-Les tests d’intégration exigent un site localhost jetable, un événement de groupe et des tables InnoDB. Configurer le socket MySQL de Local si nécessaire. Les réservations fictives sont annulées par transaction et les retenues de concurrence nettoyées. Le test des modules initialise la nouvelle table si nécessaire ; il bloque e-mails et requêtes HTTP.
+Les tests d’intégration nécessitent un site localhost jetable, des tables InnoDB, un événement natif et le socket PHP/MySQL adapté à Local. Les écritures de test sont annulées par transaction.
 
-Le dépôt ne contient ni site WordPress, ni base, ni licence. Aucun push ne synchronise la base. Pas de mise à jour automatique. Les données sont conservées à la désinstallation par défaut. Historique pré-refonte conservé au tag `archive/pre-rewrite-2026-09-12`.
+Le ZIP exclut les tests, Git et les données locales. Aucune nouvelle table n’est nécessaire. Les données sont conservées par défaut à la désinstallation ; la suppression volontaire requiert `FBA_DELETE_DATA_ON_UNINSTALL=true`. Aucun push ne synchronise la base et aucune mise à jour automatique n’est installée.
 
 Licence GPL-2.0-or-later.

@@ -3,7 +3,7 @@ namespace WaasKit\FluentBooking\Infrastructure;
 
 use FluentBooking\App\Models\Booking;
 use FluentBooking\App\Services\Helper;
-use WaasKit\FluentBooking\Integrations\FluentBooking\BookingModules;
+use WaasKit\FluentBooking\Integrations\FluentBooking\RetiredProfiles;
 
 final class Privacy
 {
@@ -20,7 +20,7 @@ final class Privacy
     {
         $rows=Booking::where('email',$email)->orderBy('id')->offset((max(1,$page)-1)*50)->limit(50)->get(); $data=[];
         foreach($rows as $booking) {
-            $q=$booking->getMeta(BookingModules::META,[]); if(!$q) {continue;}
+            $q=$booking->getMeta(RetiredProfiles::META,[]); if(!$q) {continue;}
             $data[]=['group_id'=>'fba-participants','group_label'=>'Participants','item_id'=>'fba-booking-'.$booking->id,
                 'data'=>[['name'=>'Participants','value'=>wp_json_encode($q['participants'],JSON_UNESCAPED_UNICODE)]]];
         }
@@ -30,10 +30,10 @@ final class Privacy
     {
         $rows=Booking::where('email',$email)->orderBy('id')->offset((max(1,$page)-1)*50)->limit(50)->get(); $removed=false;
         foreach($rows as $booking) {
-            $q=$booking->getMeta(BookingModules::META,[]);if(!$q) {continue;}
+            $q=$booking->getMeta(RetiredProfiles::META,[]);if(!$q) {continue;}
             foreach($q['participants'] as &$person) {$person['name']='';$person['email']='';$person['birth_date']='';$person['fields']=[];}
             unset($person);
-            Helper::updateBookingMeta($booking->id,BookingModules::META,$q);$removed=true;
+            Helper::updateBookingMeta($booking->id,RetiredProfiles::META,$q);$removed=true;
         }
         return ['items_removed'=>$removed,'items_retained'=>false,'messages'=>[],'done'=>count($rows)<50];
     }
