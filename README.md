@@ -7,7 +7,7 @@ Cette version est destinée à la validation locale. Elle ne remplace pas encore
 ## Disponible
 
 - Architecture PHP avec namespace WaasKit et chargement PSR-4, sans dépendance de production à installer.
-- Configuration globale, par agenda et par événement dans **FluentBooking → Modules et réglages**.
+- Configuration globale, par agenda et par événement dans **FluentBooking → Modules**.
 - Héritage explicite, valeurs effectives et provenance ; `false` et `0` sont conservés.
 - Stockage versionné : option WordPress globale et métadonnées natives contextualisées.
 - Droits des gestionnaires vérifiés via les permissions FluentBooking ; nonces sur les écritures.
@@ -23,7 +23,7 @@ Tout est désactivé par défaut. Le plugin n'altère ni les montants ni les cha
 1. Utiliser une installation de test sauvegardée avec FluentBooking 2.4.0.
 2. Décompresser le ZIP dans `wp-content/plugins/fluent-booking-addon`.
 3. Activer **Fluent Booking Addon**.
-4. Ouvrir **FluentBooking → Modules et réglages** et choisir le contexte à configurer.
+4. Ouvrir **FluentBooking → Modules** et choisir le contexte à configurer.
 
 Un clone Git peut être relié au dossier des plugins par un lien symbolique pour le développement. Le site WordPress, sa base, les clés et les licences ne font pas partie du dépôt. Un `git push` publie le code ; il ne synchronise pas la base WordPress.
 

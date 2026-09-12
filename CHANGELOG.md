@@ -2,7 +2,7 @@
 
 ## 4.0.0-alpha.2
 
-- Nom affiché : Fluent Booking Addon ; sous-menu « Modules et réglages ».
+- Nom affiché : Fluent Booking Addon ; sous-menu « Modules ».
 - Tableau de bord natif avec navigation globale, agendas repliables et événements.
 - Panneau Participants, provenance des valeurs et aide contextuelle.
 - Diagnostics séparés des réglages courants.

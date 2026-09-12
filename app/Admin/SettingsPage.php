@@ -14,7 +14,7 @@ final class SettingsPage
     public function register(): void
     {
         add_action('admin_menu', function () {
-            $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules et réglages', 'read', 'waaskit-fluent-booking', [$this, 'render']);
+            $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
             add_action('admin_enqueue_scripts', static function ($current) use ($hook) {
                 if ($current !== $hook) { return; }
                 $base = plugins_url('assets/admin/', dirname(__DIR__, 2) . '/wk-fluent-multireservation.php');
