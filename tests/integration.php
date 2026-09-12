@@ -54,9 +54,9 @@ try {
     }
     ob_start(); $_GET = ['scope' => 'calendar_event', 'object_id' => (string) $event->id];
     (new SettingsPage($store))->render(); $html = ob_get_clean();
-    check(str_contains($html, 'Valeur effective') && str_contains($html, 'waaskit_fb_save') && str_contains($html, 'Modules et réglages'), 'contextual admin renders configuration');
+    check(str_contains($html, 'Valeur effective') && str_contains($html, 'waaskit_fb_save') && str_contains($html, '<h2>Modules</h2>'), 'contextual admin renders configuration');
     ob_start(); $_GET['tab'] = 'diagnostics'; (new SettingsPage($store))->render(); $diagnostics = ob_get_clean();
-    check(str_contains($diagnostics, 'simulation uniquement') && !str_contains($diagnostics, 'name="action"'), 'diagnostics tab separates maintenance from settings');
+    check(str_contains($diagnostics, 'simulation uniquement') && str_contains($diagnostics, '<details><summary>Diagnostics</summary>'), 'diagnostics collapsed below settings');
     check(Plugin::compatible(), 'native version contract passes');
     $before = $store->read('site');
     $external = $before; $external['revision']++;
@@ -64,30 +64,8 @@ try {
     $staleCache = false;
     try { $store->save('site', 0, [], $before['revision']); } catch (RuntimeException $e) { $staleCache = true; }
     check($staleCache, 'cached options cannot hide another writer');
-    $native = new \WaasKit\FluentBooking\Integrations\FluentBooking\NativeSettings($store);
-    $menu = $native->menu([]);
-    check($menu['waaskit_addon']['route']['name'] === 'configure-integrations', 'native menu reuses existing Vue route');
-    check($native->fields()['fields']['enabled']['type'] === 'select', 'native form schema exposes supported controls');
-    $nativeState = $native->settings();
-    $native->save(['_revision' => $nativeState['_revision'], 'enabled' => 'off', 'max_participants' => '0']);
-    check($store->read('site')['values'] === ['enabled' => false, 'max_participants' => 0], 'native settings preserve false and zero');
-    $rejected = false;
-    try { $native->save($nativeState); } catch (RuntimeException $e) { $rejected = true; }
-    check($rejected, 'native form rejects stale revisions');
-    $nativeState = $native->settings();
-    $rejected = false;
-    try { $native->save(array_merge($nativeState, ['max_participants' => '-1'])); } catch (InvalidArgumentException $e) { $rejected = true; }
-    check($rejected, 'native form validates participant limit');
-    $native->save(array_merge($nativeState, ['enabled' => 'inherit', 'max_participants' => '']));
-    check($store->read('site')['values'] === [], 'native blank value restores inheritance');
-    wp_set_current_user(0);
-    check($native->menu([]) === [], 'native menu hidden without global permission');
-    $rejected = false;
-    try { $native->settings(); } catch (RuntimeException $e) { $rejected = true; }
-    check($rejected, 'native settings authorize reads');
-    $rejected = false;
-    try { $native->save($nativeState); } catch (RuntimeException $e) { $rejected = true; }
-    check($rejected, 'native settings authorize writes');
+    check(!has_filter('fluent_booking/get_client_settings_waaskit_addon'), 'native settings integration removed');
+    check(!has_action('fluent_booking/save_client_settings_waaskit_addon'), 'native settings save hook removed');
 
 } finally {
     $wpdb->query('ROLLBACK');

@@ -30,16 +30,8 @@ Hors FluentBooking 2.4.x, les nouvelles écritures de réglages sont désactivé
 
 Représentation des participants sans e-mail, instantané des règles d'un dossier de réservation, prix par catégorie, paiement, réconciliation et allocation atomique des places. Ces éléments ne sont pas implémentés dans une fondation de configuration et doivent suivre des prototypes natifs complets.
 
-## Intégration native alpha.3
+## Administration minimale alpha.4
 
-Le constat initial sur l'absence d'un point de montage arbitraire ne signifie pas qu'un formulaire natif est impossible. FluentBooking 2.4.0 fournit déjà la route Vue `configure-integrations`, avec un paramètre `settings_key`. Son composant générique consomme les schémas PHP et utilise les champs, boutons, notifications et styles natifs.
+Une seule page WordPress sous Fluent Booking → Modules. Un sélecteur de contexte, une table de formulaire native et des diagnostics repliés. Aucun asset CSS/JS propre, route Vue, adaptateur de paramètres natifs ni redirection. L'essai alpha.3 et le prototype contextuel interrompu sont retirés.
 
-L'adaptateur `NativeSettings` réutilise cette route avec la clé `waaskit_addon`, le filtre `fluent_booking/settings_menu_items`, les filtres `get_client_settings_waaskit_addon` / `get_client_field_settings_waaskit_addon` et l'action `save_client_settings_waaskit_addon`, sous le préfixe `fluent_booking/`.
-
-Aucun fichier FluentBooking n'est modifié. Aucun accès à une instance Vue privée, nouvelle route JavaScript, iframe, injection DOM ni CSS de l'add-on dans l'écran natif. Les contrats sont vérifiés dans les sources installées 2.4.0 ; la compatibilité avec les versions futures reste à tester.
-
-Le composant natif exige Pro. L'interface est donc proposée seulement avec le cœur et Pro en 2.4.x ; la page WordPress reste disponible comme repli. Le raccourci Modules ouvre l'écran natif pour les administrateurs lorsque cette paire est présente.
-
-Les paramètres globaux utilisent le même `ConfigurationStore` que la page contextuelle. `inherit` et le champ maximum vide suppriment les surcharges ; `off` et `0` les conservent explicitement. La révision circule dans l'objet `settings` sans champ éditable et reste vérifiée côté serveur. La politique REST native et le nonce s'appliquent ; l'adaptateur impose aussi `manage_options` pour toutes ses lectures et écritures.
-
-L'intégration native porte sur les réglages globaux. Les réglages de calendriers et événements et les diagnostics restent liés à l'écran contextuel ; aucune couverture native complète de ces contextes n'est revendiquée.
+Les données et les protections de configuration sont conservées. Les API FluentBooking restent utilisées uniquement pour les modèles, métadonnées, permissions et le hook de validation des demandes. Retirer l'intégration visuelle ne signifie pas supprimer cette dépendance fonctionnelle.

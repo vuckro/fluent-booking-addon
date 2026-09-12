@@ -2,14 +2,13 @@
 namespace WaasKit\FluentBooking;
 
 use WaasKit\FluentBooking\Admin\SettingsPage;
-use WaasKit\FluentBooking\Integrations\FluentBooking\NativeSettings;
 use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
 use WaasKit\FluentBooking\Rules\Registry;
 use WaasKit\FluentBooking\Rules\ParticipantLimit;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.3';
+    public const VERSION = '4.0.0-alpha.4';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -35,7 +34,6 @@ final class Plugin
         $registry->add(new ParticipantLimit());
         do_action('waaskit_fluent_booking/register_rules', $registry);
         (new SettingsPage($store))->register();
-        (new NativeSettings($store))->register();
         add_filter('fluent_booking/booking_data', static function ($data, $event, $fields, $input) use ($store, $registry) {
             if (is_wp_error($data)) { return $data; }
             try {

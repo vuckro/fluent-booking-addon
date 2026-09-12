@@ -2,7 +2,7 @@
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parent.parent
-output = root / 'dist' / 'fluent-booking-addon-4.0.0-alpha.3.zip'
+output = root / 'dist' / 'fluent-booking-addon-4.0.0-alpha.4.zip'
 output.parent.mkdir(exist_ok=True)
 files = [root / name for name in ['wk-fluent-multireservation.php', 'autoload.php', 'README.md', 'CHANGELOG.md']]
 files += sorted((root / 'app').rglob('*.php'))

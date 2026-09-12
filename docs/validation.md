@@ -47,3 +47,12 @@ Les règles, le stockage et les permissions sont inchangés. La structure respon
 - Données de test retirées et sessions temporaires révoquées.
 
 Le composant Vue générique, sa route, ses champs supportés et ses appels REST ont été vérifiés dans le bundle installé. Le rendu effectif dans un navigateur, les transitions entre rubriques et le mobile restent à confirmer visuellement. Aucun résultat de capture visuelle n'est revendiqué. L'intégration concerne les réglages globaux ; les réglages contextuels utilisent toujours la page WordPress.
+
+## Retour minimal alpha.4
+
+Les sections précédentes décrivent les versions historiques ; l'intégration native alpha.3 est retirée.
+
+- 12 assertions unitaires et 18 assertions d'intégration locale réussies.
+- 7 contrôles HTTP : affichage authentifié sans redirection native, sauvegarde, relecture, refus de révision obsolète, nonce invalide, cible inexistante et accès anonyme.
+- Syntaxe PHP validée. Configuration HTTP restaurée et session temporaire révoquée.
+- Aucune recette visuelle par navigateur effectuée ; rendu basé uniquement sur les composants standards WordPress.

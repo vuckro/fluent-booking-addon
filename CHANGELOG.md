@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.0-alpha.4
+
+- Retrait de l’intégration aux paramètres FluentBooking et du prototype contextuel non livré.
+- Une seule page Modules : sélecteur, formulaire WordPress, diagnostics repliés.
+- Suppression des styles et scripts de présentation propres à l’extension.
+- Conservation des configurations, permissions, nonces et protections de concurrence.
+- Compte rendu du périmètre et de ses limites.
+
 ## 4.0.0-alpha.3
 
 - Réglages globaux intégrés à Paramètres → Modules via le formulaire générique natif FluentBooking.
