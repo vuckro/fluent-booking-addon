@@ -1,0 +1,6 @@
+/vendor/
+/dist/
+/.env*
+*.sql
+*.log
+.DS_Store

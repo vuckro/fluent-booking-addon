@@ -1,0 +1,9 @@
+{
+  "name": "waaskit/fluent-booking-addon",
+  "description": "Modular FluentBooking addon foundation",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": { "php": ">=8.1" },
+  "autoload": { "psr-4": { "WaasKit\\FluentBooking\\": "app/" } },
+  "scripts": { "test": "php tests/unit.php" }
+}
