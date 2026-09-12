@@ -9,6 +9,6 @@ Exemple : le global active une limite de 6. Un calendrier peut choisir 4 tout en
 
 L’héritage suit : valeurs par défaut → global → calendrier → événement. Une valeur explicite `0` ou « Non » remplace celle du niveau supérieur. Changer le global modifie les contextes qui en héritent, pas ceux qui ont une valeur personnalisée.
 
-Les boutons sous le sélecteur permettent de gérer les calendriers ou d’ouvrir la page publique du contexte sélectionné. Si celle-ci est désactivée dans FluentBooking, aucun faux lien n’est proposé.
+Le lien à côté d’« Afficher les réglages » ouvre la page publique du calendrier ou de l’événement affiché dans un nouvel onglet. Si celle-ci est désactivée dans FluentBooking, aucun faux lien n’est proposé.
 
 Les diagnostics sont destinés aux administrateurs. L’inventaire des anciennes options est informatif et n’effectue aucune conversion.

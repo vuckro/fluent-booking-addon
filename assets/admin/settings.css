@@ -101,7 +101,6 @@ body.fba-admin .fba-settings select:is(:hover,:focus,:focus-visible) { color:var
 body.fba-admin .fba-settings select option { color:var(--fba-text); background-color:var(--fba-surface); }
 html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23c1c7d1' stroke-width='1.5' d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); }
 /* Context links and the two settings share the same light/dark palette. */
-.fba-settings .fba-context-links { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
 .fba-settings .fba-context-help { margin:12px 0 24px; }
 .fba-settings .fba-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
 .fba-settings .fba-effective { padding:14px 0; border-top:1px solid var(--fba-line); color:var(--fba-text); }

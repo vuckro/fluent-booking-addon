@@ -20,7 +20,7 @@ L’historique Git garde ces travaux, sans les embarquer dans le plugin courant.
 - Une seule page Modules, avec navigation FluentBooking, modes clair/sombre et styles isolés.
 - Deux options : appliquer la limite et choisir un maximum. « Niveau supérieur » explique l’héritage ; le nombre devient inactif lorsqu’il est hérité.
 - Résumé du réglage enregistré et origine distincte de l’activation et du maximum.
-- Accès à la gestion des calendriers ; accès à la page publique du contexte sélectionné lorsque FluentBooking la fournit, dans un nouvel onglet. Une page publique désactivée est signalée, sans être activée automatiquement.
+- Accès à la page publique du contexte sélectionné, à côté d’« Afficher les réglages », lorsque FluentBooking la fournit, dans un nouvel onglet. Une page publique désactivée est signalée, sans être activée automatiquement.
 - Contrôle serveur, permissions natives, nonce, validation stricte et protection contre les sauvegardes concurrentes.
 - Diagnostics repliés, export de configuration REST authentifié en lecture seule.
 - Séparation du header, du formulaire et du raccordement à BookingService pour faciliter les prochaines modifications.

@@ -67,7 +67,7 @@ try {
     check(!has_filter('fluent_booking/get_client_settings_waaskit_addon'), 'native settings integration removed');
     check(!has_action('fluent_booking/save_client_settings_waaskit_addon'), 'native settings save hook removed');
 
-    check(str_contains($html, 'Gérer les calendriers') && !str_contains($html, 'name="profile['), 'admin exposes native calendar navigation without experimental options');
+    check(!str_contains($html, 'Gérer les calendriers') && !str_contains($html, 'name="profile['), 'admin exposes native calendar navigation without experimental options');
     check(!class_exists('WaasKit\\FluentBooking\\Integrations\\FluentBooking\\BookingModules'), 'experimental runtime removed');
     $current = $store->read('site');
     $current['values']['booking_profile'] = ['enabled' => true, 'types' => [['id' => 'historical']]];

@@ -124,12 +124,13 @@ final class SettingsPage
                 }
             }
         }
-        echo '</select> <button class="button" type="submit">Afficher les réglages</button></form>';
-        $this->calendarLinks($scope, $id);
+        echo '</select> <button class="button" type="submit">Afficher les réglages</button>';
+        $this->calendarLink($scope, $id);
+        echo '</form>';
         echo '<p class="description fba-context-help">Un réglage global s’applique à tous les calendriers. Chaque calendrier ou événement peut utiliser sa propre valeur.</p>';
     }
 
-    private function calendarLinks(string $scope, int $id): void
+    private function calendarLink(string $scope, int $id): void
     {
         if (!self::allowed($scope, $id)) { return; }
         $publicUrl = '';
@@ -138,13 +139,11 @@ final class SettingsPage
         } elseif ($scope === 'calendar') {
             $publicUrl = Calendar::find($id)->getLandingPageUrl();
         }
-        echo '<div class="fba-context-links"><a class="button" href="' . esc_url(admin_url('admin.php?page=fluent-booking#/calendars')) . '">Gérer les calendriers</a>';
         if ($publicUrl) {
             echo '<a class="button" href="' . esc_url($publicUrl) . '" target="_blank" rel="noopener noreferrer">' . ($scope === 'calendar_event' ? 'Voir la page de réservation' : 'Voir le calendrier') . ' <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a>';
         } elseif ($scope !== 'site') {
             echo '<span class="description">La page publique de ce calendrier n’est pas activée dans FluentBooking.</span>';
         }
-        echo '</div>';
     }
 
     private function contextOption(string $label, string $scope, int $id, string $currentScope, int $currentId): void
