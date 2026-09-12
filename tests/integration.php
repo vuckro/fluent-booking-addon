@@ -54,7 +54,9 @@ try {
     }
     ob_start(); $_GET = ['scope' => 'calendar_event', 'object_id' => (string) $event->id];
     (new SettingsPage($store))->render(); $html = ob_get_clean();
-    check(str_contains($html, 'Valeur effective') && str_contains($html, 'waaskit_fb_save') && str_contains($html, 'simulation uniquement'), 'contextual admin renders configuration and diagnostics');
+    check(str_contains($html, 'Valeur effective') && str_contains($html, 'waaskit_fb_save') && str_contains($html, 'Modules et réglages'), 'contextual admin renders configuration');
+    ob_start(); $_GET['tab'] = 'diagnostics'; (new SettingsPage($store))->render(); $diagnostics = ob_get_clean();
+    check(str_contains($diagnostics, 'simulation uniquement') && !str_contains($diagnostics, 'name="action"'), 'diagnostics tab separates maintenance from settings');
     check(Plugin::compatible(), 'native version contract passes');
     $before = $store->read('site');
     $external = $before; $external['revision']++;

@@ -1,13 +1,13 @@
-# WaasKit — FluentBooking Addon
+# Fluent Booking Addon
 
-Version **4.0.0-alpha.1** : nouvelle fondation, issue de l'historique de `fluent-booking-guests`.
+Version **4.0.0-alpha.2** : nouvelle fondation, issue de l'historique de `fluent-booking-guests`.
 
 Cette version est destinée à la validation locale. Elle ne remplace pas encore les fonctionnalités de participants sans e-mail et de tarification de la version 3.
 
 ## Disponible
 
 - Architecture PHP avec namespace WaasKit et chargement PSR-4, sans dépendance de production à installer.
-- Configuration globale, par agenda et par événement dans **FluentBooking → WaasKit**.
+- Configuration globale, par agenda et par événement dans **FluentBooking → Modules et réglages**.
 - Héritage explicite, valeurs effectives et provenance ; `false` et `0` sont conservés.
 - Stockage versionné : option WordPress globale et métadonnées natives contextualisées.
 - Droits des gestionnaires vérifiés via les permissions FluentBooking ; nonces sur les écritures.
@@ -22,14 +22,16 @@ Tout est désactivé par défaut. Le plugin n'altère ni les montants ni les cha
 
 1. Utiliser une installation de test sauvegardée avec FluentBooking 2.4.0.
 2. Décompresser le ZIP dans `wp-content/plugins/fluent-booking-addon`.
-3. Activer **WaasKit — FluentBooking Addon**.
-4. Ouvrir **FluentBooking → WaasKit** et choisir le contexte à configurer.
+3. Activer **Fluent Booking Addon**.
+4. Ouvrir **FluentBooking → Modules et réglages** et choisir le contexte à configurer.
 
 Un clone Git peut être relié au dossier des plugins par un lien symbolique pour le développement. Le site WordPress, sa base, les clés et les licences ne font pas partie du dépôt. Un `git push` publie le code ; il ne synchronise pas la base WordPress.
 
 Ne pas activer simultanément l'ancienne version et celle-ci. Le fichier principal historique est conservé, mais une installation ayant un autre nom de dossier nécessite un remplacement explicite. Aucun mécanisme de mise à jour automatique n'est fourni.
 
 ## Configuration
+
+La navigation latérale regroupe les événements sous leur agenda et indique le contexte sélectionné. Le panneau central rassemble les réglages du module Participants. L’onglet Diagnostics contient les versions et la simulation de migration, séparées des réglages courants.
 
 Sélectionner **Hériter** pour supprimer une surcharge, ou **Définir ici** pour enregistrer la valeur choisie. Le niveau global hérite des valeurs du produit ; un événement hérite de son agenda, puis du site.
 

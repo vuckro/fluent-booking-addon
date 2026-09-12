@@ -30,3 +30,9 @@ Les tests d'intégration annulent leurs écritures par transaction. Les contrôl
 - Migration appliquée et parité avec l'ancienne extension.
 
 Le workflow CI exécute la syntaxe et les tests unitaires PHP 8.1–8.4. Les intégrations WordPress locales ne sont pas exécutées automatiquement sur GitHub.
+
+## Présentation alpha.2
+
+Après la réorganisation : 12 assertions unitaires, 16 d’intégration et 14 contrôles HTTP réussis. Les contrôles HTTP couvrent les quatre contextes d’écran, le chargement CSS/JS et leur absence du tableau de bord général WordPress, ainsi que les protections de sauvegarde. Les données temporaires et la session de test ont été retirées.
+
+Les règles, le stockage et les permissions sont inchangés. La structure responsive est fournie ; aucune inspection visuelle par navigateur n’a été réalisée pour cette mise à jour.

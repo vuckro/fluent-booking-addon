@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: WaasKit — FluentBooking Addon
+ * Plugin Name: Fluent Booking Addon
  * Plugin URI: https://github.com/vuckro/fluent-booking-addon
  * Description: Fondation modulaire : configuration contextuelle, héritage et diagnostics FluentBooking.
- * Version: 4.0.0-alpha.1
+ * Version: 4.0.0-alpha.2
  * Author: WaasKit
  * Author URI: https://waaskit.com
  * Requires at least: 6.0
