@@ -1,3 +1,8 @@
+# 4.0.0-alpha.12 — conteneur allégé
+
+- Fond du conteneur principal retiré ; cartes conservées sur le fond de page.
+- Padding supérieur retiré sur ordinateur et mobile pour rapprocher le contenu du header.
+
 # 4.0.0-alpha.11 — administration plus lisible
 
 - Regroupement en Participants, Catégories et tarifs, Places disponibles.

@@ -3,7 +3,7 @@
 body.fba-admin { --fba-bg:#f4f5fa; --fba-surface:#fff; --fba-sunk:#f9fafb; --fba-text:#2f3448; --fba-muted:#565865; --fba-line:#eaecf0; --fba-strong:#808b9c; --fba-accent:#253241; --fba-contrast:#fff; --fba-wash:#f0f0f1; background:var(--fba-bg); }
 html.fba-dark body.fba-admin { color-scheme:dark; --fba-bg:#11171d; --fba-surface:#1c2732; --fba-sunk:#151d26; --fba-text:#f5f6f7; --fba-muted:#c1c7d1; --fba-line:#2c3c4e; --fba-strong:#5e7490; --fba-accent:#d9dadc; --fba-contrast:#2f3448; --fba-wash:#253241; }
 html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
-.fba-settings { max-width:1060px; margin:24px auto; padding:28px; background:var(--fba-surface); border-radius:8px; color:var(--fba-text); }
+.fba-settings { max-width:1060px; margin:24px auto; padding:0 28px 28px; color:var(--fba-text); }
 .fba-settings .fba-header { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:30px; }
 .fba-settings h1 { color:var(--fba-text); font-size:24px; font-weight:600; padding:0; }
 .fba-settings h2 { color:var(--fba-text); font-size:18px; margin:0 0 18px; }
@@ -40,7 +40,7 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings > details { margin-top:22px; color:var(--fba-muted); }
 .fba-settings summary { cursor:pointer; padding:8px 0; }
 @media(max-width:782px) {
- .fba-settings { margin:12px 10px 12px 0; padding:18px; }
+ .fba-settings { margin:12px 10px 12px 0; padding:0 18px 18px; }
  .fba-settings .fba-header { align-items:flex-start; flex-direction:column; gap:12px; }
  .fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
  .fba-settings .fba-context > label,.fba-settings .fba-context .description { width:100%; margin:0; }
