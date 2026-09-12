@@ -29,7 +29,8 @@ body.fba-admin { background:#f4f5fa; }
 .fba-settings .button:hover { border-color:#8793a3; background:#f8f9fc; }
 .fba-settings .button-primary { background:var(--fba-text); border-color:var(--fba-text); color:#fff; }
 .fba-settings .button-primary:hover { background:#36465a; border-color:#36465a; color:#fff; }
-.fba-settings :is(select,input,.button,summary):focus-visible { outline:2px solid #5263ef; outline-offset:2px; }
+.fba-settings :is(select,input,.button,summary):focus { border-color:#8793a3; box-shadow:none; outline:none; }
+.fba-settings :is(select,input,.button,summary):focus-visible { outline:1px solid #646d7e; outline-offset:1px; }
 .fba-settings .fba-help { margin:0; padding-top:16px; border-top:1px solid var(--fba-line); }
 .fba-settings .submit { text-align:right; margin:0; padding:22px 0; }
 .fba-settings .fba-card-footer { padding:16px 24px; background:#fafbfc; border-top:1px solid var(--fba-line); font-size:12px; line-height:1.6; color:var(--fba-muted); }
