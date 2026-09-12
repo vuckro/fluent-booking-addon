@@ -1,10 +1,10 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.15** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
+Version **4.0.0-alpha.16** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
 
 Un seul module : limiter les personnes par demande de réservation, sans modifier les paiements ou les capacités natives. Les fonctions expérimentales de groupe, tarifs et jauges des alphas précédentes ont été retirées.
 
-Dans **Fluent Booking → Modules**, sélectionner tous les calendriers, un calendrier ou un événement. Choisir si la limite s’applique, puis son maximum. Les réglages sont hérités du niveau supérieur sauf personnalisation explicite. Le résumé indique les valeurs enregistrées et leur provenance. Le bouton de consultation publique apparaît si la page du calendrier est activée dans FluentBooking.
+Dans **Fluent Booking → Modules**, sélectionner tous les calendriers, un calendrier ou un événement. Choisir de reprendre les réglages communs, de garder uniquement les limites FluentBooking ou de fixer un maximum. Le nombre n’est demandé que dans ce dernier cas. Le résumé indique les valeurs enregistrées et leur provenance. Le bouton de consultation publique apparaît si la page du calendrier est activée dans FluentBooking.
 
 Cette alpha n’est pas un remplacement fonctionnel de la 3.3.6 ni une version certifiée pour la production. Les modifications et reports ne sont pas couverts. Les tarifs et paiements restent entièrement gérés par FluentBooking.
 

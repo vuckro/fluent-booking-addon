@@ -58,7 +58,8 @@ final class SettingsPage
         check_admin_referer('waaskit_fb_save_' . $scope . '_' . $id);
         try {
             if (!Plugin::compatible()) { throw new \RuntimeException('Version FluentBooking non prise en charge.'); }
-            $values = SettingsForm::parse(wp_unslash($_POST));
+            $stored = $this->store->read($scope, $id);
+            $values = SettingsForm::parse(wp_unslash($_POST), $scope, $stored['values'], $this->store->effective($scope, $id));
             $revision = filter_var($_POST['revision'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
             if ($revision === false || $revision === null) { throw new \InvalidArgumentException('Révision invalide.'); }
             $this->store->save($scope, $id, $values, $revision);
@@ -76,7 +77,7 @@ final class SettingsPage
         if (isset($_GET['context']) && is_string($_GET['context']) && preg_match('/^(site|calendar|calendar_event):([0-9]+)$/D', $_GET['context'], $match)) {
             $scope = $match[1]; $id = (int) $match[2];
         }
-        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Gérez vos modules et leurs réglages.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
+        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Choisissez un calendrier, puis le nombre de personnes autorisées par réservation.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
         echo '<h2>Modules</h2>';
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
@@ -92,13 +93,16 @@ final class SettingsPage
         if (!empty($effective['booking_profile']['value']['enabled'])) {
             echo '<div class="notice notice-warning inline"><p>Un ancien profil expérimental est encore actif pour ce contexte. Les nouvelles réservations concernées sont bloquées. Un administrateur doit examiner ce profil avant de revenir aux réglages natifs.</p></div>';
         }
-        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Limite de participants</h3><p>Limitez le nombre de personnes dans une seule demande de réservation.</p></div></header>';
+        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Limite de participants</h3><p>Exemple : autoriser une réservation pour 4 personnes maximum, même si le créneau contient davantage de places.</p></div></header>';
         echo '<form class="fba-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field('waaskit_fb_save_' . $scope . '_' . $id);
         foreach (['action' => 'waaskit_fb_save', 'scope' => $scope, 'object_id' => $id, 'revision' => $stored['revision']] as $key => $value) {
             echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
         }
-        SettingsForm::render($scope, $stored['values'], $effective);
+         $parent = $scope === 'calendar_event'
+            ? $this->store->effective('calendar', (int) CalendarSlot::find($id)->calendar_id)
+            : $this->store->effective('site');
+        SettingsForm::render($scope, $stored['values'], $effective, $parent);
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
         echo '</form><footer class="fba-card-footer">Cette limite complète la capacité des créneaux définie dans FluentBooking. Elle ne change ni les prix, ni les paiements, ni les réservations existantes. Les modifications et reports ne sont pas couverts.</footer></section>';
         if (current_user_can('manage_options')) {
@@ -109,8 +113,8 @@ final class SettingsPage
 
     private function navigation(string $scope, int $id): void
     {
-        echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">Réglages de </label><select id="fba-context" name="context">';
-        if (self::allowed('site', 0)) { $this->contextOption('Tous les calendriers', 'site', 0, $scope, $id); }
+        echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">À configurer</label><select id="fba-context" name="context">';
+        if (self::allowed('site', 0)) { $this->contextOption('Réglages communs à tous les calendriers', 'site', 0, $scope, $id); }
         $events = [];
         foreach (CalendarSlot::all() as $event) { $events[(int) $event->calendar_id][] = $event; }
         foreach (Calendar::all() as $calendar) {
@@ -120,14 +124,14 @@ final class SettingsPage
             }
             foreach ($events[$calendarId] ?? [] as $event) {
                 if (self::allowed('calendar_event', (int) $event->id)) {
-                    $this->contextOption($calendar->title . ' / ' . $event->title, 'calendar_event', (int) $event->id, $scope, $id);
+                    $this->contextOption('Événement : ' . $event->title . ' (' . $calendar->title . ')', 'calendar_event', (int) $event->id, $scope, $id);
                 }
             }
         }
         echo '</select> <button class="button" type="submit">Afficher les réglages</button>';
         $this->calendarLink($scope, $id);
         echo '</form>';
-        echo '<p class="description fba-context-help">Un réglage global s’applique à tous les calendriers. Chaque calendrier ou événement peut utiliser sa propre valeur.</p>';
+        echo '<p class="description fba-context-help">Pour commencer, configurez les réglages communs. Sélectionnez ensuite un calendrier ou un événement uniquement si vous souhaitez une règle différente.</p>';
     }
 
     private function calendarLink(string $scope, int $id): void

@@ -1,3 +1,9 @@
+# 4.0.0-alpha.16
+
+- Une seule décision en langage courant remplace les deux menus d’héritage.
+- Champ du maximum conditionnel, exemple concret et aperçu du réglage commun.
+- Conservation des anciennes configurations si le formulaire est enregistré sans changement.
+
 # 4.0.0-alpha.15
 
 - Retrait des moteurs expérimentaux de participants, tarifs et capacités et de leurs formulaires/APIs.

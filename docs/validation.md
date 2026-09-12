@@ -1,8 +1,8 @@
-# Validation alpha.15
+# Validation alpha.16
 
 ## Exécuté localement
 
-- 19 assertions unitaires : valeurs strictes, héritage, faux/0 explicites, limites, registre et validation des deux options du formulaire.
+- 22 assertions unitaires : valeurs strictes, héritage, faux/0 explicites, limites, registre et validation des choix simplifiés du formulaire.
 - 23 assertions d’intégration WordPress : permissions, stockage, révisions concurrentes, refus natif, rendu HTML, retrait du runtime expérimental, conservation et protection des profils historiques.
 - 7 assertions avec BookingService natif : les événements individuel et de groupe acceptent deux personnes, refusent une troisième et n’insèrent rien en cas de refus.
 - Syntaxe PHP et JavaScript, intégrité du ZIP et absence des anciens moteurs dans celui-ci.

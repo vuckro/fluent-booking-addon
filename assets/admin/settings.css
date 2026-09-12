@@ -108,3 +108,14 @@ html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3
 .fba-settings .fba-form select { max-width:100%; }
 .fba-settings .fba-form :is(select,input):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; }
 html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
+/* A single plain-language decision, with the number shown only when needed. */
+.fba-settings .fba-policy { margin:24px 0; padding:0; border:0; }
+.fba-settings .fba-policy legend { font-weight:600; margin-bottom:16px; }
+.fba-settings .fba-choice { display:flex; align-items:flex-start; gap:12px; padding:14px 0; cursor:pointer; }
+.fba-settings .fba-choice input[type=radio] { flex-shrink:0; margin:3px 0 0; background:var(--fba-surface); border-color:var(--fba-strong); box-shadow:none; }
+.fba-settings .fba-choice input[type=radio]:checked::before { background:var(--fba-text); }
+.fba-settings .fba-choice input[type=radio]:focus-visible { outline:1px solid var(--fba-strong); outline-offset:3px; }
+.fba-settings .fba-choice .description { display:block; margin:4px 0 0; }
+.fba-settings .fba-maximum { margin:12px 0 0 28px; padding:16px; background:var(--fba-sunk); border-radius:6px; }
+.fba-settings .fba-maximum[hidden] { display:none; }
+.fba-settings .fba-maximum label { display:inline-block; margin-right:10px; font-weight:600; }

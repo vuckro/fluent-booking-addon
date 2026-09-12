@@ -1,4 +1,4 @@
-# Base simplifiée — 4.0.0-alpha.15
+# Base simplifiée — 4.0.0-alpha.16
 
 ## Décision
 
@@ -18,7 +18,7 @@ L’historique Git garde ces travaux, sans les embarquer dans le plugin courant.
 ## Conservé et amélioré
 
 - Une seule page Modules, avec navigation FluentBooking, modes clair/sombre et styles isolés.
-- Deux options : appliquer la limite et choisir un maximum. « Niveau supérieur » explique l’héritage ; le nombre devient inactif lorsqu’il est hérité.
+- Un seul choix : reprendre les réglages communs, garder les limites natives ou fixer un maximum. Le nombre apparaît uniquement si nécessaire.
 - Résumé du réglage enregistré et origine distincte de l’activation et du maximum.
 - Accès à la page publique du contexte sélectionné, à côté d’« Afficher les réglages », lorsque FluentBooking la fournit, dans un nouvel onglet. Une page publique désactivée est signalée, sans être activée automatiquement.
 - Contrôle serveur, permissions natives, nonce, validation stricte et protection contre les sauvegardes concurrentes.

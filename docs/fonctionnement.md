@@ -1,14 +1,15 @@
-# Comprendre les réglages
+# Configurer en quelques instants
 
-1. **Réglages de** : choisir tous les calendriers, un calendrier ou un événement.
-2. **Appliquer cette limite** : oui ajoute le contrôle ; non laisse uniquement les règles FluentBooking ; utiliser le niveau supérieur reprend son choix.
-3. **Personnes maximum par demande** : choisir un nombre ici ou reprendre celui du niveau supérieur. Le total comprend le réservant et ses invités. `0` n’ajoute aucune limite.
-4. **Enregistrer** : le résumé affiche alors le résultat réellement enregistré.
+1. Dans **À configurer**, commencez par les **réglages communs à tous les calendriers**, puis cliquez sur **Afficher les réglages**.
+2. Choisissez **Garder uniquement les limites FluentBooking**, ou **Fixer un maximum de personnes par réservation**.
+3. Si vous fixez un maximum, saisissez un nombre : par exemple **4** pour le réservant et 3 invités. Enregistrez.
 
-Exemple : le global active une limite de 6. Un calendrier peut choisir 4 tout en reprenant l’activation globale. Un événement peut désactiver uniquement cette limite supplémentaire ; les restrictions natives restent applicables.
+Pour une exception, sélectionnez ensuite le calendrier ou l’événement concerné. Vous pouvez garder la règle commune, fixer un autre maximum ou retirer uniquement la limite ajoutée par l’extension.
 
-L’héritage suit : valeurs par défaut → global → calendrier → événement. Une valeur explicite `0` ou « Non » remplace celle du niveau supérieur. Changer le global modifie les contextes qui en héritent, pas ceux qui ont une valeur personnalisée.
+Le choix « Utiliser les réglages communs » affiche la règle qu’il reprend. Pour un événement, il reprend les réglages de son calendrier. Les prochaines modifications de cette règle commune se transmettent automatiquement.
 
-Le lien à côté d’« Afficher les réglages » ouvre la page publique du calendrier ou de l’événement affiché dans un nouvel onglet. Si celle-ci est désactivée dans FluentBooking, aucun faux lien n’est proposé.
+Le résumé en bas indique ce qui est enregistré. Vos changements ne s’appliquent qu’après avoir cliqué sur Enregistrer. Une ancienne configuration enregistrée sans changement conserve son fonctionnement.
 
-Les diagnostics sont destinés aux administrateurs. L’inventaire des anciennes options est informatif et n’effectue aucune conversion.
+Le lien à côté d’Afficher ouvre la page publique du calendrier ou de l’événement affiché dans un nouvel onglet, lorsqu’elle est activée dans FluentBooking.
+
+La limite porte sur une seule réservation. La capacité totale du créneau et les paiements restent gérés dans FluentBooking. Les diagnostics sont destinés aux administrateurs.

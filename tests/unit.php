@@ -21,10 +21,15 @@ check($registry->validate(['participant_count' => 999], ['max_participants' => 0
 rejects(fn() => $registry->add(new ParticipantLimit()), 'duplicate rule rejected');
 
 use WaasKit\FluentBooking\Admin\SettingsForm;
-check(SettingsForm::parse(['enabled_mode'=>'inherit','limit_mode'=>'inherit','max_participants'=>'garbage']) === [], 'inherited form ignores unused number');
-check(SettingsForm::parse(['enabled_mode'=>'0','limit_mode'=>'override','max_participants'=>'0']) === ['enabled'=>false,'max_participants'=>0], 'form keeps explicit off and zero');
-check(SettingsForm::parse(['enabled_mode'=>'1','limit_mode'=>'override','max_participants'=>'4']) === ['enabled'=>true,'max_participants'=>4], 'plain form applies four people');
-rejects(fn()=>SettingsForm::parse(['enabled_mode'=>['1'],'limit_mode'=>'inherit']), 'malformed activation rejected');
-rejects(fn()=>SettingsForm::parse(['enabled_mode'=>'1','limit_mode'=>'override','max_participants'=>'2.5']), 'fractional people rejected');
-rejects(fn()=>SettingsForm::parse(['enabled_mode'=>'1','limit_mode'=>'override','max_participants'=>'1001']), 'form enforces maximum');
-rejects(fn()=>SettingsForm::parse(['enabled_mode'=>'1','limit_mode'=>'override']), 'missing explicit maximum rejected');
+$defaults = Schema::resolve([]);
+$active = Schema::resolve(['site'=>['enabled'=>true,'max_participants'=>4]]);
+check(SettingsForm::parse(['policy'=>'inherit'], 'calendar', [], $active) === [], 'common settings remain inherited');
+check(SettingsForm::parse(['policy'=>'off'], 'calendar', [], $active) === ['enabled'=>false,'max_participants'=>0], 'off overrides common limit');
+check(SettingsForm::parse(['policy'=>'limit','max_participants'=>'4'], 'site', [], $defaults) === ['enabled'=>true,'max_participants'=>4], 'one choice sets activation and number');
+check(SettingsForm::parse(['policy'=>'limit','max_participants'=>'4'], 'calendar', ['max_participants'=>4], $active) === ['max_participants'=>4], 'unchanged form preserves partial inheritance');
+check(SettingsForm::parse(['policy'=>'inherit'], 'calendar', ['max_participants'=>4], $active) === [], 'return to common settings clears both overrides');
+rejects(fn()=>SettingsForm::parse(['policy'=>'inherit'], 'site', [], $defaults), 'global cannot inherit');
+rejects(fn()=>SettingsForm::parse(['policy'=>['limit']], 'site', [], $defaults), 'malformed policy rejected');
+rejects(fn()=>SettingsForm::parse(['policy'=>'limit','max_participants'=>'0'], 'site', [], $defaults), 'explicit limit must be positive');
+rejects(fn()=>SettingsForm::parse(['policy'=>'limit','max_participants'=>'1001'], 'site', [], $defaults), 'maximum bounded');
+rejects(fn()=>SettingsForm::parse(['policy'=>'limit'], 'site', [], $defaults), 'missing number rejected');
