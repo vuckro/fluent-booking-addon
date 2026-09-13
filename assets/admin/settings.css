@@ -127,4 +127,15 @@ html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
 .fba-settings .fba-extra-field label { display:block; margin-bottom:12px; }
 .fba-settings .fba-extra-field input[type=text],.fba-settings .fba-extra-field textarea,.fba-settings .fba-extra-field select { display:block; width:100%; max-width:540px; background:var(--fba-surface); color:var(--fba-text); border:1px solid var(--fba-line); border-radius:6px; }
 .fba-settings .fba-extra-field [hidden] { display:none; }
-.fba-settings .fba-choice input[type=checkbox] { flex-shrink:0; margin-top:3px; accent-color:var(--fba-accent); }
+/* FluentBooking checkbox geometry, without WordPress's blue checkmark. */
+body.fba-admin .fba-settings input[type=checkbox] { appearance:none; -webkit-appearance:none; position:relative; box-sizing:border-box; flex-shrink:0; width:20px; height:20px; min-width:20px; margin:0 8px 0 0; vertical-align:middle; border:1px solid var(--fba-line); border-radius:4px; background:var(--fba-surface); box-shadow:none; cursor:pointer; }
+body.fba-admin .fba-settings .fba-choice input[type=checkbox] { margin:1px 0 0; }
+body.fba-admin .fba-settings input[type=checkbox]::before { content:none; }
+body.fba-admin .fba-settings input[type=checkbox]:checked { background:var(--fba-accent); border-color:var(--fba-accent); }
+body.fba-admin .fba-settings input[type=checkbox]:checked::after { content:""; position:absolute; box-sizing:content-box; width:4px; height:8px; left:7px; top:3px; border:solid var(--fba-contrast); border-width:0 1px 1px 0; transform:rotate(45deg); }
+body.fba-admin .fba-settings input[type=checkbox]:not(:disabled):hover { border-color:var(--fba-accent); }
+body.fba-admin .fba-settings input[type=checkbox]:focus-visible { outline:1px solid var(--fba-accent); outline-offset:3px; box-shadow:none; }
+@media (forced-colors:active) {
+ body.fba-admin .fba-settings input[type=checkbox]:checked { background:Highlight; border-color:Highlight; forced-color-adjust:none; }
+ body.fba-admin .fba-settings input[type=checkbox]:checked::after { border-color:HighlightText; }
+}
