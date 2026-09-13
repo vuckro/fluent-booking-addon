@@ -36,7 +36,18 @@ final class BookingAdapter
         add_action('fluent_booking/author_landing_head', static function () { wp_print_styles(['fba-guests']); });
         add_action('fluent_booking/author_landing_footer', static function () { wp_print_scripts(['fba-guests']); });
         add_filter('fluent_booking/public_event_vars',[$this,'publicVars'],110,2);
-        add_filter('fluent_booking/initialize_booking_data',function($data,$posted,$event){$data['_fba_extras']=$posted['fba_extra_'.$event->id]??'[]';$data['_fba_requested_count']=1+count((array)($posted['guests']??[]));return $data;},110,3);
+        add_filter('fluent_booking/initialize_booking_data',function($data,$posted,$event){
+            $extras=$posted['fba_extra_'.$event->id]??'[]';
+            // The public AJAX handler passes raw, WP-slashed $_REQUEST. The REST
+            // controller already cleans its request. Unslash only the public boundary,
+            // exactly once, so JSON escapes in names and answers remain intact.
+            if (doing_action('wp_ajax_fluent_cal_schedule_meeting') || doing_action('wp_ajax_nopriv_fluent_cal_schedule_meeting')) {
+                $extras=wp_unslash($extras);
+            }
+            $data['_fba_extras']=$extras;
+            $data['_fba_requested_count']=1+count((array)($posted['guests']??[]));
+            return $data;
+        },110,3);
         add_filter('fluent_booking/schedule_validation_rules_data', function($rules,$posted,$event) {if($this->options((int)$event->id)['enabled']) {unset($rules['rules']['guests']);} return $rules;},100,3);
         add_filter('fluent_booking/booking_data',[$this,'validate'],200,4);
         add_action('fluent_booking/after_booking_meta_update',[$this,'persist'],1,4);
@@ -163,7 +174,11 @@ final class BookingAdapter
             $data['_fba_token']=$token;
             $data['quantity']=$quantity;
             return $data;
-        } catch(\Throwable $error) { $this->unlock();return new \WP_Error('fba_guests_refused',$error->getMessage(),['status'=>422]); }
+        } catch(\Throwable $error) {
+            $this->unlock();
+            $message=$error instanceof \JsonException ? 'Les informations des participants sont invalides. Rechargez la page puis réessayez.' : $error->getMessage();
+            return new \WP_Error('fba_guests_refused',$message,['status'=>422]);
+        }
     }
     public function persist($booking,$data,$custom,$event): void
     {

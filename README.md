@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.27**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.28**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
 Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 

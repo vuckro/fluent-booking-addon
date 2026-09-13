@@ -1,3 +1,10 @@
+## 4.0.0-alpha.28
+
+- Correction de « Syntax error » à la réservation : déséchappement des données JSON uniquement à l’entrée AJAX publique WordPress, sans double traitement du contrôleur REST.
+- Préservation des accents, apostrophes, guillemets et antislashs dans les identités des invités.
+- Message compréhensible en cas de JSON invalide ; les données restent refusées.
+- Régression reproduite avant correction dans le vrai gestionnaire public, puis 22 contrôles dédiés : confirmation, tarifs, places, champs et restauration des données.
+
 ## 4.0.0-alpha.27
 
 - Option désactivée par défaut : réserver pour autrui sans participer.
