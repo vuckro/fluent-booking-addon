@@ -47,6 +47,29 @@ final class BookingPresentation
         return implode(' · ', array_filter(array_merge([$person['role'], $person['tariff']], $person['answers']), static fn($value)=>$value!==''));
     }
 
+    /**
+     * Stable booking metadata for FluentBooking's native e-mail shortcode
+     * {{booking.custom.fba_participants_email}}. This only contains the party
+     * recorded on the booking; it is never used in connected calendar events.
+     */
+    public function emailSummary($booking): string
+    {
+        $details=$this->details($booking);
+        if (!$details) {return '';}
+        $contact=esc_html($details['contact']);
+        $status=$details['attends']?'participe':'ne participe pas';
+        $html='<strong>Contact de réservation</strong><br>'.$contact.' — '.$status;
+        if (!$details['people']) {return $html;}
+        $html.='<br><br><strong>Participants</strong><br><ul style="margin:6px 0 0;padding-left:18px">';
+        foreach ($details['people'] as $person) {
+            $html.='<li><strong>'.esc_html($person['name']).'</strong>';
+            $description=$this->description($person);
+            if ($description!=='') {$html.=' — '.esc_html($description);}
+            $html.='</li>';
+        }
+        return $html.'</ul>';
+    }
+
     public function admin($booking): void
     {
         $details=$this->details($booking);

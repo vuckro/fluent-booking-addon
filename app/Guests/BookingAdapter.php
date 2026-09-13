@@ -18,13 +18,21 @@ final class BookingAdapter
     public function register(): void
     {
         add_filter('fluent_booking/booking_data', function($data) {$this->paymentContext=null;return $data;},1);
+
+        /*
+         * FluentBooking builds the draft order before invoking the payment
+         * provider. Prepare the frozen participant lines here so that both the
+         * draft order and Stripe receive the selected tariff(s), never the
+         * complete native catalogue.
+         */
+        add_action('fluent_booking/pre_after_booking_pending', function($booking) {
+            $this->preparePaymentContext($booking);
+        },1);
         foreach(['stripe','offline'] as $method) {
             add_action('fluent_booking/payment/pay_order_with_'.$method,function($booking){
-                $this->paymentContext=null;
-                $snapshot=$booking->getMeta(self::META,[]);
-                if (!empty($snapshot['preserve_payments'])) {return;}
-                if(isset($snapshot['currency']) && $snapshot['currency']!==\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()) {throw new \RuntimeException('La devise a changé depuis la réservation.');}
-                $this->paymentContext=isset($snapshot['items'])?['event_id'=>(int)$booking->event_id,'items'=>$snapshot['items']]:null;
+                // Covers payment retries, which do not always re-enter the
+                // pending-booking lifecycle.
+                $this->preparePaymentContext($booking);
             },1);
         }
         add_filter('fluent_booking/get_event_payment_settings',function($settings,$event){
@@ -69,6 +77,19 @@ final class BookingAdapter
             if($booking->isDirty('status') && in_array($booking->status,['pending','scheduled'],true) && !in_array($booking->getOriginal('status'),['pending','scheduled'],true)) {throw new \RuntimeException('La réactivation nécessite une vérification des places.');}
         });
     }
+
+    /** Restrict native payment items to the immutable items selected at booking. */
+    private function preparePaymentContext($booking): void
+    {
+        $this->paymentContext=null;
+        $snapshot=$booking->getMeta(self::META,[]);
+        if (!is_array($snapshot) || !empty($snapshot['preserve_payments'])) {return;}
+        if (isset($snapshot['currency']) && $snapshot['currency']!==\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()) {
+            throw new \RuntimeException('La devise a changé depuis la réservation.');
+        }
+        if (!isset($snapshot['items']) || !is_array($snapshot['items'])) {return;}
+        $this->paymentContext=['event_id'=>(int)$booking->event_id,'items'=>$snapshot['items']];
+    }
     public function publicVars(array $vars,$event): array
     {
         $options=$this->options((int)$event->id);
@@ -79,9 +100,14 @@ final class BookingAdapter
         try {$catalogue=$options['native_tariffs']?NativeTariffs::catalogue($event):null;}
         catch (\InvalidArgumentException $error) {$configurationError=$error->getMessage();}
         if ($catalogue) {
-            $vars['slot']['total_payment']=$catalogue[0]['cents']/100;
+            // FluentBooking's Stripe component reads both payment_items and
+            // the payment field. Keep its initial Payment Element aligned
+            // with the first selectable tariff instead of the full catalogue.
+            $initialItem=['title'=>$catalogue[0]['title'],'value'=>$catalogue[0]['cents']/100];
+            $vars['slot']['total_payment']=$initialItem['value'];
+            $vars['payment_items']=[$initialItem];
             foreach ($vars['form_fields'] as &$field) {
-                if (($field['type']??'')==='payment') {$field['payment_items']=[['title'=>$catalogue[0]['title'],'value'=>$catalogue[0]['cents']/100]];}
+                if (($field['type']??'')==='payment') {$field['payment_items']=[$initialItem];}
             } unset($field);
         }
         $price=0;
@@ -193,6 +219,12 @@ final class BookingAdapter
         unset($snapshot['lock']);
         Helper::updateBookingMeta($booking->id,self::META,$snapshot);
         Helper::updateBookingMeta($booking->id,'quantity',$snapshot['quantity']);
+        // Native e-mail templates resolve booking.custom.* from this metadata.
+        // Keep the summary separate from user-facing form fields and never add
+        // it to shared calendar payloads.
+        $customFields=(array)$booking->getMeta('custom_fields_data',[]);
+        $customFields['fba_participants_email']=(new BookingPresentation())->emailSummary($booking);
+        Helper::updateBookingMeta($booking->id,'custom_fields_data',$customFields);
         if($booking->getMeta(self::META,[])!==$snapshot) {throw new \RuntimeException('Les informations des invités n’ont pas pu être enregistrées.');}
         $lock=$this->pending[$token]['lock'];unset($this->pending[$token]);$this->unlock($lock);
     }
