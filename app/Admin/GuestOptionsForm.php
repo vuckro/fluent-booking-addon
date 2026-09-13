@@ -63,7 +63,9 @@ final class GuestOptionsForm
         $prefix='guest_options[fields]['.$index.']';
         echo '<fieldset class="fba-extra-field"><legend>Champ invité</legend><input type="hidden" data-field-id name="'.esc_attr($prefix.'[id]').'" value="'.esc_attr($field['id']).'">';
         echo '<label>Libellé<input type="text" maxlength="160" name="'.esc_attr($prefix.'[label]').'" value="'.esc_attr($field['label']).'" placeholder="Ex. Catégorie du participant"></label><label>Affichage<select name="'.esc_attr($prefix.'[type]').'">';
-        foreach(['select'=>'Liste déroulante','radio'=>'Boutons radio','checkbox'=>'Case à cocher','text'=>'Texte libre','number'=>'Nombre'] as $type=>$title){echo '<option value="'.$type.'"'.selected($type,$field['type'],false).'>'.$title.'</option>';}
+        // Preserve existing saved fields without offering this type for new fields.
+        if ($field['type']==='checkbox') {echo '<option value="checkbox" selected hidden>Champ existant</option>';}
+        foreach(['select'=>'Liste déroulante','radio'=>'Boutons radio','text'=>'Texte libre','number'=>'Nombre'] as $type=>$title){echo '<option value="'.$type.'"'.selected($type,$field['type'],false).'>'.$title.'</option>';}
         echo '</select></label><label class="fba-field-choices">Choix possibles, un par ligne<textarea name="'.esc_attr($prefix.'[choices]').'" placeholder="Option 1&#10;Option 2">'.esc_textarea(implode("\n",$field['choices'])).'</textarea></label>';
         echo '<div class="fba-field-bounds"'.($field['type']!=='number'?' hidden':'').'>';
         foreach(['min'=>'Minimum','max'=>'Maximum'] as $key=>$title) {echo '<label>'.$title.'<input type="number" step="any" name="'.esc_attr($prefix.'['.$key.']').'" value="'.esc_attr($field[$key]??'').'" placeholder="Sans limite"></label>';}
