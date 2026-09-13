@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.31**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.32**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
 Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 
@@ -10,6 +10,10 @@ Une page **Modules** pour configurer chaque événement de groupe, avec des opti
 Les personnalisations sont désactivées par défaut. Sans tarification personnalisée, le paiement natif est conservé. Chaque participant occupe une place native ; FluentBooking garde les capacités et disponibilités. Il n’existe plus de limite ni d’héritage parallèle dans l’add-on.
 
 Nouvelle option facultative : **[Réserver pour d’autres personnes](docs/reserver-pour-autrui.md)**. Le contact peut ne pas participer ; seuls les participants occupent des places et paient en mode par personne. Le contact reste affiché comme réservant dans FluentBooking.
+
+## Apparence des emails
+
+Dans **Modules → Apparence des emails**, un administrateur peut choisir la couleur de la bordure supérieure des emails. Ce réglage est global, indépendant des événements : noir `#111111` par défaut, bleu natif `#0069ff` pour revenir au rendu FluentBooking. Il concerne les prochains envois via le mailer natif ; les autres emails WordPress, les liens et les messages déjà envoyés ne sont pas modifiés.
 
 ## Utilisation et maintenance
 

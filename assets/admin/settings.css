@@ -163,3 +163,5 @@ html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30
 .fba-settings .fba-field-bounds label { min-width:0; }
 .fba-settings .fba-field-bounds input[type=number] { display:block; width:100%; min-width:0; margin:8px 0 0; padding:8px 12px; box-sizing:border-box; }
 @media(max-width:480px) { .fba-settings .fba-field-bounds { grid-template-columns:1fr; gap:0; } }
+
+.fba-settings input[type=color] { width:64px; height:36px; padding:3px; margin-left:12px; vertical-align:middle; border:1px solid var(--fba-line); border-radius:6px; background:var(--fba-surface); cursor:pointer; }

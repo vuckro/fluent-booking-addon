@@ -6,7 +6,7 @@ use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.31';
+    public const VERSION = '4.0.0-alpha.32';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -29,6 +29,7 @@ final class Plugin
         if (!class_exists('FluentBooking\\App\\Models\\CalendarSlot')) { return; }
         $store = new ConfigurationStore();
         (new SettingsPage($store))->register();
+        (new \WaasKit\FluentBooking\Emails\Appearance())->register();
         if (ConfigurationStore::migrationRequired()) {
             $message='Fluent Booking Addon : migration des anciens réglages requise. Consultez docs/migration.md avant de rouvrir les réservations.';
             add_action('admin_notices', static function () use ($message) {echo '<div class="notice notice-error"><p>'.esc_html($message).'</p></div>';});

@@ -80,7 +80,9 @@ final class SettingsPage
         echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Modules</h1><p>Personnalisez les informations et les tarifs des invités de votre événement.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
-            echo '<p>Sélectionnez un événement de groupe accessible.</p></div>'; return;
+            echo '<p>Sélectionnez un événement de groupe accessible.</p>';
+            \WaasKit\FluentBooking\Emails\Appearance::render();
+            echo '</div>'; return;
         }
         try {
             $stored = $this->store->read($scope, $id);
@@ -99,6 +101,7 @@ final class SettingsPage
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
         echo '</form><footer class="fba-card-footer">Ces options s’appliquent aux nouvelles réservations. Les réservations existantes conservent leur tarif ; leur report n’est pas pris en charge dans ce mode.</footer></section>';
         $this->guestGuidance($scope, $id);
+        \WaasKit\FluentBooking\Emails\Appearance::render();
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
         }

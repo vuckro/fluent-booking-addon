@@ -55,3 +55,7 @@ Alpha.30 : ajout de `php tests/calendar-presentation.php` (24 contrôles), et de
 ## Audit alpha.31 — 13 septembre 2026
 
 266 contrôles PHP passent, dont 39 nouveaux contrôles `tests/calendar-contacts.php` (WordPress local requis). Les tests de notifications incluent les anciennes tâches indexées par ID. Exécuter ce test avec le même `WAASKIT_WP_PATH` et socket MySQL que les autres tests d’intégration. Les 8 scénarios DOM passent. Voir `recette-finale.md` pour les limites et conditions de production ; les tests ne certifient pas les services externes.
+
+## Apparence des emails — alpha.32
+
+`tests/email-appearance.php`, avec `WAASKIT_WP_PATH` et le socket local : 10 contrôles réussis sur le modèle email natif après Emogrifier. Le hook `pre_wp_mail` bloque le transport ; les réglages sont restaurés par rollback. Vérifie la couleur par défaut/personnalisée, le retour au bleu, les valeurs invalides et l’absence de modification des emails hors mailer FluentBooking. Aucun email réellement envoyé.

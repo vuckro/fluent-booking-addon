@@ -1,3 +1,9 @@
+## 4.0.0-alpha.32
+
+- Réglage global de couleur de la bordure des emails dans Modules, réservé aux administrateurs ; noir #111111 par défaut.
+- Filtrage limité au mailer FluentBooking et à la bordure bleue native, validation stricte de la couleur, protection nonce et permissions.
+- 10 contrôles sur le modèle natif après intégration CSS, sans envoi réel.
+
 ## 4.0.0-alpha.31
 
 - Correction : les places rattachées sans email ne déclenchent plus de création, modification ou suppression d’événement distant. Les groupes Google, Outlook, Apple et Nextcloud transmettent seulement les contacts.
