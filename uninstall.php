@@ -7,6 +7,7 @@ $remove = static function (): void {
     $wpdb->query('DROP TABLE IF EXISTS `' . esc_sql($wpdb->prefix . 'fba_capacity') . '`');
     delete_option('fba_db_version');
     delete_option('waaskit_fb_email_border_color');
+    delete_option('waaskit_fb_email_appearance_enabled');
     delete_option('waaskit_fluent_booking_config');
     delete_option('fba_native_settings_migrated');
     // Native booking records and historical payment data remain untouched.

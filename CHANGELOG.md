@@ -1,3 +1,10 @@
+## 4.0.0-alpha.34
+
+- Apparence des emails déplacée au-dessus des réglages de l’événement ; espacements et alignement du sélecteur corrigés.
+- Case d’activation indépendante : options masquées lorsque désactivées, bordure native conservée. Couleur choisie conservée pour une prochaine activation.
+- Personnalisation désactivée par défaut, y compris à la mise à jour : cocher et enregistrer pour appliquer la couleur.
+- 12 contrôles email sans envoi et vérification DOM du dépliage, indépendamment du formulaire invité.
+
 ## 4.0.0-alpha.33
 
 - Protection des dossiers personnalisés contre la suppression native de tout le groupe d’un créneau. Utiliser l’annulation de la réservation principale.

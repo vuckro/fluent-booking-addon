@@ -1,3 +1,16 @@
+/* Global email appearance is independent of the selected event. */
+(() => {
+    const toggle = document.querySelector('[name="email_appearance_enabled"]');
+    const options = document.getElementById('fba-email-options');
+    if (!toggle || !options) return;
+    const refresh = () => {
+        options.hidden = !toggle.checked;
+        toggle.setAttribute('aria-expanded', String(toggle.checked));
+    };
+    toggle.addEventListener('change', refresh);
+    refresh();
+})();
+
 /* Guest options only. Native FluentBooking owns all participant limits. */
 (() => {
     const root = document.querySelector('.fba-guest-options');

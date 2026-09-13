@@ -6,7 +6,7 @@ use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.33';
+    public const VERSION = '4.0.0-alpha.34';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')

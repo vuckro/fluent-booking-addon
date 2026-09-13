@@ -10,12 +10,15 @@ add_filter('pre_wp_mail',static function($result,$mail)use(&$captured){$captured
 add_filter('pre_http_request',static fn()=>new WP_Error('blocked','Test'),PHP_INT_MAX);
 $wpdb->query('START TRANSACTION');
 try {
- delete_option(Appearance::OPTION);
+ delete_option(Appearance::OPTION);delete_option(Appearance::ENABLED_OPTION);
  $email_body='<p>Test FluentBooking</p>';$email_footer='';
  ob_start();include $path.'/wp-content/plugins/fluent-booking/app/Views/emails/template.php';$html=ob_get_clean();
  $emogrifier=new FluentBooking\App\Services\Libs\Emogrifier\Emogrifier($html);
  $html=(string)$emogrifier->emogrify();
  check(str_contains($html,'#0069ff'),'real native template contains blue border after CSS inlining');
+ Mailer::send('nobody@example.invalid','Test',$html);
+ check($captured['message']===$html,'disabled by default preserves native email');
+ update_option(Appearance::ENABLED_OPTION,true,false);
  Mailer::send('nobody@example.invalid','Test',$html);
  check(str_contains($captured['message'],'border-top: 4px solid #111111'),'native email uses default black border');
  check($captured['to']==='nobody@example.invalid' && $captured['subject']==='Test','recipient and subject preserved');
@@ -34,6 +37,8 @@ try {
  $changed=str_replace('#0069ff','#123456',$html);
  Mailer::send('nobody@example.invalid','Test',$changed);
  check($captured['message']===$changed,'another template customization is not overwritten');
+ update_option(Appearance::ENABLED_OPTION,false,false);
+ Mailer::send('nobody@example.invalid','Test',$html);check($captured['message']===$html,'disabling restores native template');
  $beforeUser=get_current_user_id();wp_set_current_user(0);ob_start();Appearance::render();$form=ob_get_clean();
  check($form==='','global control hidden from unauthorized users');wp_set_current_user($beforeUser);
-} finally {$wpdb->query('ROLLBACK');wp_cache_delete(Appearance::OPTION,'options');wp_cache_delete('notoptions','options');wp_cache_delete('alloptions','options');}
+} finally {$wpdb->query('ROLLBACK');wp_cache_delete(Appearance::OPTION,'options');wp_cache_delete(Appearance::ENABLED_OPTION,'options');wp_cache_delete('notoptions','options');wp_cache_delete('alloptions','options');}

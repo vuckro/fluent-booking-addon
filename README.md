@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.33**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.34**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
 Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 
@@ -13,7 +13,7 @@ Nouvelle option facultative : **[Réserver pour d’autres personnes](docs/reser
 
 ## Apparence des emails
 
-Dans **Modules → Apparence des emails**, un administrateur peut choisir la couleur de la bordure supérieure des emails. Ce réglage est global, indépendant des événements : noir `#111111` par défaut, bleu natif `#0069ff` pour revenir au rendu FluentBooking. Il concerne les prochains envois via le mailer natif ; les autres emails WordPress, les liens et les messages déjà envoyés ne sont pas modifiés.
+Dans **Modules → Apparence des emails**, un administrateur peut cocher « Personnaliser la couleur des emails » pour afficher le choix de couleur de la bordure supérieure. La personnalisation est désactivée par défaut ; décocher puis enregistrer restaure le modèle natif, en conservant la couleur choisie. Ce réglage est global, indépendant des événements : noir `#111111` proposé à l’activation, bleu natif `#0069ff` pour revenir au rendu FluentBooking. Il concerne les prochains envois via le mailer natif ; les autres emails WordPress, les liens et les messages déjà envoyés ne sont pas modifiés.
 
 ## Utilisation et maintenance
 

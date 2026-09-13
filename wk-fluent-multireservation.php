@@ -3,7 +3,7 @@
  * Plugin Name: Fluent Booking Addon
  * Plugin URI: https://github.com/vuckro/fluent-booking-addon
  * Description: Invités supplémentaires, places et choix d’un tarif FluentBooking par personne.
- * Version: 4.0.0-alpha.33
+ * Version: 4.0.0-alpha.34
  * Author: WaasKit
  * Author URI: https://waaskit.com
  * Requires at least: 6.0

@@ -166,3 +166,13 @@ html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30
 @media(max-width:480px) { .fba-settings .fba-field-bounds { grid-template-columns:1fr; gap:0; } }
 
 .fba-settings input[type=color] { width:64px; height:36px; padding:3px; margin-left:12px; vertical-align:middle; border:1px solid var(--fba-line); border-radius:6px; background:var(--fba-surface); cursor:pointer; }
+
+.fba-settings #fba-email-appearance { margin:0 0 28px; }
+.fba-settings .fba-email-form { padding:24px; }
+.fba-settings .fba-email-toggle { display:flex; align-items:center; gap:4px; font-weight:600; }
+.fba-settings #fba-email-options { margin-top:20px; }
+.fba-settings #fba-email-options[hidden] { display:none; }
+.fba-settings .fba-email-color-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+.fba-settings .fba-email-color-row input[type=color] { margin:0; }
+.fba-settings .fba-email-form .description { margin:12px 0 0; line-height:1.6; }
+.fba-settings .fba-email-form .submit { margin-bottom:0; }
