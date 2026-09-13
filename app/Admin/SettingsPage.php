@@ -113,7 +113,6 @@ final class SettingsPage
         $options=\WaasKit\FluentBooking\Guests\Options::validate($this->store->read('calendar_event',$id)['values']['guest_options']??[]);
         $native=['enabled'=>false,'limit'=>1];
         foreach($event->getBookingFields() as $field) {if(($field['name']??'')==='guests') {$native=$field;}}
-        $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
         $modes=['required'=>'obligatoire','optional'=>'facultatif','hidden'=>'masqué'];
         $options = \WaasKit\FluentBooking\Guests\Options::effective($options);
         $enabled = $options['enabled'];
@@ -137,7 +136,7 @@ final class SettingsPage
         foreach ($summary as [$label, $value, $hint]) {
             echo '<div><dt>' . esc_html($label) . '</dt><dd><strong>' . esc_html($value) . '</strong><span>' . esc_html($hint) . '</span></dd></div>';
         }
-        echo '</dl><div class="fba-summary-links"><a class="button" href="' . esc_url($base . 'question-settings') . '">Réglages des invités</a><a class="button" href="' . esc_url($base . 'payment-settings') . '">Réglages du tarif de base</a></div></div></section>';
+        echo '</dl></div></section>';
     }
 
     private function navigation(string $scope, int $id): void
@@ -151,6 +150,11 @@ final class SettingsPage
         }
         echo '</select> <button class="button" type="submit">Afficher les réglages</button>';
         $this->calendarLink($scope, $id);
+        if (self::allowed($scope, $id)) {
+            $event=CalendarSlot::find($id);
+            $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
+            echo '<a class="button" href="'.esc_url($base.'question-settings').'">Réglages des invités</a><a class="button" href="'.esc_url($base.'payment-settings').'">Réglages du tarif de base</a>';
+        }
         echo '</form>';
         echo '<p class="description fba-context-help">Choisissez l’événement dont vous souhaitez personnaliser les invités. Les capacités, disponibilités et tarifs de base restent dans FluentBooking.</p>';
     }
