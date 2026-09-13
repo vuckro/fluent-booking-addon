@@ -150,7 +150,7 @@ final class SettingsPage
                 $this->contextOption($event->title.' ('.($calendar->title??'').')','calendar_event',(int)$event->id,$scope,$id);
             }
         }
-        echo '</select><button class="button" type="submit">Afficher les réglages</button></div><div class="fba-context-shortcuts">';
+        echo '</select><button class="button" type="submit">Afficher les réglages</button>';
         $this->calendarLink($scope, $id);
         echo '</div></form>';
         echo '<p class="description fba-context-help">Choisissez l’événement dont vous souhaitez personnaliser les invités. Les capacités, disponibilités et tarifs de base restent dans FluentBooking.</p>';
