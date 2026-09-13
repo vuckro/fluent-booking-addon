@@ -19,3 +19,9 @@ check(Pricing::quote(5000,$options,$guests)['total']===5000,'flat price without 
 $options['per_person_price']=true;
 check(Pricing::quote(5000,$options,$guests)['total']===15000,'base per person');
 rejects(fn()=>Options::validate(['email_mode'=>'bogus']),'invalid identity mode rejected');
+
+$catalogue=[['id'=>'adult','title'=>'Adulte','cents'=>7000],['id'=>'child','title'=>'Enfant','cents'=>5500]];
+check(\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[['tariff'=>'child']])['total']===12500,'native choices summed once');
+rejects(fn()=>\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[[]]),'guest without tariff is never silently skipped');
+rejects(fn()=>\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[null]),'malformed guest rejected by pricing engine');
+check(Options::defaults()['native_tariffs']===true && Options::validate(['enabled'=>false])['native_tariffs']===false,'new mode default preserves pre-existing configurations');

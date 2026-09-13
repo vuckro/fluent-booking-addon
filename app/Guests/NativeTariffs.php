@@ -30,7 +30,7 @@ final class NativeTariffs
     {
         $lookup=array_column($catalogue,null,'id');
         $people=[];$total=0;
-        foreach (array_merge([$holder],array_column($guests,'tariff')) as $id) {
+        foreach (array_merge([$holder],array_map(static fn($guest)=>is_array($guest)?($guest['tariff']??null):null,$guests)) as $id) {
             if (!is_string($id) || !isset($lookup[$id])) {
                 throw new \InvalidArgumentException('Choisissez un tarif valide pour chaque personne. Si les tarifs ont changé, rechargez la page.');
             }

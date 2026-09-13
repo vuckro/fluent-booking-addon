@@ -1,3 +1,10 @@
+## 4.0.0-alpha.23
+
+- Recette finale : prix, capacité, commandes, annulation, compatibilité et formulaires.
+- Le moteur de tarifs refuse explicitement tout invité sans choix, même appelé directement.
+- Formulaire : astérisque sur l’identité obligatoire ; résumé enregistré plus clair.
+- Test reproductible du vrai bundle FluentBooking : navigation retour, conservation des invités, absence de doublon et charge utile transmise à un serveur simulé.
+
 ## 4.0.0-alpha.22
 
 - Tarifs natifs exclusifs pour le réservant et chaque invité ; récapitulatif et commande par personne.

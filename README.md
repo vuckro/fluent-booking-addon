@@ -1,3 +1,5 @@
+> [Bilan de recette alpha.23 et parcours de test](docs/recette-finale.md).
+
 > Nouveau : [tarifs FluentBooking au choix par personne](docs/tarifs-par-personne.md) (alpha.22).
 
 # Fluent Booking Addon

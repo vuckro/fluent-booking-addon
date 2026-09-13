@@ -42,7 +42,7 @@
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
                 ['name','email'].forEach(key => {
-                    const label = document.createElement('label'); label.textContent = key === 'name' ? 'Nom de l’invité' : 'Courriel de l’invité';
+                    const label = document.createElement('label'); label.textContent = (key === 'name' ? 'Nom de l’invité' : 'Courriel de l’invité') + (config[key+'Mode'] === 'required' ? ' *' : '');
                     const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200; input.dataset.fbaIdentity = key;
                     input.required = config[key+'Mode'] === 'required'; input.disabled = config[key+'Mode'] === 'hidden'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
                 });

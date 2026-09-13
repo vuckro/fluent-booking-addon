@@ -19,6 +19,7 @@ try {
  rejects(fn()=>$store->save('calendar_event',2,['guest_options'=>$options],$before['revision']),'stale revision refused');
  $_GET=['page'=>'waaskit-fluent-booking','scope'=>'calendar_event','object_id'=>2];
  ob_start();(new SettingsPage($store))->render();$html=ob_get_clean();
+ check(!str_contains($html,'Multiplier le prix par le nombre de personnes'),'native mode has no redundant multiplier control');
  check(str_contains($html,'<h1>Modules</h1>'),'page title Modules');
  check(!str_contains($html,'Limite de participants') && !str_contains($html,'name="policy"'),'duplicate block absent');
  check(!str_contains($html,'Réglages communs') && !str_contains($html,'Utiliser les réglages'),'inheritance navigation removed');
