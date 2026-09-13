@@ -22,26 +22,14 @@ add_filter('pre_wp_mail','__return_true');
 final class StripeTestResponse extends Error {}
 add_filter('wp_die_ajax_handler', static fn() => static function () {throw new StripeTestResponse();});
 $sent = [];
-$intents=[]; $cancelCalls=0; $failCancel=false;
-add_filter('pre_http_request', static function ($pre, $args, $url) use (&$sent, &$intents, &$cancelCalls, &$failCancel) {
-    $reply=static fn($body,$code=200)=>['headers'=>[], 'response'=>['code'=>$code,'message'=>'Fixture'], 'body'=>wp_json_encode($body)];
-    if ($url === 'https://api.stripe.com/v1/payment_intents') {
-        parse_str($args['body'], $body); $sent[]=$body;
-        $id='pi_localfixture'.$body['metadata']['booking_id'];
-        $intents[$id]=['id'=>$id,'client_secret'=>$id.'_secret_fixture','amount'=>(int)$body['amount'],
-            'currency'=>strtolower($body['currency']),'status'=>'requires_payment_method','amount_received'=>0,
-            'metadata'=>$body['metadata']];
-        return $reply($intents[$id]);
-    }
-    if (preg_match('~^https://api.stripe.com/v1/payment_intents/(pi_[A-Za-z0-9]+)(/cancel)?$~', $url, $match) && isset($intents[$match[1]])) {
-        if (!empty($match[2])) {
-            $cancelCalls++;
-            if ($failCancel) return $reply(['error'=>['message'=>'Simulated conflict']],409);
-            $intents[$match[1]]['status']='canceled';
-        }
-        return $reply($intents[$match[1]]);
-    }
-    return new WP_Error('blocked', 'No network in tests');
+add_filter('pre_http_request', static function ($pre, $args, $url) use (&$sent) {
+    if ($url !== 'https://api.stripe.com/v1/payment_intents') return new WP_Error('blocked', 'No network in tests');
+    parse_str($args['body'], $body);
+    $sent[] = $body;
+    return ['headers'=>[], 'response'=>['code'=>200,'message'=>'OK'], 'body'=>wp_json_encode([
+        'id'=>'pi_local_fixture','client_secret'=>'pi_local_fixture_secret','amount'=>(int)$body['amount'],
+        'currency'=>strtolower($body['currency']), 'status'=>'requires_payment_method'
+    ])];
 }, 999, 3);
 add_filter('pre_option_fluent_booking_payment_settings_stripe', static fn() => [
     'is_active'=>'yes','provider'=>'api_keys','payment_mode'=>'test','checkout_mode'=>'onsite',
@@ -89,36 +77,6 @@ try {
         check((int)$order->total_amount===$expected && (int)$order->items()->sum('item_total')===$expected, "order and lines = {$expected} cents, forged quantity ignored");
         check((int)end($sent)['amount']===$expected, "actual native PaymentIntent request = {$expected} cents");
         check((int)$response['data']['data']['payment_args']['amount']===$expected && (int)$response['data']['intent']['amount']===$expected, 'response, intent and stored order agree');
-        $edit=new WaasKit\FluentBooking\Payments\EditCheckout();
-        $intentId=$response['data']['intent']['id'];
-        $secret=$response['data']['intent']['client_secret'];
-        $cancel=static fn($hash=null,$clientSecret=null)=>$edit->cancel($booking->id,$intentId,$clientSecret??$secret,$hash??$booking->hash);
-        $refuse=static function($action,$label) use($booking) {
-            $rejected=false;try{$action();}catch(RuntimeException $e){$rejected=true;}
-            check($rejected && Booking::find($booking->id)->status==='pending',$label);
-        };
-        if ($case===0) {
-            $refuse(static fn()=>$cancel('invalid'), 'wrong booking capability cannot cancel');
-            $refuse(static fn()=>$cancel(null,$intentId.'_secret_wrong'), 'wrong Stripe secret cannot cancel');
-            $intents[$intentId]['metadata']['ref_id']='another-booking';
-            $refuse($cancel,'Stripe intent must belong to this booking');
-            $intents[$intentId]['metadata']['ref_id']=$booking->hash;
-            foreach (['processing','succeeded','requires_capture'] as $status) {
-                $intents[$intentId]['status']=$status;
-                $refuse($cancel,'cannot edit Stripe status '.$status);
-            }
-            $intents[$intentId]['status']='requires_payment_method';
-            $failCancel=true;
-            $refuse($cancel,'Stripe cancellation conflict keeps reservation and seats');
-            $failCancel=false;
-        }
-        $cancel();
-        check(Booking::find($booking->id)->status==='cancelled', 'unpaid attempt cancelled after Stripe confirmation');
-        check(Booking::where('parent_id',$booking->id)->where('status','!=','cancelled')->count()===0,'all attached seats released');
-        check(FluentBookingPro\App\Models\Order::find($order->id)->status==='cancelled','draft order closed');
-        $calls=$cancelCalls; $cancel();
-        check($cancelCalls===$calls,'retry after lost response is idempotent');
-
     }
 
 } finally {

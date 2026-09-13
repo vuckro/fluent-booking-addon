@@ -8,9 +8,9 @@ const allAdult=process.env.FBA_ALL_ADULT==='1';
 const expected=nonparticipating?5500:(allAdult?14000:12500);
 const amountPattern=new RegExp(String(expected/100));
 const html=fs.readFileSync(process.env.FBA_PAGE_HTML,'utf8');
-let reloadAttempts=0;
+let reloads=0;
 const virtualConsole=new VirtualConsole();
-virtualConsole.on('jsdomError',error=>{if(error.message==='Not implemented: navigation (except hash changes)')reloadAttempts++;else throw error;});
+virtualConsole.on('jsdomError',error=>{if(error.message==='Not implemented: navigation (except hash changes)')reloads++;else throw error;});
 const dom=new JSDOM(html,{virtualConsole,url:'http://localhost:10038/?fluent-booking=calendar&host=waaskit&event=30min-1',runScripts:'outside-only',pretendToBeVisual:true});
 const w=dom.window;w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.ResizeObserver=class {observe(){}disconnect(){}};w.HTMLElement.prototype.scrollIntoView=function(){};
 const response=fs.readFileSync(process.env.FBA_SLOTS_JSON,'utf8');
@@ -61,7 +61,7 @@ setTimeout(async()=>{
  assert.equal(d.querySelector('#fcalInputIDfba_extra_2').value,frozen,'request payload stays frozen');
  const amount=expected;
  const actual=process.env.FBA_MISMATCH==='1'?7000:amount;
- const result={success:true,data:{actionName:'custom',nextAction:'stripe',status:'success',data:{id:123,hash:'booking_fixture',payment_method:'stripe',payment_args:{amount:actual,currency:'eur',public_key:'pk_test_fixture'}},intent:{id:'pi_fixture',amount:actual,currency:'eur',client_secret:'pi_fixture_secret'}}};
+ const result={success:true,data:{actionName:'custom',nextAction:'stripe',status:'success',data:{payment_method:'stripe',payment_args:{amount:actual,currency:'eur',public_key:'pk_test_fixture'}},intent:{amount:actual,currency:'eur',client_secret:'pi_fixture_secret'}}};
  pending.status=200;pending.response=result;pending.responseText=JSON.stringify(result);pending.readyState=4;pending.onload?.();pending.onreadystatechange?.();
  await new Promise(r=>setTimeout(r,50));
  if(process.env.FBA_MISMATCH==='1') {
@@ -78,42 +78,14 @@ setTimeout(async()=>{
  assert(w.testPostedBody,'native form submitted to local mock');
  const submitted=w.testPostedBody.get('fba_extra_2');assert(submitted,'guest payload reaches native submission');
  const payload=JSON.parse(submitted);if(nonparticipating) assert.equal(payload.holder_participates,false);assert.equal(payload.guests[0].name,'Camille');assert.equal(payload.guests[0].tariff,w.fbaGuestForms[2].tariffs[allAdult?0:1].id);
- if (process.env.FBA_EDIT==='1') {
-   let release,requests=0;
-   w.fetch=async(url,request)=>{requests++;assert.equal(request.body.get('action'),'fba_edit_checkout');assert.equal(request.body.get('booking_id'),'123');return new Promise(resolve=>{release=resolve;});};
-   const edit=d.querySelector('.fba-edit-checkout'); edit.click(); edit.click();
-   assert.equal(requests,1,'double click sends one cancellation');
-   assert(d.querySelector('.fluent_booking_payment_processor').inert,'payment cannot be clicked during cancellation');
-   release({ok:false,json:async()=>({success:false,data:{message:'Paiement en cours'}})});
-   await new Promise(r=>setTimeout(r,10));
-   assert.equal(w.sessionStorage.getItem('fba_checkout_draft_2'),null,'failed cancellation never starts another booking');
-   assert(!edit.disabled,'cancellation can be retried');
-   d.querySelector('.fcal_back button').click();assert.equal(requests,2,'native back arrow also cancels before leaving');release({ok:true,json:async()=>({success:true})});
-   await new Promise(r=>setTimeout(r,10));
-   assert.equal(reloadAttempts,1,'reload only after successful cancellation');
-   const draft=JSON.parse(w.sessionStorage.getItem('fba_checkout_draft_2'));
-   assert.equal(JSON.parse(draft.payload).guests[0].name,'Camille');
-   assert.equal(draft.contact.fcalInputIDname,'Recette');
-   assert(!JSON.stringify(draft).includes('pi_fixture_secret'),'Stripe secret is not stored');
-   // Simulate the fresh document reached by reload, and select a slot again.
-   const fresh=new JSDOM(html,{url:w.location.href,runScripts:'outside-only',pretendToBeVisual:true});
-   const f=fresh.window;
-   f.matchMedia=w.matchMedia;f.ResizeObserver=w.ResizeObserver;f.HTMLElement.prototype.scrollIntoView=function(){};
-   f.XMLHttpRequest=w.XMLHttpRequest;f.fetch=async()=>({ok:true,json:async()=>JSON.parse(response),text:async()=>response});
-   f.sessionStorage.setItem('fba_checkout_draft_2',JSON.stringify(draft));
-   for(const script of f.document.querySelectorAll('script:not([src])')) f.eval(script.textContent);
-   f.eval(fs.readFileSync(path.join(wp,'wp-content/plugins/fluent-booking/assets/public/js/app.js'),'utf8'));
-   f.eval(fs.readFileSync(path.join(root,'assets/public/guests.js'),'utf8'));
-   await new Promise(r=>setTimeout(r,100));
-   f.document.querySelector('.day-enabled').click();await new Promise(r=>setTimeout(r,30));
-   f.document.querySelector('.fcal_spot_name').click();await new Promise(r=>setTimeout(r,30));
-   f.document.querySelector('.fcal_spot_confirm').click();await new Promise(r=>setTimeout(r,30));
-   assert.equal(f.document.querySelector('[data-fba-identity=name]').value,'Camille');
-   assert.equal(f.document.querySelector('#fcalInputIDname').value,'Recette');
-   assert(!f.document.querySelector('.fba-add-guest').disabled,'fresh participants can be edited');
-   assert.equal(f.sessionStorage.getItem('fba_checkout_draft_2'),null,'draft consumed once');
-   assert.equal(f.document.querySelector('.fluent_booking_payment_processor').style.display,'none','old Stripe checkout is gone');
-   f.dispatchEvent(new f.Event('pagehide'));f.close();
+ if(process.env.FBA_RESTART==='1') {
+   w.fetch=()=>{throw Error('Restart must not call an API');};
+   d.querySelector('.fba-restart-checkout').click();
+   assert.equal(reloads,1,'restart reloads the page');
+   d.querySelector('.fcal_back button').click();
+   assert.equal(reloads,2,'native back reloads instead of reopening stale checkout');
+   assert.equal(w.sessionStorage.length,0,'no personal draft or Stripe secret stored');
+   assert(!d.querySelector('.fba-edit-checkout'),'old retry action removed');
  }
  console.log('PASS native Svelte + Stripe checkout: pending lock, response consistency, frozen recap, no network payment');
  w.dispatchEvent(new w.Event('pagehide'));w.close();
