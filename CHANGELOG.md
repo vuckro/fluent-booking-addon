@@ -1,5 +1,13 @@
 # 4.0.0-alpha.18
 
+## 4.0.0-alpha.19
+
+- Options invités affichées uniquement après activation.
+- Identités obligatoires, facultatives ou masquées ; places rattachées au réservant sans faux contacts.
+- Listes, radios et cases avec suppléments ou remplacement du tarif par invité.
+- Calcul serveur en centimes, contrôle des remplacements concurrents, annulation et suppression des places rattachées.
+- Tests de prix, identité, confidentialité et affichage conditionnel.
+
 - Options propres à chaque événement de groupe : contrôle des places par personne et multiplication du prix indépendants.
 - Questions supplémentaires par invité : liste de choix, texte et nombre, avec caractère obligatoire configurable.
 - Récapitulatif public du nombre de personnes et du prix dès l’ajout d’un invité.

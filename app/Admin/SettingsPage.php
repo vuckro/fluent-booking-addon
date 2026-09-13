@@ -109,7 +109,7 @@ final class SettingsPage
         SettingsForm::render($scope, $stored['values'], $effective, $parent);
         if ($scope === 'calendar_event' && CalendarSlot::find($id)->isMultiGuestEvent()) { GuestOptionsForm::render(\WaasKit\FluentBooking\Guests\Options::validate($stored['values']['guest_options'] ?? [])); }
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
-        echo '</form><footer class="fba-card-footer">Cette limite complète la capacité des créneaux définie dans FluentBooking. Elle ne change ni les prix, ni les paiements, ni les réservations existantes. Les modifications et reports ne sont pas couverts.</footer></section>';
+        echo '</form><footer class="fba-card-footer">La limite de personnes complète la capacité des créneaux. Les options invités peuvent modifier le prix des nouvelles réservations ; les réservations existantes conservent leur tarif. Les reports ne sont pas pris en charge dans le mode personnalisé.</footer></section>';
         $this->guestGuidance($scope, $id);
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
@@ -137,7 +137,7 @@ final class SettingsPage
         } else {
             echo '<p><strong>Places et prix</strong><br>Cet événement n’est pas un événement de groupe. Ses invités ne sont pas comptés comme des places individuelles. Utilisez un événement de groupe pour réserver une place et appliquer un tarif par personne.</p>';
         }
-        echo '<details><summary>Informations demandées aux invités</summary><p>Le formulaire natif de groupe exige un nom et une adresse e-mail distincte pour chaque personne. Vous pouvez ajouter une catégorie, un âge ou une question libre dans les options ci-dessus. Le nom et l’e-mail restent obligatoires dans ce mode natif.</p></details></div></section>';
+        echo '<details><summary>Informations demandées aux invités</summary><p>Par défaut, le formulaire natif exige un nom et un courriel distinct. Dans les options personnalisées, chaque champ peut devenir facultatif ou masqué. Les invités sont alors rattachés au réservant, qui reçoit les communications du groupe. Les champs supplémentaires peuvent collecter une information, ajouter un supplément ou remplacer le tarif d’un invité.</p></details></div></section>';
     }
 
     private function navigation(string $scope, int $id): void

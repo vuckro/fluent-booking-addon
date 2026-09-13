@@ -1,3 +1,5 @@
+Mise à jour alpha.19 : identité des invités facultative ou masquée, champs et choix tarifaires, affichage conditionnel. Voir [le guide actuel](invites-et-evolutions.md).
+
 > Alpha.18 : voir [le guide des options invités](invites-et-evolutions.md) pour les fonctionnalités ajoutées après le nettoyage décrit ci-dessous.
 
 > Alpha.17 : voir [le point sur les invités](invites-et-evolutions.md) pour le contrôle public, les places et le prix natifs. Le bilan ci-dessous décrit le nettoyage du socle.

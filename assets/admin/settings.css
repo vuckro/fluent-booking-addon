@@ -139,3 +139,6 @@ body.fba-admin .fba-settings input[type=checkbox]:focus-visible { outline:1px so
  body.fba-admin .fba-settings input[type=checkbox]:checked { background:Highlight; border-color:Highlight; forced-color-adjust:none; }
  body.fba-admin .fba-settings input[type=checkbox]:checked::after { border-color:HighlightText; }
 }
+
+.fba-settings .fba-guest-details[hidden], .fba-settings .fba-field-pricing[hidden] { display:none; }
+.fba-settings .fba-identity-option { display:flex; align-items:center; gap:12px; margin:12px 0; }

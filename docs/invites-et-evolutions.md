@@ -1,37 +1,42 @@
-# Invités — alpha.18
+# Invités — alpha.19
 
-## Configurer
+## Utilisation
 
-Dans Modules, sélectionner **l’événement de groupe**, puis activer **Personnaliser la réservation avec invités**.
+Dans Modules, sélectionner l’événement de groupe, puis cocher **Personnaliser la réservation avec invités**. Les options apparaissent ; les décocher masque les réglages sans effacer les choix enregistrés. Enregistrer pour appliquer.
 
-- **Décompter une place par personne** : contrôle sous verrou que le créneau dispose d’une place pour le réservant et chaque invité. FluentBooking crée les réservations individuelles ; aucun second débit n’est ajouté. Désactivé, le comptage natif reste utilisé : cette case ne transforme pas un groupe natif en une seule place.
-- **Multiplier le prix par le nombre de personnes** : le tarif de base natif de 100 devient 100, 200 ou 300 selon le nombre de personnes. Désactivé, le groupe paie une seule fois le tarif de base. La quantité de commande et celle utilisée pour payer restent cohérentes.
-- **Questions pour chaque invité** : ajouter une liste de choix, un texte ou un nombre. Exemple : question « Catégorie », choix « Adulte » et « Enfant », réponse obligatoire. Un âge peut être une question de type Nombre. Rien n’est codé spécialement pour une catégorie.
+1. Activer aussi **Invités supplémentaires** dans les questions FluentBooking, via le lien proposé.
+2. Choisir éventuellement un maximum par réservation : réservant compris. Cette limite reste indépendante de la capacité du créneau.
+3. Garder **Décompter une place par personne** coché. Les réservations natives représentent les places, sans double stock. Décoché, le fonctionnement natif demeure ; les invités sans identité gardent obligatoirement un contrôle de capacité pour éviter la surréservation.
+4. Choisir si le tarif de base s’applique à chaque personne ou une seule fois à la réservation.
+5. Choisir séparément pour le nom et le courriel : **Obligatoire**, **Facultatif** ou **Masqué**.
+6. Ajouter si nécessaire un champ : liste déroulante, boutons radio, case à cocher, texte ou nombre. Chaque champ possède un libellé et peut être obligatoire.
 
-Activer également **Invités supplémentaires** dans les questions natives via le lien fourni. Enregistrer. Les options sont propres à l’événement et désactivées par défaut ; les limites existantes sont préservées.
+## Prix par invité
 
-## Logique
+Les listes, radios et cases peuvent avoir trois comportements : aucun effet, **ajouter un supplément**, **remplacer le tarif de cet invité**. Pour une liste ou des radios, saisir les choix puis leurs montants dans le même ordre, un par ligne. Pour une case, saisir un seul montant, appliqué si elle est cochée. Les montants utilisent la devise FluentBooking.
 
-Le réservant compte toujours comme une personne. Le récapitulatif public compte les lignes invité dès leur ajout, même avant la saisie de leur identité. La validation serveur refuse une identité ou réponse obligatoire incomplète ; aucune ligne ne doit disparaître silencieusement lors de la réservation.
+Le réservant paie toujours le tarif de base. Pour chaque invité :
 
-Les réservations natives restent la source du nombre de places consommées. Quand le contrôle supplémentaire est activé, un verrou MySQL par événement et début de créneau sérialise le contrôle et la création du groupe. Il n’existe pas de second stock à synchroniser. Un échec partiel du moteur natif peut néanmoins laisser des réservations à examiner : aucune garantie de transaction atomique de l’ensemble des notifications/paiements n’est annoncée.
+- Tarif de départ = tarif de base si la multiplication est cochée, sinon 0.
+- Un choix peut remplacer ce tarif de départ, y compris par 0.
+- Tous les suppléments sélectionnés s’ajoutent ensuite, une seule fois.
 
-Les questions sont identifiées par une clé stable, indépendante du libellé. Les réponses et leurs libellés sont conservés avec la réservation. Modifier une question ne réécrit pas les réponses passées. Le tarif en centimes et la quantité sont également conservés, puis utilisés pour la commande.
+Un seul champ peut remplacer le tarif afin d’éviter deux remplacements contradictoires. Les suppléments ne sont jamais multipliés par la taille du groupe. Les champs texte et nombre collectent des informations et ne déclenchent pas de tarif automatique.
 
-Les réponses sont présentées dans le détail de confirmation natif et couvertes par les outils de confidentialité WordPress. L’effacement des données personnelles conserve les quantités nécessaires à la réservation et à la commande.
+**Exemple :** base 50 ; choix Adulte = 50, Enfant = 25, supplément = 10. Réservant + adulte avec supplément + enfant = **50 + 50 + 10 + 25 = 135**. Les places consommées restent **3**.
 
-## Limites
+## Identités et places
 
-- Événements de groupe, créneau unique ; aucune prise en charge des séries récurrentes.
-- Nom et e-mail distinct restent obligatoires pour chaque invité. Aucun faux e-mail n’est créé.
-- Stripe et paiement hors ligne natifs, tarif unique, devises à deux décimales. Coupons, WooCommerce, tarifs alternatifs et autres passerelles refusés dans ce mode.
-- Les questions collectent des informations ; elles ne modifient pas encore le tarif ou le poids en places. Les règles Adulte/Enfant viendront ensuite.
-- Les reports et réactivations des nouvelles réservations enrichies sont bloqués jusqu’à un parcours adapté. Les annulations restent natives ; ne pas modifier directement les tables pour contourner ces contrôles.
-- Le frontend complète les lignes d’invités du formulaire FluentBooking 2.4 ; une recette navigateur réelle reste nécessaire avant production, notamment pour les intégrations tierces et les pages contenant plusieurs formulaires.
-- Aucun paiement Stripe réel n’a été effectué pendant les tests.
+Si nom et courriel sont obligatoires, le parcours natif des invités est conservé. Si l’un devient facultatif ou masqué, le formulaire utilise des invités rattachés au réservant : aucun faux e-mail, aucun contact automatique, aucune notification individuelle. Le courriel facultatif est validé lorsqu’il est renseigné et conservé avec les réponses. Le réservant reçoit les communications du groupe.
 
-## Tests
+Chaque invité rattaché dispose d’une ligne de place native liée au réservant. Annuler ou supprimer le réservant libère aussi ces places. Une catégorie ou un prix nul ne change jamais le nombre de places. Le contrôle serveur utilise un verrou par événement et début de créneau. Il ne constitue pas une transaction globale couvrant toutes les intégrations externes et les paiements.
 
-Les tests ciblés vérifient trois personnes/trois places, le refus à capacité insuffisante, 100 × 3 = 300, le forfait 100 avec multiplicateur désactivé, la persistance des champs, les réponses manquantes, le maintien du prix après modification et les outils de confidentialité. Les écritures sont annulées et la configuration utilisateur est comparée avant/après.
+Les réponses, les tarifs en centimes et le total sont validés côté serveur et conservés avec la réservation. Un changement ultérieur de tarif ne recalcule pas une ancienne réservation. Les commandes et paiements utilisent le montant conservé, jamais un montant fourni par le navigateur. Les outils de confidentialité couvrent les copies rattachées et les courriels facultatifs.
 
-Un test DOM vérifie le récapitulatif 100/200/300, les questions obligatoires, la sérialisation et la conservation des bonnes réponses après suppression d’un invité. Il ne remplace pas une recette du véritable composant Svelte dans le navigateur.
+## Limites avant production
+
+- FluentBooking 2.4.x, événement de groupe et créneau unique ; pas de séries récurrentes.
+- Choix payants : un seul tarif de base natif et paiement activé, devise à deux décimales, Stripe ou paiement hors ligne. Coupons, WooCommerce, tarifs alternatifs et autres passerelles exclus de ce mode.
+- Les reports et réactivations sont bloqués tant qu’un parcours adapté n’est pas disponible. Les annulations restent possibles.
+- La saisie de l’âge ne modifie pas automatiquement les tarifs. Pas de règles conditionnelles entre champs ni de réduction de places selon une catégorie.
+- Tests serveur et DOM effectués. Une recette du vrai formulaire Svelte, des intégrations tierces et de Stripe en mode test reste nécessaire avant production. Aucun paiement réel n’a été effectué.

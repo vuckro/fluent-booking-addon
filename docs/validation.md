@@ -27,3 +27,7 @@ Les tests ne prouvent pas une exclusion atomique entre deux réservations concur
 - Compatibilité avant toute mise à jour de FluentBooking. Les tests locaux ne justifient pas de déclarer toutes les versions 2.4.x certifiées.
 
 Les tests de paiement et de concurrence de capacité des anciennes alphas ne valident pas cette base : ces fonctions sont retirées. La CI existante vérifie syntaxe et tests unitaires sur PHP 8.1–8.4 ; elle n’a pas été relancée à distance pour cette modification locale.
+
+## Alpha.19
+
+Tests ajoutés : `guest-pricing.php` (18 assertions : identité absente, tarifs remplacés et suppléments, capacité, annulation/suppression, export/effacement et restauration des données). `guest-admin-dom.cjs` vérifie le masquage conditionnel sans perte des sélections. `guests-attached-dom.cjs` vérifie le total 135, les radios et cases, puis la suppression qui conserve le choix enfant et le total 75. Les tests existants restent exécutés. Les tests DOM ne constituent pas une recette du navigateur et aucun paiement réel n’est déclenché.

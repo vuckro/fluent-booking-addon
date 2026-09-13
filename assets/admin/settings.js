@@ -20,8 +20,17 @@
     const template = root.querySelector('template');
     let index = list.children.length;
     const refresh = () => {
+        const enabled = root.querySelector('[name="guest_options[enabled]"]');
+        const details = root.querySelector('.fba-guest-details');
+        details.hidden = !enabled.checked;
+        enabled.setAttribute('aria-expanded', String(enabled.checked));
         list.querySelectorAll('.fba-extra-field').forEach(row => {
-            row.querySelector('.fba-field-choices').hidden = row.querySelector('select').value !== 'select';
+            const type = row.querySelector('select').value;
+            row.querySelector('.fba-field-choices').hidden = !['select','radio'].includes(type);
+            const pricing = row.querySelector('.fba-field-pricing');
+            pricing.hidden = !['select','radio','checkbox'].includes(type);
+            if (pricing.hidden) pricing.querySelector('select').value = 'none';
+            row.querySelector('.fba-field-prices').hidden = pricing.querySelector('select').value === 'none';
         });
         root.querySelector('.fba-add-field').disabled = list.children.length >= 8;
     };

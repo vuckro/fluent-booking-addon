@@ -48,6 +48,14 @@ final class GuestFields
         $maximum = $this->maximum((int) $event->id);
         $custom = $this->store->read('calendar_event', (int) $event->id)['values']['guest_options']['enabled'] ?? false;
         if ($maximum <= 0 && !$custom) { return null; }
+        $options = \WaasKit\FluentBooking\Guests\Options::validate($this->store->read('calendar_event',(int)$event->id)['values']['guest_options']??[]);
+        if (\WaasKit\FluentBooking\Guests\Identity::attached($options)) {
+            try {
+                $rows=\WaasKit\FluentBooking\Guests\Identity::rows($posted['fba_extra_'.$event->id]??'[]',$options);
+                if($maximum>0 && count($rows)+1>$maximum) {throw new \InvalidArgumentException('Le nombre de personnes dépasse la limite de cette réservation.');}
+                return null;
+            } catch(\Throwable $e) {return new \WP_Error('fba_guests',$e->getMessage());}
+        }
         $guests = $posted['guests'] ?? [];
         if (!is_array($guests)) { return new \WP_Error('fba_guests', 'La liste des invités est invalide.'); }
         if ($maximum > 0 && 1 + count($guests) > $maximum) {
@@ -76,7 +84,8 @@ final class GuestFields
 
     public function validationRules(array $config, array $posted, $event): array
     {
-        if ($this->maximum((int) $event->id) === 1) {
+        $options=\WaasKit\FluentBooking\Guests\Options::validate($this->store->read('calendar_event',(int)$event->id)['values']['guest_options']??[]);
+        if ($this->maximum((int) $event->id) === 1 || \WaasKit\FluentBooking\Guests\Identity::attached($options)) {
             unset($config['rules']['guests']);
         }
         return $config;

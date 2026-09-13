@@ -1,8 +1,8 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.18** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
+Version **4.0.0-alpha.19** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
 
-Limite par réservation et options d’invités pour les événements de groupe : places par personne, prix proportionnel ou forfaitaire, et questions supplémentaires. Le moteur utilise les réservations et commandes natives, sans table de stock parallèle. Les anciens moteurs expérimentaux restent retirés.
+Limite par réservation et options d’invités pour les événements de groupe : places par personne, prix proportionnel ou forfaitaire, identités facultatives ou masquées, et champs avec suppléments ou tarifs par choix. Le moteur utilise les réservations et commandes natives, sans table de stock parallèle. Les anciens moteurs expérimentaux restent retirés.
 
 Dans **Fluent Booking → Modules**, sélectionner tous les calendriers, un calendrier ou un événement. Choisir de reprendre les réglages communs, de garder uniquement les limites FluentBooking ou de fixer un maximum. Le nombre n’est demandé que dans ce dernier cas. Le résumé indique les valeurs enregistrées et leur provenance. Le bouton de consultation publique apparaît si la page du calendrier est activée dans FluentBooking.
 
@@ -23,6 +23,7 @@ WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/booking-service.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-logic.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-options.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-pricing.php
 python3 scripts/package.py
 ```
 

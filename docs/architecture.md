@@ -25,3 +25,7 @@ Ne pas ajouter de tarification à la règle de limite. Ne pas charger l’applic
 Les options invités sont enregistrées seulement sur un événement, sans ajouter un second mécanisme d’héritage. Une réservation principale conserve le groupe et son tarif ; chaque réservation invitée conserve ses propres réponses pour la confidentialité.
 
 Les données saisies sont validées côté serveur même sans JavaScript. Les contrôles de permission et nonce restent au point d’entrée d’écriture. Le magasin contrôle la révision et vérifie la lecture après sauvegarde.
+
+## Invités sans identité et choix tarifaires (alpha.19)
+
+`Guests/Identity` valide les modes d’identité et les données du formulaire. `Guests/Pricing` calcule en centimes le tarif du réservant et des invités : remplacement avant suppléments, indépendant des places. `Guests/AttachedSeats` crée les places natives liées au réservant et suit leur annulation/suppression sans faux contacts ni notifications individuelles. Le mode natif reste conservé lorsque les deux identités sont obligatoires. Les adaptateurs de paiement consomment le tarif enregistré ; ils ne recalculent pas les choix courants. Les champs ont des identifiants stables et les montants sont validés au serveur.
