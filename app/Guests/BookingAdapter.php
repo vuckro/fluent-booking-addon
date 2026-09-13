@@ -167,7 +167,7 @@ final class BookingAdapter
             if ($options['native_tariffs']) {
                 $quantity=1;
                 $quote=['total'=>$tariffQuote['total']??0,'guests'=>array_column(array_slice($tariffQuote['people']??[],$holderParticipates?1:0),'cents')];
-                $items=array_map(static fn($person,$index)=>['title'=>($holderParticipates && $index===0?'Contact principal':'Invité '.($index+($holderParticipates?0:1))).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
+                $items=array_map(static fn($person,$index)=>['title'=>($holderParticipates && $index===0?'Contact principal':'Participant '.($index+($holderParticipates?0:1))).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
             }
             else {
                 $quote=Pricing::quote(array_sum(array_column($items,'cents')),$options,$answers);

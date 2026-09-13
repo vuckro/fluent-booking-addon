@@ -18,7 +18,7 @@ final class AttachedSeats
                 if ($skipFirst && $index===0) {continue;}
                 $data=[];
                 foreach(['calendar_id','event_id','group_id','host_user_id','person_time_zone','start_time','end_time','slot_minutes','status','event_type','source','location_details'] as $key) {$data[$key]=$holder->$key;}
-                $data+=['parent_id'=>$holder->id,'person_user_id'=>0,'first_name'=>$guest['name']?:'Invité '.($index+1),'last_name'=>'','email'=>'','payment_method'=>'','payment_status'=>''];
+                $data+=['parent_id'=>$holder->id,'person_user_id'=>0,'first_name'=>$guest['name']?:'Participant '.($index+1),'last_name'=>'','email'=>'','payment_method'=>'','payment_status'=>''];
                 $seat=Booking::create($data); $created[]=$seat;
                 $seat->hosts()->attach([$holder->host_user_id=>['status'=>'confirmed']]);
                 Helper::updateBookingMeta($seat->id,BookingAdapter::META,['seat'=>true,'attached_seat'=>true,'guests'=>[$guest],'fields'=>$snapshot['fields']]);

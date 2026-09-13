@@ -45,7 +45,7 @@
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
         const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
-            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter un invité'; add.className = 'fba-add-guest';
+            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter un participant'; add.className = 'fba-add-guest';
             guestWrap.append(add);
             const payment = root.querySelector('.fcal_payment_items');
             const paymentItem = payment?.closest('.fcal_form_item');
@@ -61,12 +61,12 @@
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
                 ['name','email'].forEach(key => {
-                    const label = document.createElement('label'); label.textContent = (key === 'name' ? 'Nom de l’invité' : 'Courriel de l’invité') + (config[key+'Mode'] === 'required' ? ' *' : '');
+                    const label = document.createElement('label'); label.textContent = (key === 'name' ? 'Nom du participant' : 'Email du participant') + (config[key+'Mode'] === 'required' ? ' *' : '');
                     const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200; input.dataset.fbaIdentity = key;
                     input.required = config[key+'Mode'] === 'required'; input.disabled = config[key+'Mode'] === 'hidden'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
                 });
-                if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de cet invité'));
-                const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.className = 'fba-remove-guest'; remove.setAttribute('aria-label', 'Supprimer cet invité'); remove.title = 'Supprimer cet invité';
+                if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de ce participant'));
+                const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.className = 'fba-remove-guest'; remove.setAttribute('aria-label', 'Supprimer ce participant'); remove.title = 'Supprimer ce participant';
                 remove.addEventListener('click', () => { row.remove(); update(); }); row.append(remove);
                 guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
@@ -82,15 +82,15 @@
             if (holder) { holder.hidden = !attends(); holder.querySelector('select').disabled = !attends(); }
             if (participation) {
                 const count = guests.length + (attends() ? 1 : 0);
-                const error = count < 1 ? 'Ajoutez au moins un participant.' : count > config.limit ? 'Retirez un invité pour participer également : le maximum serait dépassé.' : '';
+                const error = count < 1 ? 'Ajoutez au moins un participant.' : count > config.limit ? 'Retirez un participant pour participer également : le maximum serait dépassé.' : '';
                 participation.setCustomValidity(error);
                 participationHelp.textContent = error || (attends() ? 'Vous comptez parmi les participants.' : 'Vous réservez pour les personnes ci-dessous. Vous restez le contact pour le paiement et les messages.');
             }
             guests.forEach((row, index) => {
                 const heading = row.querySelector('.fba-guest-label');
                 row.querySelector('.fba-remove-guest').disabled = !attends() && guests.length === 1;
-                row.querySelector('.fba-remove-guest')?.setAttribute('aria-label', 'Supprimer l’invité ' + (index + 1));
-                if (heading && heading.textContent !== 'Invité ' + (index + 1)) heading.textContent = 'Invité ' + (index + 1);
+                row.querySelector('.fba-remove-guest')?.setAttribute('aria-label', 'Supprimer le participant ' + (index + 1));
+                if (heading && heading.textContent !== 'Participant ' + (index + 1)) heading.textContent = 'Participant ' + (index + 1);
                 if (row.querySelector('.fba-guest-extra')) return;
                 const panel = document.createElement('div'); panel.className = 'fba-guest-extra';
                 config.fields.forEach(field => {
@@ -146,7 +146,7 @@
                     cents += tariff.cents;
                     const line = document.createElement('div'); const label = document.createElement('dt'); const value = document.createElement('dd');
                     const guestIndex = index - (attends() ? 1 : 0);
-                    label.textContent = (guestIndex < 0 ? 'Vous' : payload[guestIndex].name || 'Invité ' + (guestIndex + 1)) + ' · ' + tariff.title;
+                    label.textContent = (guestIndex < 0 ? 'Vous' : payload[guestIndex].name || 'Participant ' + (guestIndex + 1)) + ' · ' + tariff.title;
                     value.textContent = format(tariff.cents); line.append(label, value); fragment.append(line);
                 });
                 lines.replaceChildren(fragment);
