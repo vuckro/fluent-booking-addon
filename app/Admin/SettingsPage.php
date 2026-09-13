@@ -12,6 +12,12 @@ final class SettingsPage
     public function __construct(private ConfigurationStore $store) {}
     public function register(): void
     {
+        add_filter('plugin_action_links_' . plugin_basename(dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), static function (array $links): array {
+            if (current_user_can('read')) {
+                array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=waaskit-fluent-booking')) . '">' . esc_html__('Réglages', 'waaskit-fluent-booking') . '</a>');
+            }
+            return $links;
+        });
         add_action('admin_menu', function () {
             $hook = add_submenu_page('fluent-booking', 'Modules', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
             add_filter('admin_body_class', static function ($classes) use ($hook) {
