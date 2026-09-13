@@ -21,6 +21,8 @@ setTimeout(async()=>{
  assert(d.querySelector('#fcalInputIDfba_extra_2').closest('.fcal_form_item').hidden);
  assert.equal(w.getComputedStyle(d.querySelector('.fcal_payment_items')).display,'none');
  assert(!d.querySelector('#payment_method_offline').closest('.fcal_payment_items'));
+ assert(!d.querySelector('.fba-add-guest').closest('label'),'custom guests are outside native payment label');
+ assert.equal(w.getComputedStyle(d.querySelector('.fba-payment-methods .fcal_input_label')).display,'none','duplicate payment heading hidden');
  d.querySelector('.fba-add-guest').click();await new Promise(r=>setTimeout(r,30));
  const guest=d.querySelector('.fba-attached-guest');guest.querySelector('[data-fba-identity=name]').value='Camille';
  const choice=guest.querySelector('[data-fba-tariff]');choice.selectedIndex=1;choice.dispatchEvent(new w.Event('input',{bubbles:true}));await new Promise(r=>setTimeout(r,30));

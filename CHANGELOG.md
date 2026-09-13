@@ -1,3 +1,9 @@
+## 4.0.0-alpha.24
+
+- Bloc invités public aligné sur la palette native, labels lisibles en sombre, champs homogènes, ajout discret et suppression compacte.
+- Un seul titre de récapitulatif ; champs personnalisés sortis du label de paiement natif.
+- « Un tarif par personne » devient la case d’activation du mode et de ses options ; décochée, elle conserve le fonctionnement natif.
+
 ## 4.0.0-alpha.23
 
 - Recette finale : prix, capacité, commandes, annulation, compatibilité et formulaires.

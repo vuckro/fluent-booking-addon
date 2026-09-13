@@ -32,10 +32,15 @@
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
         const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
-            const add = document.createElement('button'); add.type = 'button'; add.textContent = 'Ajouter un invité'; add.className = 'fba-add-guest';
+            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter un invité'; add.className = 'fba-add-guest';
             guestWrap.append(add);
             const payment = root.querySelector('.fcal_payment_items');
-            (payment || transportItem).before(guestWrap);
+            const paymentItem = payment?.closest('.fcal_form_item');
+            if (paymentItem) {
+                paymentItem.classList.add('fba-payment-methods');
+                paymentItem.querySelector('.fcal_input_content')?.setAttribute('aria-label','Moyen de paiement');
+            }
+            (paymentItem || transportItem).before(guestWrap);
             if (holder) guestWrap.before(holder);
             add.addEventListener('click', () => {
                 if (rows().length + 1 >= config.limit) return;
@@ -47,7 +52,7 @@
                     input.required = config[key+'Mode'] === 'required'; input.disabled = config[key+'Mode'] === 'hidden'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
                 });
                 if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de cet invité'));
-                const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Supprimer cet invité';
+                const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.className = 'fba-remove-guest'; remove.setAttribute('aria-label', 'Supprimer cet invité'); remove.title = 'Supprimer cet invité';
                 remove.addEventListener('click', () => { row.remove(); update(); }); row.append(remove);
                 guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
@@ -61,6 +66,7 @@
             const guests = rows();
             guests.forEach((row, index) => {
                 const heading = row.querySelector('.fba-guest-label');
+                row.querySelector('.fba-remove-guest')?.setAttribute('aria-label', 'Supprimer l’invité ' + (index + 1));
                 if (heading && heading.textContent !== 'Invité ' + (index + 1)) heading.textContent = 'Invité ' + (index + 1);
                 if (row.querySelector('.fba-guest-extra')) return;
                 const panel = document.createElement('div'); panel.className = 'fba-guest-extra';

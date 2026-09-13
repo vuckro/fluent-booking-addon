@@ -25,12 +25,12 @@ final class GuestOptionsForm
     public static function render(array $options): void
     {
         echo '<fieldset class="fba-policy fba-guest-options"><legend>Réserver avec des invités</legend>';
-        foreach(['enabled'=>['Personnaliser la réservation avec invités','Active les options ci-dessous pour cet événement de groupe.'],
+        foreach(['enabled'=>[$options['native_tariffs']?'Un tarif par personne':'Personnaliser la réservation avec invités',$options['native_tariffs']?'Coché : chaque personne choisit son tarif FluentBooking. Décoché : le formulaire et le calcul natifs sont conservés.':'Active les options ci-dessous pour cet événement de groupe.'],
             'per_person_price'=>['Multiplier le prix par le nombre de personnes','Coché : chaque personne part du tarif de base. Décoché : seul le réservant paie ce tarif. Les choix tarifaires des invités s’appliquent ensuite.']] as $key=>[$label,$help]) {
             if($key==='per_person_price') {echo '<div class="fba-guest-details"'.(!$options['enabled']?' hidden':'').'>'; }
             if($key==='per_person_price') {
                 if ($options['native_tariffs']) {
-                    echo '<input type="hidden" name="guest_options[native_tariffs]" value="1"><h3>Un tarif par personne</h3>';
+                    echo '<input type="hidden" name="guest_options[native_tariffs]" value="1">';
                 } else {
                     echo '<label class="fba-identity-option"><span>Tarification</span><select name="guest_options[native_tariffs]"><option value="1">Un tarif par personne</option><option value="0" selected>Ancien calcul personnalisé</option></select></label>';
                 }

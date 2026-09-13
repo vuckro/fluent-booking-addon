@@ -4,7 +4,7 @@
 
 1. Dans les paiements de l’événement FluentBooking, créez les lignes **Adulte : 70 €** et **Enfant : 55 €**. Utilisez les paiements natifs, une durée unique et un événement de groupe.
 2. Activez **Invités supplémentaires** dans les questions FluentBooking. La capacité du créneau reste gérée par FluentBooking.
-3. Dans **Modules**, sélectionnez cet événement et activez la personnalisation. Les nouveaux réglages utilisent **Un tarif par personne**.
+3. Dans **Modules**, sélectionnez cet événement et cochez **Un tarif par personne** : les options de personnalisation apparaissent. Décochez puis enregistrez pour retrouver le formulaire et le calcul natifs.
 4. Choisissez **Nom obligatoire** et **Courriel masqué** pour les invités, puis enregistrez.
 
 L’événement collectif local est déjà configuré ainsi. Ses tarifs natifs n’ont pas été modifiés. L’objet de la réunion reste une question native : vous pouvez le désactiver dans les questions FluentBooking.

@@ -20,6 +20,9 @@ try {
  $_GET=['page'=>'waaskit-fluent-booking','scope'=>'calendar_event','object_id'=>2];
  ob_start();(new SettingsPage($store))->render();$html=ob_get_clean();
  check(!str_contains($html,'Multiplier le prix par le nombre de personnes'),'native mode has no redundant multiplier control');
+ check(str_contains($html,'Un tarif par personne') && str_contains($html,'guest_options[enabled]'),'per-person feature is controlled by the activation checkbox');
+ $off=\WaasKit\FluentBooking\Admin\GuestOptionsForm::parse(['guest_options'=>['native_tariffs'=>'1','name_mode'=>'required','email_mode'=>'hidden']]);
+ check(!$off['enabled'] && $off['native_tariffs'] && $off['email_mode']==='hidden','unchecking restores native behavior and retains identity settings');
  check(str_contains($html,'<h1>Modules</h1>'),'page title Modules');
  check(!str_contains($html,'Limite de participants') && !str_contains($html,'name="policy"'),'duplicate block absent');
  check(!str_contains($html,'Réglages communs') && !str_contains($html,'Utiliser les réglages'),'inheritance navigation removed');
