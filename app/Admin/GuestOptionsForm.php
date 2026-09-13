@@ -31,16 +31,16 @@ final class GuestOptionsForm
             echo '<label class="fba-choice"><input type="checkbox" name="guest_options['.esc_attr($key).']" value="1"'.checked($options[$key],true,false).'><span><strong>'.esc_html($label).'</strong><span class="description">'.esc_html($help).'</span></span></label>';
         }
         foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
-            echo '<label class="fba-identity-option">'.esc_html($title).' <select name="guest_options['.$key.']">';
+            echo '<label class="fba-identity-option"><span>'.esc_html($title).'</span><select name="guest_options['.$key.']">';
             foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
             echo '</select></label>';
         }
         echo '<p class="description">Chaque personne occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
-        echo '<h3>Options et informations par invité</h3><p class="description">Ajoutez un choix de tarif, une option ou une information utile pour chaque invité.</p><div class="fba-guest-fields">';
+        echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez un choix de tarif, une option ou une information utile pour chaque invité.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}
         echo '</div><button type="button" class="button fba-add-field">Ajouter un champ</button><template id="fba-field-template">';
         self::row('__INDEX__',['id'=>'','label'=>'','type'=>'select','required'=>false,'choices'=>[]]);
-        echo '</template><p class="description">Les réponses sont conservées avec la réservation. Le tarif du réservant reste inchangé. Pour chaque invité : tarif de base (si multiplication cochée), éventuellement remplacé par un choix, puis suppléments ajoutés. Un seul champ peut remplacer le tarif.</p></div></fieldset>';
+        echo '</template><p class="description">Les réponses sont conservées avec la réservation. Le tarif du réservant reste inchangé. Pour chaque invité : tarif de base (si multiplication cochée), éventuellement remplacé par un choix, puis suppléments ajoutés. Un seul champ peut remplacer le tarif.</p></section></div></fieldset>';
     }
     private static function prices($text): array
     {
