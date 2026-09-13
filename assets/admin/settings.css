@@ -158,6 +158,8 @@ body.fba-admin .fba-settings :is(.fba-add-field,.fba-remove-field,.fba-summary-l
 html.fba-dark .fba-settings .fba-summary-status.is-enabled { background:#193d30; color:#9edbb9; }
 html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30; color:#f2b5b5; }
 
-.fba-settings .fba-field-bounds { display:flex; gap:16px; }
+.fba-settings .fba-field-bounds { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; width:100%; max-width:540px; }
 .fba-settings .fba-field-bounds[hidden] { display:none; }
-.fba-settings .fba-field-bounds label { flex:1; min-width:0; }
+.fba-settings .fba-field-bounds label { min-width:0; }
+.fba-settings .fba-field-bounds input[type=number] { display:block; width:100%; min-width:0; margin:8px 0 0; padding:8px 12px; box-sizing:border-box; }
+@media(max-width:480px) { .fba-settings .fba-field-bounds { grid-template-columns:1fr; gap:0; } }
