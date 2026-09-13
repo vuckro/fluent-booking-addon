@@ -1,4 +1,4 @@
-# Vérification avant production — 13 septembre 2026 — alpha.33
+# Vérification avant production — 13 septembre 2026 — alpha.35
 
 ## Verdict
 
@@ -6,20 +6,22 @@
 
 ## Résultats locaux
 
-- 281 contrôles PHP : unité, configuration, champs et bornes, tarifs natifs, migration, contact non participant, entrée AJAX publique et intégration des agendas/notifications.
+- 283 contrôles PHP : unité, configuration, champs et bornes, tarifs natifs, migration, contact non participant, entrée AJAX publique et intégration des agendas/notifications.
 - 8 scénarios DOM : administration, invités, tarifs, informations seules, participation du contact et parcours du bundle natif.
 - Réservations de test transactionnelles annulées ; emails et HTTP externes bloqués dans les tests. Les tests ne créent pas d’événement Google et ne débitent aucun paiement.
 - Environnement : WordPress 7.1, PHP 8.2.29, FluentBooking et Pro annoncés 2.4.0. **FluentBooking gratuit : les 926 fichiers correspondent aux SHA-256 officiels WordPress.org 2.4.0, aucun fichier PHP supplémentaire. FluentBooking Pro : la copie locale contient des modifications ; la distribution officielle Pro reste à valider.**
 
 Les contrôles couvrent 70 € adulte, 55 € enfant, 125 € pour les deux ; contact non participant + enfant = 55 € et une place ; validation serveur des tarifs et champs ; refus de zéro participant ou de six participants pour cinq places ; annulation groupée, suppression et préservation des montants historiques.
 
+Les trois raccourcis du HTML réel ont également été contrôlés : ouverture dans un nouvel onglet et emplacement dans le sélecteur ou la carte appropriée. Cela ne remplace pas une inspection visuelle au navigateur.
+
 ## Contrôle du paquet
 
-L’archive `fluent-booking-addon-4.0.0-alpha.33.zip` est reconstruite depuis le code validé ; chaque fichier est comparé au dépôt. Elle inclut le correctif des flèches en mode sombre et le réglage de couleur des emails. Syntaxe PHP/JavaScript et structure ZIP vérifiées. GitHub est synchronisé sur `codex/nonparticipating-booker` ; cette recette ne publie pas sur main et ne déploie aucun site.
+L’archive `fluent-booking-addon-4.0.0-alpha.35.zip` est reconstruite depuis le code validé ; chaque fichier est comparé au dépôt. Elle inclut le correctif des flèches en mode sombre et le réglage de couleur des emails. Syntaxe PHP/JavaScript et structure ZIP vérifiées. GitHub est synchronisé sur `codex/nonparticipating-booker` ; cette recette ne publie pas sur main et ne déploie aucun site.
 
 ## Corrections trouvées pendant l’audit
 
-Nouvelle protection alpha.33 : `BookingProtection` empêche la suppression native d’un groupe personnalisé avant les effets externes, y compris depuis un contact natif du même groupe. Un changement de statut isolé d’une place invitée est refusé ; la mise à jour depuis le contact reste autorisée. Cinq contrôles supplémentaires couvrent ces refus, la conservation des places et l’annulation principale.
+Protection introduite en alpha.33 : `BookingProtection` empêche la suppression native d’un groupe personnalisé avant les effets externes, y compris depuis un contact natif du même groupe. Un changement de statut isolé d’une place invitée est refusé ; la mise à jour depuis le contact reste autorisée. Cinq contrôles supplémentaires couvrent ces refus, la conservation des places et l’annulation principale.
 
 Les gestionnaires de paiement natifs déclenchent aussi les hooks de réservation des fiches de places rattachées. Ces fiches ont volontairement un email vide. Elles pouvaient donc produire une tentative Google invalide et des notifications/rappels séparés.
 

@@ -1,3 +1,10 @@
+## 4.0.0-alpha.35
+
+- Raccourcis FluentBooking dans la carte Invités et tarifs, ouverts dans de nouveaux onglets ; libellé « Réglages des invités supplémentaires ».
+- Page de réservation à côté du bouton Afficher les réglages, également dans un nouvel onglet.
+- Espacements mobiles et confirmation d’enregistrement de l’apparence des emails harmonisés.
+- Recette finale : 283 contrôles PHP, 8 scénarios DOM et contrôle du HTML réel des raccourcis. Limites de validation production documentées.
+
 ## 4.0.0-alpha.34
 
 - Apparence des emails déplacée au-dessus des réglages de l’événement ; espacements et alignement du sélecteur corrigés.

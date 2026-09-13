@@ -181,3 +181,8 @@ html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30
 .fba-settings .fba-guest-header { flex-wrap:wrap; align-items:center; }
 .fba-settings .fba-card-actions { display:flex; flex-basis:100%; flex-wrap:wrap; gap:8px; }
 body.fba-admin .fba-settings .fba-card-actions .button { min-height:36px; padding:6px 12px; font-size:12px; }
+
+/* Final alignment of email controls and narrow-screen card content. */
+.fba-settings .fba-email-form .fba-save-feedback { margin:0 0 20px; padding:10px 12px; border-radius:6px; background:var(--fba-sunk); color:var(--fba-text); }
+@media(max-width:782px) { .fba-settings .fba-email-form { padding:18px; } }
+@media(max-width:480px) { .fba-settings .fba-card-actions { flex-direction:column; } .fba-settings .fba-card-actions .button { width:100%; } }

@@ -61,7 +61,7 @@ final class Appearance
         echo '<form class="fba-form fba-email-form" method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
         wp_nonce_field('waaskit_fb_email_appearance');
         echo '<input type="hidden" name="action" value="waaskit_fb_email_appearance">';
-        if (isset($_GET['email_saved'])) {echo '<p role="status">Couleur enregistrée.</p>';}
+        if (isset($_GET['email_saved'])) {echo '<p class="fba-save-feedback" role="status">Apparence enregistrée.</p>';}
         $enabled=self::enabled();
         echo '<label class="fba-email-toggle"><input type="checkbox" name="email_appearance_enabled" value="1"'.checked($enabled,true,false).' aria-controls="fba-email-options" aria-expanded="'.($enabled?'true':'false').'"> <span>Personnaliser la couleur des emails</span></label>';
         echo '<div id="fba-email-options"'.($enabled?'':' hidden').'><div class="fba-email-color-row"><label for="fba-email-color">Couleur de la bordure</label><input type="color" id="fba-email-color" name="email_border_color" value="'.esc_attr(self::color()).'"></div><p class="description">La couleur choisie remplace la bordure en haut des prochains emails FluentBooking.</p></div>';
