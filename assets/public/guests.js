@@ -1,6 +1,7 @@
 /* One guest form; FluentBooking still owns holder details, submission and payment. */
 (() => {
     const mounted = new WeakSet();
+    const checkoutObservers = new Set();
     const boot = () => document.querySelectorAll('input[id^="fcalInputIDfba_extra_"]').forEach(transport => {
         if (mounted.has(transport)) return;
         const id = transport.id.replace('fcalInputIDfba_extra_', '');
@@ -76,6 +77,28 @@
         if (!nativeTariffs) title.hidden = true;
         if (config.preservePayments) recap.hidden = true;
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
+        let checkoutLocked = false;
+        const lockForPayment = () => {
+            if (checkoutLocked) return;
+            const processor = root.querySelector('.fluent_booking_payment_processor');
+            // Stripe freezes the amount in its PaymentIntent. Once its native
+            // checkout is mounted, changing this party would make the visible
+            // recap disagree with the payable amount.
+            if (!processor || processor.style.display === 'none' || !processor.querySelector('iframe, #fluent_booking_stipe_pay')) return;
+            checkoutLocked = true;
+            root.classList.add('fba-checkout-locked');
+            [holder, participationLabel, guestWrap].filter(Boolean).forEach(element => {
+                element.querySelectorAll('input, select, button').forEach(control => { control.disabled = true; });
+            });
+            const notice = document.createElement('p');
+            notice.className = 'fba-payment-locked-notice';
+            notice.setAttribute('role', 'status');
+            notice.textContent = 'Le paiement a été préparé avec les participants indiqués. Pour modifier la réservation, revenez à l’étape précédente puis recommencez le paiement.';
+            recap.before(notice);
+        };
+        const checkoutObserver = new MutationObserver(lockForPayment);
+        checkoutObserver.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['style']});
+        checkoutObservers.add(checkoutObserver);
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
             const guests = rows();
@@ -194,7 +217,7 @@
     });
     const observer = new MutationObserver(boot);
     observer.observe(document.documentElement, {childList:true,subtree:true});
-    window.addEventListener('pagehide', () => observer.disconnect());
+    window.addEventListener('pagehide', () => { observer.disconnect(); checkoutObservers.forEach(item => item.disconnect()); checkoutObservers.clear(); });
     window.addEventListener('pageshow', () => { observer.observe(document.documentElement, {childList:true,subtree:true}); boot(); });
     boot();
 })();
