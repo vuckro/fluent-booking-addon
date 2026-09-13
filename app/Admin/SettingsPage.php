@@ -77,7 +77,7 @@ final class SettingsPage
             $scope='calendar_event';$id=0;
             foreach(CalendarSlot::all() as $event) {if($event->isMultiGuestEvent() && self::allowed($scope,(int)$event->id)) {$id=(int)$event->id;break;}}
         }
-        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Modules</h1><p>Personnalisez les informations et les tarifs des invités de votre événement.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
+        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Modules</h1><p>Personnalisez vos emails et les réservations avec invités.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
         \WaasKit\FluentBooking\Emails\Appearance::render();
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
@@ -141,21 +141,21 @@ final class SettingsPage
 
     private function navigation(string $scope, int $id): void
     {
-        echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">À configurer</label><select id="fba-context" name="context">';
+        echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><div class="fba-context-primary"><label for="fba-context">À configurer</label><select id="fba-context" name="context">';
         foreach (CalendarSlot::all() as $event) {
             if ($event->isMultiGuestEvent() && self::allowed('calendar_event',(int)$event->id)) {
                 $calendar=Calendar::find($event->calendar_id);
                 $this->contextOption($event->title.' ('.($calendar->title??'').')','calendar_event',(int)$event->id,$scope,$id);
             }
         }
-        echo '</select> <button class="button" type="submit">Afficher les réglages</button>';
+        echo '</select><button class="button" type="submit">Afficher les réglages</button></div><div class="fba-context-shortcuts">';
         $this->calendarLink($scope, $id);
         if (self::allowed($scope, $id)) {
             $event=CalendarSlot::find($id);
             $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
             echo '<a class="button" href="'.esc_url($base.'question-settings').'">Réglages des invités</a><a class="button" href="'.esc_url($base.'payment-settings').'">Réglages du tarif de base</a>';
         }
-        echo '</form>';
+        echo '</div></form>';
         echo '<p class="description fba-context-help">Choisissez l’événement dont vous souhaitez personnaliser les invités. Les capacités, disponibilités et tarifs de base restent dans FluentBooking.</p>';
     }
 

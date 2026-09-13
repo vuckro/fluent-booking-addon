@@ -13,10 +13,13 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 body.fba-admin .fba-settings a { color:var(--fba-muted); text-underline-offset:3px; }
 body.fba-admin .fba-settings a:hover { color:var(--fba-text); }
 body.fba-admin .fba-settings a:focus-visible { outline:1px solid var(--fba-strong); outline-offset:3px; box-shadow:none; }
-.fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
+.fba-settings .fba-context { display:grid; gap:12px; margin:0 0 12px; }
 .fba-settings .fba-context > .description { flex-basis:100%; margin:0; }
-.fba-settings .fba-context > label { margin-right:2px; font-weight:600; }
-.fba-settings .fba-context select { width:340px; max-width:100%; }
+.fba-settings .fba-context-primary { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; }
+.fba-settings .fba-context-primary > label { font-weight:600; }
+.fba-settings .fba-context-shortcuts { display:flex; flex-wrap:wrap; gap:8px; }
+.fba-settings .fba-context-shortcuts:empty { display:none; }
+.fba-settings .fba-context select { width:100%; max-width:none; min-width:0; }
 .fba-settings .description { color:var(--fba-muted); font-size:12px; }
 .fba-settings .fba-card { background:var(--fba-surface); border:1px solid var(--fba-line); border-radius:8px; overflow:hidden; }
 .fba-settings .fba-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:24px; border-bottom:1px solid var(--fba-line); }
@@ -41,9 +44,10 @@ body.fba-admin .fba-settings .button:not(:disabled):focus-visible { outline:1px 
 @media(max-width:782px) {
  .fba-settings { margin:12px 10px 12px 0; padding:0 18px 18px; }
  .fba-settings .fba-header { align-items:flex-start; flex-direction:column; gap:12px; }
- .fba-settings .fba-context { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
- .fba-settings .fba-context > label,.fba-settings .fba-context .description { width:100%; margin:0; }
- .fba-settings .fba-context select { flex:1; min-width:0; }
+ .fba-settings .fba-context-primary { grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+ .fba-settings .fba-context-primary > label { grid-column:1 / -1; }
+ .fba-settings .fba-context-shortcuts .button { flex:1 1 180px; }
+
  .fba-settings .fba-card-header { padding:18px; }
  .fba-settings .fba-form { padding:0 18px; }
  .fba-settings .fba-card-footer { padding:16px 18px; }
@@ -173,4 +177,6 @@ html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30
 .fba-settings .fba-email-color-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
 .fba-settings .fba-email-color-row input[type=color] { margin:0; }
 .fba-settings .fba-email-form .description { margin:12px 0 0; line-height:1.6; }
-.fba-settings .fba-email-form .submit { margin:20px 0 0; padding-bottom:0; }
+.fba-settings .fba-email-form .submit { margin:24px 0 0; padding:20px 0 0; }
+
+@media(max-width:480px) { .fba-settings .fba-context-primary { grid-template-columns:minmax(0,1fr); } .fba-settings .fba-context-primary > label { grid-column:auto; } .fba-settings .fba-context-shortcuts { flex-direction:column; } .fba-settings .fba-context-shortcuts .button { flex:auto; } }
