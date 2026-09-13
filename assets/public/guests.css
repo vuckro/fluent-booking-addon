@@ -46,3 +46,7 @@
 
 .fba-verified-checkout > .label { display:none; }
 .fba-stripe-total { margin:0 0 12px; font-size:16px; color:var(--fcal_dark); }
+
+.fba-edit-checkout { border:0; padding:2px 6px; color:inherit; background:transparent; font:inherit; text-decoration:underline; cursor:pointer; }
+.fba-edit-checkout:disabled { opacity:.6; cursor:wait; }
+.fba-edit-checkout-help { display:block; margin-top:8px; }

@@ -94,3 +94,27 @@ Ces tests ne valident pas un débit bancaire, 3-D Secure, le webhook réel, le r
 ou la réception d'un email. Ces étapes restent à tester en mode test Stripe avant de
 qualifier une installation de production. Le cœur Pro installé localement contient des
 adaptations ; une autre version Pro doit repasser cette recette.
+
+## Modifier avant paiement — alpha.37
+
+`EditCheckout` expose une action AJAX POST publique limitée aux réservations de
+l'extension, principales, Stripe et impayées. Le hash de réservation est vérifié
+avant tout appel externe ; le client secret est ensuite comparé à Stripe et les
+métadonnées Stripe doivent pointer vers cette réservation. Les montants clients ne
+sont pas utilisés. Les appels Stripe sont construits sur un hôte fixe sans redirection.
+Un verrou par réservation sérialise les doubles demandes. L'annulation Stripe doit
+réussir avant la libération des places. Un nouvel appel peut terminer une tentative
+interrompue ou confirmer une annulation déjà effectuée sans nouvelle annulation Stripe.
+Aucun email d'annulation n'est envoyé pour cette tentative impayée.
+
+Le test `stripe-native-tariffs.php` couvre les capacités invalides, un intent lié à une
+autre réservation, les statuts non modifiables, une erreur Stripe, l'annulation des
+cinq scénarios tarifaires, la libération des places, la fermeture de commande et
+l'idempotence. Tous les accès externes sont interceptés et les données annulées.
+
+Avec `FBA_EDIT=1`, `native-stripe-dom.cjs` teste les doubles clics, l'erreur
+API, le bouton Modifier et la flèche native. Après succès, il vérifie l'appel au
+rechargement puis démarre un nouveau document jsdom avec le brouillon temporaire :
+coordonnées et participants sont restaurés, contrôles modifiables, ancien écran Stripe
+absent, brouillon consommé. jsdom simule le nouveau document car il ne sait pas naviguer.
+L'annulation auprès d'un compte Stripe test réel reste une vérification manuelle.

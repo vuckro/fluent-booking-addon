@@ -68,7 +68,18 @@ le récapitulatif reste visible et figé : le montant à payer vient de la répo
 vérifiée contre le PaymentIntent et les choix soumis. En cas de désaccord, Stripe ne
 s'ouvre pas et un message demande de contacter l'organisateur.
 
-L'extension ne propose pas de modifier une réservation dont le paiement est déjà
-préparé : elle ne crée pas automatiquement un second paiement ou une seconde
-réservation. Un abandon peut laisser une réservation en attente dans FluentBooking ;
-sa gestion doit être incluse dans la recette de l'installation.
+Le bouton « Modifier » annule d'abord le PaymentIntent Stripe impayé, puis ferme la
+commande et la réservation provisoires et libère leurs places. Le formulaire est
+rechargé : choisissez à nouveau un créneau et ajustez vos participants. Coordonnées
+et participants sont conservés dans cet onglet pour une seule reprise, pendant
+15 minutes au maximum ; aucune donnée de carte ni secret Stripe n'est conservé.
+Les places sont revérifiées à la nouvelle réservation et ne sont pas garanties
+pendant la modification. La tentative annulée reste dans l'historique.
+
+Un paiement effectué, en traitement ou autorisé en attente de capture ne peut pas
+être modifié ainsi. Si l'annulation échoue, le formulaire ne redémarre pas. La flèche
+de retour native utilise la même procédure. Cette fonctionnalité concerne uniquement
+le formulaire Stripe intégré ; elle ne modifie pas une réservation déjà confirmée.
+Un abandon sans utiliser ce bouton relève toujours de l'expiration native FluentBooking.
+
+L'annulation est conforme à l'[API PaymentIntent Stripe](https://docs.stripe.com/api/payment_intents/cancel).

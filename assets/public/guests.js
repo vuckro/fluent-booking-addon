@@ -31,6 +31,14 @@
         const format = cents => new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
         const nativeTariffs = Array.isArray(config.tariffs);
         const structuredPayload = nativeTariffs || !!config.structuredPayload || !!config.allowNonparticipating;
+        const draftKey = 'fba_checkout_draft_' + id;
+        let draft = null;
+        try {
+            const stored = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
+            if (stored && Date.now() - stored.created < 15 * 60 * 1000 && stored.created <= Date.now()) draft = stored;
+            sessionStorage.removeItem(draftKey);
+        } catch (_) { /* Storage is optional during a normal booking. */ }
+        if (draft && typeof draft.payload === 'string') transport.value = draft.payload;
         let saved = null;
         try { saved = transport.value ? JSON.parse(transport.value) : null; } catch (_) { /* A fresh form has no payload. */ }
         let restoring = !!saved;
@@ -152,6 +160,50 @@
                 const total = document.createElement('h3'); total.className = 'fba-stripe-total';
                 total.textContent = 'Montant à payer : ' + format(cents); processor.prepend(total);
                 notice.textContent = 'Les participants et le montant sont confirmés pour ce paiement.';
+                const edit = document.createElement('button'); edit.type = 'button';
+                edit.className = 'fba-edit-checkout'; edit.textContent = 'Modifier';
+                edit.title = 'Annuler le paiement en attente et modifier la réservation';
+                const help = document.createElement('span'); help.className = 'fba-edit-checkout-help';
+                help.textContent = 'Pour modifier, le paiement en attente sera annulé. Vous choisirez à nouveau un créneau ; vos coordonnées et participants seront conservés.';
+                let editing = false;
+                const editCheckout = async () => {
+                    if (editing) return;
+                    // Only non-payment fields are retained in this tab. Never
+                    // read Stripe iframes, billing inputs or client secrets.
+                    const contact = {};
+                    root.querySelectorAll('.fcal_form_item input[id]').forEach(input => {
+                        if (['text','email','tel'].includes(input.type) && input !== transport
+                            && !input.closest('.fba-payment-methods, .fluent_booking_payment_processor')) contact[input.id] = input.value;
+                    });
+                    const snapshot = JSON.stringify({created:Date.now(), payload:transport.value, contact});
+                    try { sessionStorage.setItem(draftKey + '_check', '1'); sessionStorage.removeItem(draftKey + '_check'); }
+                    catch (_) { help.textContent = 'Le navigateur ne permet pas de conserver vos informations. Contactez l’organisateur pour modifier cette réservation.'; return; }
+                    editing = true; edit.disabled = true; edit.textContent = 'Annulation du paiement…';
+                    processor.inert = true;
+                    try {
+                        const body = new URLSearchParams({action:'fba_edit_checkout', booking_id:response.data.id,
+                            booking_hash:response.data.hash, intent_id:intent.id, client_secret:intent.client_secret});
+                        const result = await fetch(window.fluentCalendarPublicVars.ajaxurl, {method:'POST', credentials:'same-origin', body});
+                        const json = await result.json();
+                        if (!result.ok || !json.success) throw new Error(json.data?.message || 'La modification n’a pas pu être préparée. Réessayez.');
+                        sessionStorage.setItem(draftKey, snapshot);
+                        // A new native form and Stripe instance avoid stale Svelte
+                        // checkout state. The cancelled intent cannot be charged.
+                        window.location.reload();
+                    } catch (error) {
+                        help.textContent = error.message || 'Impossible de contacter le service. Réessayez.';
+                        help.setAttribute('role','alert');
+                        processor.inert = false;
+                        editing = false; edit.disabled = false; edit.textContent = 'Réessayer la modification';
+                    }
+                };
+                edit.addEventListener('click', editCheckout);
+                notice.append(document.createTextNode(' '), edit);
+                notice.append(help);
+                // Route the native back arrow through the same cancellation.
+                const back = root.closest('.fluent_booking_app')?.querySelector('.fcal_back button');
+                back?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); editCheckout(); }, true);
+
             }
             recap.after(notice);
         });
@@ -271,6 +323,12 @@
                 });
             });
         }
+        if (draft?.contact) Object.entries(draft.contact).forEach(([inputId, value]) => {
+            const input = document.getElementById(inputId);
+            if (input && root.contains(input) && ['text','email','tel'].includes(input.type) && typeof value === 'string') {
+                input.value = value; input.dispatchEvent(new Event('input', {bubbles:true}));
+            }
+        });
         restoring = false; update();
         });
     };
