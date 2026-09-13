@@ -45,7 +45,7 @@
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
         const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
-            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter un participant'; add.className = 'fba-add-guest';
+            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter une personne'; add.className = 'fba-add-guest';
             guestWrap.append(add);
             const payment = root.querySelector('.fcal_payment_items');
             const paymentItem = payment?.closest('.fcal_form_item');
