@@ -9,7 +9,7 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings h2 { color:var(--fba-text); font-size:18px; margin:0 0 18px; }
 .fba-settings p { line-height:1.6; }
 .fba-settings .fba-header p { margin:6px 0 0; color:var(--fba-muted); }
-.fba-settings .fba-header > a { font-size:12px; text-decoration:none; padding:6px 10px; border:1px solid var(--fba-line); border-radius:6px; white-space:nowrap; }
+.fba-settings .fba-header > a { font-size:12px; text-decoration:none; padding:6px 10px; border-radius:6px; white-space:nowrap; }
 body.fba-admin .fba-settings a { color:var(--fba-muted); text-underline-offset:3px; }
 body.fba-admin .fba-settings a:hover { color:var(--fba-text); }
 body.fba-admin .fba-settings a:focus-visible { outline:1px solid var(--fba-strong); outline-offset:3px; box-shadow:none; }
