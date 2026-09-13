@@ -180,3 +180,7 @@ html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30
 .fba-settings .fba-email-form .submit { margin:24px 0 0; padding:20px 0 0; }
 
 @media(max-width:480px) { .fba-settings .fba-context-primary { grid-template-columns:minmax(0,1fr); } .fba-settings .fba-context-primary > label { grid-column:auto; } .fba-settings .fba-context-shortcuts { flex-direction:column; } .fba-settings .fba-context-shortcuts .button { flex:auto; } }
+
+.fba-settings .fba-guest-header { flex-wrap:wrap; align-items:center; }
+.fba-settings .fba-card-actions { display:flex; flex-wrap:wrap; gap:8px; }
+body.fba-admin .fba-settings .fba-card-actions .button { min-height:36px; padding:6px 12px; font-size:12px; }

@@ -91,7 +91,9 @@ final class SettingsPage
         }
         if (isset($_GET['saved'])) { echo '<div class="notice notice-success inline"><p>Réglages enregistrés.</p></div>'; }
         if (!CalendarSlot::find($id)->isMultiGuestEvent()) {echo '<p>La personnalisation est disponible sur les événements de groupe.</p></div>';return;}
-        echo '<section class="fba-card"><header class="fba-card-header"><div><h3>Invités et tarifs</h3><p>Les places et le maximum de personnes se règlent dans FluentBooking.</p></div></header>';
+        $event=CalendarSlot::find($id);
+        $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
+        echo '<section class="fba-card"><header class="fba-card-header fba-guest-header"><div><h3>Invités et tarifs</h3><p>Les places et le maximum de personnes se règlent dans FluentBooking.</p></div><div class="fba-card-actions"><a class="button" href="'.esc_url($base.'question-settings').'">Réglages des invités</a><a class="button" href="'.esc_url($base.'payment-settings').'">Réglages du tarif de base</a></div></header>';
         echo '<form class="fba-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field('waaskit_fb_save_' . $scope . '_' . $id);
         foreach (['action' => 'waaskit_fb_save', 'scope' => $scope, 'object_id' => $id, 'revision' => $stored['revision']] as $key => $value) {
@@ -150,11 +152,6 @@ final class SettingsPage
         }
         echo '</select><button class="button" type="submit">Afficher les réglages</button></div><div class="fba-context-shortcuts">';
         $this->calendarLink($scope, $id);
-        if (self::allowed($scope, $id)) {
-            $event=CalendarSlot::find($id);
-            $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
-            echo '<a class="button" href="'.esc_url($base.'question-settings').'">Réglages des invités</a><a class="button" href="'.esc_url($base.'payment-settings').'">Réglages du tarif de base</a>';
-        }
         echo '</div></form>';
         echo '<p class="description fba-context-help">Choisissez l’événement dont vous souhaitez personnaliser les invités. Les capacités, disponibilités et tarifs de base restent dans FluentBooking.</p>';
     }
