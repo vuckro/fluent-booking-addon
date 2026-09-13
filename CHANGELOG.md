@@ -1,3 +1,10 @@
+## 4.0.0-alpha.30
+
+- Description informative lors de la création d’événements de groupe Google et Outlook : distinction entre contacts invités et participants, lien vers les réservations protégées de l’administration.
+- Aucun nom, âge, réponse, tarif individuel ou lien de confirmation personnel ajouté à l’événement partagé.
+- Conservation des invitations, statuts RSVP, dates, titre et contenus préexistants ; aucun compteur dynamique susceptible de devenir périmé.
+- Événements distants existants inchangés. Pas de synchronisation rétroactive ni d’extension Apple/Nextcloud dans cette version.
+
 ## 4.0.0-alpha.29
 
 - Les fiches natives affichent le réservant, sa participation, les participants, leurs tarifs et leurs réponses conservées.

@@ -1,4 +1,4 @@
-# Tests — alpha.29
+# Tests — alpha.30
 
 Exécuter depuis la racine du plugin avec PHP 8.1+ ; les intégrations refusent un site autre que localhost/127.0.0.1. Configurer le socket MySQL de PHP si Local le nécessite.
 
@@ -49,3 +49,5 @@ Total actuel : **189 contrôles PHP et 8 scénarios DOM réussis**. Les 22 nouve
 **200 contrôles PHP réussis.** Le test AJAX couvre maintenant les données transmises aux vues natives, les réponses de chaque invité, le lien enfant → réservant, la confirmation et son titre de facturation. Les contacts, tarifs et réponses historiques ne sont pas réécrits. Les réservations locales existantes 417, 418 et 419 ont aussi été vérifiées en lecture seule : Marie, 8 ans ; Jean, 10 ans ; Papa non participant.
 
 La liste native conserve le nom du contact de la réservation principale (Papa). Déplier sa ligne affiche « Réservé par : Papa — ne participe pas » puis « Participant : Jean », son tarif et son âge. Cela préserve les coordonnées utilisées pour la facturation et les communications. Les intégrations externes continuent d’utiliser ce contact natif. Aucun nouveau test visuel navigateur ni test de réception des emails n’est revendiqué.
+
+Alpha.30 : ajout de `php tests/calendar-presentation.php` (24 contrôles), et de 4 contrôles des hooks connectés dans le parcours AJAX. Voir [le périmètre des agendas connectés](agendas-connectes.md).

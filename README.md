@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.29**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.30**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
 Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 
@@ -15,6 +15,7 @@ Nouvelle option facultative : **[Réserver pour d’autres personnes](docs/reser
 
 - [Guide des tarifs et informations](docs/tarifs-par-personne.md)
 - [Recette avant main et limites de validation](docs/recette-finale.md)
+- [Agendas connectés et confidentialité](docs/agendas-connectes.md)
 - [Commandes de test](docs/validation.md)
 - [Migration depuis la v3 ou les anciennes alphas](docs/migration.md)
 - [Architecture](docs/architecture.md)

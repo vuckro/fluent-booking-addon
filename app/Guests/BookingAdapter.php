@@ -54,6 +54,7 @@ final class BookingAdapter
         add_filter('fluent_booking/create_draft_order',[$this,'order'],100,4);
         add_action('fluent_booking/after_order_items_created',[$this,'orderItems'],100,4);
         (new BookingPresentation())->register();
+        (new CalendarPresentation())->register();
         register_shutdown_function([$this,'unlock']);
         Booking::updated([AttachedSeats::class,'sync']);
         Booking::deleting([AttachedSeats::class,'remove']);

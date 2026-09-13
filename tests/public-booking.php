@@ -72,6 +72,10 @@ try {
         check($status===200, 'public AJAX accepts '.($attends?'attending':'nonparticipating').' contact: '.($response['message']??''));
         $booking=Booking::where('hash',$response['booking_hash'])->firstOrFail();
         $snapshot=$booking->getMeta(BookingAdapter::META,[]);
+        $google=apply_filters('fluent_booking/google_event_data',['summary'=>'Group'], $booking, []);
+        check(str_contains($google['description']??'', 'Réservation de groupe') && !str_contains($google['description'],$guest['name']),'registered Google hook describes real booking without personal data');
+        $outlook=apply_filters('fluent_booking/outlook_event_data',['subject'=>'Group'], $booking);
+        check(str_contains($outlook['body']['content']??'', 'droits d’accès requis'),'registered Outlook hook provides protected organizer access');
         check($snapshot['guests'][0]['name']===$guest['name'],'accents, apostrophes, quotes and backslashes survive request and storage');
         check($snapshot['count']===($attends?2:1) && 1+Booking::where('parent_id',$booking->id)->count()===($attends?2:1),'public reservation uses only participant seats');
         $order=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($booking,$event,['quantity'=>999]);
