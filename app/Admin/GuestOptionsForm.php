@@ -9,7 +9,8 @@ final class GuestOptionsForm
         $raw=$post['guest_options']??[];
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
-        foreach(['enabled','per_person_seats','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        foreach(['enabled','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        $value['per_person_seats']=true; // Legacy storage key; a person always occupies one seat.
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}
@@ -26,9 +27,8 @@ final class GuestOptionsForm
     {
         echo '<fieldset class="fba-policy fba-guest-options"><legend>Réserver avec des invités</legend>';
         foreach(['enabled'=>['Personnaliser la réservation avec invités','Active les options ci-dessous pour cet événement de groupe.'],
-            'per_person_seats'=>['Décompter une place par personne','Vérifie une place pour vous et chaque invité. Ce comptage reste indépendant des prix. Les invités sans identité gardent toujours ce contrôle ; sinon, décocher conserve le contrôle natif.'],
             'per_person_price'=>['Multiplier le prix par le nombre de personnes','Coché : chaque personne part du tarif de base. Décoché : seul le réservant paie ce tarif. Les choix tarifaires des invités s’appliquent ensuite.']] as $key=>[$label,$help]) {
-            if($key==='per_person_seats') {echo '<div class="fba-guest-details"'.(!$options['enabled']?' hidden':'').'>'; }
+            if($key==='per_person_price') {echo '<div class="fba-guest-details"'.(!$options['enabled']?' hidden':'').'>'; }
             echo '<label class="fba-choice"><input type="checkbox" name="guest_options['.esc_attr($key).']" value="1"'.checked($options[$key],true,false).'><span><strong>'.esc_html($label).'</strong><span class="description">'.esc_html($help).'</span></span></label>';
         }
         foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
@@ -36,7 +36,7 @@ final class GuestOptionsForm
             foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
             echo '</select></label>';
         }
-        echo '<p class="description">Si une identité est facultative ou masquée, les invités sont rattachés au réservant : celui-ci reçoit les communications du groupe.</p>';
+        echo '<p class="description">Chaque personne occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
         echo '<h3>Options et informations par invité</h3><p class="description">Ajoutez un choix de tarif, une option ou une information utile pour chaque invité.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}
         echo '</div><button type="button" class="button fba-add-field">Ajouter un champ</button><template id="fba-field-template">';

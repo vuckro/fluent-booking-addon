@@ -1,4 +1,4 @@
-# Invités — alpha.19
+# Invités — alpha.20
 
 ## Utilisation
 
@@ -6,7 +6,7 @@ Dans Modules, sélectionner l’événement de groupe, puis cocher **Personnalis
 
 1. Activer aussi **Invités supplémentaires** dans les questions FluentBooking, via le lien proposé.
 2. Choisir éventuellement un maximum par réservation : réservant compris. Cette limite reste indépendante de la capacité du créneau.
-3. Garder **Décompter une place par personne** coché. Les réservations natives représentent les places, sans double stock. Décoché, le fonctionnement natif demeure ; les invités sans identité gardent obligatoirement un contrôle de capacité pour éviter la surréservation.
+3. Chaque personne occupe automatiquement une place. La case de décompte a été supprimée ; les réservations natives restent la source des places disponibles.
 4. Choisir si le tarif de base s’applique à chaque personne ou une seule fois à la réservation.
 5. Choisir séparément pour le nom et le courriel : **Obligatoire**, **Facultatif** ou **Masqué**.
 6. Ajouter si nécessaire un champ : liste déroulante, boutons radio, case à cocher, texte ou nombre. Chaque champ possède un libellé et peut être obligatoire.
@@ -27,7 +27,7 @@ Un seul champ peut remplacer le tarif afin d’éviter deux remplacements contra
 
 ## Identités et places
 
-Si nom et courriel sont obligatoires, le parcours natif des invités est conservé. Si l’un devient facultatif ou masqué, le formulaire utilise des invités rattachés au réservant : aucun faux e-mail, aucun contact automatique, aucune notification individuelle. Le courriel facultatif est validé lorsqu’il est renseigné et conservé avec les réponses. Le réservant reçoit les communications du groupe.
+Le formulaire personnalisé utilise toujours des invités rattachés au réservant, quel que soit le mode d’identité : aucun faux e-mail, aucun contact automatique, aucune notification individuelle. Le courriel facultatif est validé lorsqu’il est renseigné et conservé avec les réponses. Le réservant reçoit les communications du groupe.
 
 Chaque invité rattaché dispose d’une ligne de place native liée au réservant. Annuler ou supprimer le réservant libère aussi ces places. Une catégorie ou un prix nul ne change jamais le nombre de places. Le contrôle serveur utilise un verrou par événement et début de créneau. Il ne constitue pas une transaction globale couvrant toutes les intégrations externes et les paiements.
 
@@ -40,3 +40,7 @@ Les réponses, les tarifs en centimes et le total sont validés côté serveur e
 - Les reports et réactivations sont bloqués tant qu’un parcours adapté n’est pas disponible. Les annulations restent possibles.
 - La saisie de l’âge ne modifie pas automatiquement les tarifs. Pas de règles conditionnelles entre champs ni de réduction de places selon une catégorie.
 - Tests serveur et DOM effectués. Une recette du vrai formulaire Svelte, des intégrations tierces et de Stripe en mode test reste nécessaire avant production. Aucun paiement réel n’a été effectué.
+
+## Limite native et limite historique
+
+FluentBooking possède déjà une capacité de créneau et une limite dans Invités supplémentaires. Le réglage historique de limite de l’add-on est encore conservé pour ne pas augmenter les valeurs existantes. Sa suppression implique de reporter chaque limite effective vers les questions natives ; aucune migration automatique n’a été faite dans cette version.

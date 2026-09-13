@@ -59,7 +59,7 @@ final class SettingsForm
             echo '<label class="fba-choice"><input type="radio" name="policy" value="' . esc_attr($value) . '"' . checked($mode, $value, false) . '><span><strong>' . esc_html($title) . '</strong><span class="description">' . esc_html($description) . '</span></span></label>';
         }
         $maximum = (int) $effective['max_participants']['value'];
-        echo '<div class="fba-maximum"><label for="fba-maximum">Maximum de personnes</label> <input type="number" class="small-text" id="fba-maximum" name="max_participants" min="1" max="1000" step="1" value="' . ($maximum > 0 ? esc_attr((string) $maximum) : '') . '" placeholder="Ex. 4" aria-describedby="fba-limit-help"><p class="description" id="fba-limit-help">Exemple : 4 permet à une personne de réserver pour elle et 3 invités. Ce nombre sert uniquement si vous choisissez de fixer un maximum.</p></div></fieldset>';
+        echo '<div class="fba-maximum"><label for="fba-maximum">Maximum de personnes</label> <input type="number" class="small-text" id="fba-maximum" name="max_participants" min="1" max="1000" step="1" value="' . ($maximum > 0 ? esc_attr((string) $maximum) : '') . '" placeholder="Ex. 2" aria-describedby="fba-limit-help"><p class="description" id="fba-limit-help">Exemple : 2 permet à une personne de réserver pour elle et 1 invité. Ce nombre sert uniquement si vous choisissez de fixer un maximum.</p></div></fieldset>';
         echo '<div class="fba-effective"><strong>Réglage actuellement enregistré : </strong>' . esc_html(self::summary($effective)) . '.<p class="description">Vos changements seront appliqués après enregistrement.</p></div>';
     }
 }

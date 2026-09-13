@@ -47,6 +47,8 @@ try {
  check(!is_wp_error($native),'priced choices also work with mandatory native identities');
  $nativeOrder=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($native,$event,['quantity'=>3]);
  check((int)$nativeOrder->total_amount===13500 && (int)$native->getMeta('quantity',0)===1,'native guest quantity cannot multiply priced choices twice');
+ (new WaasKit\FluentBooking\Infrastructure\Privacy())->erase('fba-holder@example.invalid');
+ check(Booking::where('parent_id',$native->id)->where('first_name','Invité')->count()===2,'erasure removes guest names from native seat records too');
  $badOptions=$options;$badOptions['fields'][1]['pricing']='replace';
  try {Options::validate($badOptions);throw new RuntimeException('Two replacements accepted');} catch(InvalidArgumentException $e) {check(true,'conflicting replacement fields rejected');}
 } finally {$wpdb->query('ROLLBACK');wp_cache_flush();}

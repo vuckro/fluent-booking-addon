@@ -53,18 +53,26 @@ final class BookingAdapter
     {
         $options=$this->options((int)$event->id);
         if(!$options['enabled']) {return $vars;}
-        $attached=Identity::attached($options);
-        $limit=10;
-        foreach($vars['form_fields'] as &$field) {if(($field['name']??'')==='guests') {$limit=empty($field['enabled'])?1:(int)($field['limit']??10); if($attached) {$field['enabled']=false;$field['required']=false;}}} unset($field);
+        foreach($vars['form_fields'] as &$field) {if(($field['name']??'')==='guests') {$field['enabled']=false;$field['required']=false;}} unset($field);
         $vars['form_fields'][]=['name'=>'fba_extra_'.$event->id,'type'=>'text','label'=>'','required'=>false,'enabled'=>true,'system_defined'=>true];
         $price=0;
         foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
-        $config=['attached'=>$attached,'limit'=>$limit,'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'seats'=>$options['per_person_seats'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
+        $config=['limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
         $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
         wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION,true);
         wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION);
         wp_add_inline_script('fba-guests','window.fbaGuestForms=window.fbaGuestForms||{};window.fbaGuestForms['.(int)$event->id.']='.wp_json_encode($config).';','before');
         return $vars;
+    }
+    private function guestLimit($event): int
+    {
+        $limit=1;
+        foreach($event->getBookingFields() as $field) {
+            if(($field['name']??'')==='guests' && !empty($field['enabled'])) {$limit=max(1,(int)($field['limit']??10));}
+        }
+        $settings=$this->store->effective('calendar_event',(int)$event->id);
+        if($settings['enabled']['value'] && $settings['max_participants']['value']>0) {$limit=min($limit,$settings['max_participants']['value']);}
+        return min($limit,(int)$event->getMaxBookingPerSlot());
     }
     public function validate($data,$event,$custom,$input)
     {
@@ -78,36 +86,19 @@ final class BookingAdapter
             if(($event->getPaymentSettings()['driver']??'native')!=='native') {throw new \RuntimeException('Ces options utilisent les paiements natifs FluentBooking, pas WooCommerce.');}
             if($event->isPaymentEnabled($data['slot_minutes']??null) && !in_array($data['payment_method']??'', ['stripe','offline'],true)) {throw new \RuntimeException('Ce mode prend en charge Stripe et le paiement hors ligne.');}
             if(!empty($input['coupon_codes']) || !empty($data['applied_coupons'])) {throw new \RuntimeException('Les coupons ne sont pas encore pris en charge avec ces options invités.');}
-            $attached=Identity::attached($options);
-            $attachedRows=$attached?Identity::rows($input['_fba_extras']??'[]',$options):[];
-            if($attached && (is_array($data['email']) || !empty($input['additional_guests']))) {throw new \RuntimeException('Utilisez le formulaire d’invités de cette réservation.');}
-            if(array_filter($options['fields'],static fn($f)=>($f['pricing']??'none')!=='none') && !$event->isPaymentEnabled($data['slot_minutes']??null)) {throw new \RuntimeException('Activez un tarif de réservation et un paiement natif avant d’utiliser des choix payants.');}
-            if(array_filter($options['fields'],static fn($f)=>($f['pricing']??'none')!=='none') && count($event->getPaymentItems())!==1) {throw new \RuntimeException('Les choix tarifaires nécessitent un seul tarif de base FluentBooking.');}
-            $emails=(array)$data['email'];$names=(array)$data['first_name'];
-            if(count($emails)!==count($names) || !$emails) {throw new \RuntimeException('Identités des invités invalides.');}
-            $count=count($emails);$holder=array_key_last($emails);$guests=[];
-            foreach($emails as $i=>$email) {
-                if(!is_string($email) || !is_email($email) || !is_string($names[$i]) || trim($names[$i])==='') {throw new \RuntimeException('Chaque personne doit avoir un nom et un e-mail valide.');}
-                if($i!==$holder) {$guests[]=['email'=>$email,'name'=>$names[$i]];}
+            $priced=(bool)array_filter($options['fields'],static fn($field)=>($field['pricing']??'none')!=='none');
+            $paymentItems=$event->getPaymentItems();
+            if($priced && (!$event->isPaymentEnabled($data['slot_minutes']??null) || count($paymentItems)!==1)) {
+                throw new \RuntimeException('Les choix payants nécessitent un tarif de base unique et un paiement natif activé.');
             }
-            if(count(array_unique(array_map('strtolower',$emails)))!==$count) {throw new \RuntimeException('Utilisez un e-mail distinct pour chaque personne.');}
-            if((int)($input['_fba_requested_count']??$count)>$count) {throw new \RuntimeException('Des invités dépassent la limite ou les places restantes. Aucun invité ne doit être retiré silencieusement.');}
-            $raw=$input['_fba_extras']??'[]';
-            if(!is_string($raw) || strlen($raw)>30000) {throw new \RuntimeException('Informations invités invalides.');}
-            $rows=json_decode($raw,true,16,JSON_THROW_ON_ERROR);
-            if(!is_array($rows)) {throw new \RuntimeException('Informations invités invalides.');}
-            if(!$attached && $raw!=='[]' && count($rows)!==count($guests)) {throw new \RuntimeException('Vérifiez les informations de chaque invité.');}
-            if(!$options['fields']) {$rows=array_map(static fn($g)=>['email'=>$g['email'],'fields'=>[]],$guests);}
-            $answers=$attached?[]:Options::answers($rows,$guests,$options['fields']);
-            if($attached) {
-                $guests=$attachedRows; $count=count($guests)+1;
-                $answers=Options::answers($attachedRows,$guests,$options['fields']);
-                $effective=$this->store->effective('calendar_event',(int)$event->id);
-                $maximum=$effective['enabled']['value']?$effective['max_participants']['value']:0;
-                if($maximum>0 && $count>$maximum) {throw new \RuntimeException('La limite de personnes par réservation est dépassée.');}
-                $nativeLimit=1;
-                foreach($event->getBookingFields() as $field) {if(($field['name']??'')==='guests' && !empty($field['enabled'])) {$nativeLimit=(int)($field['limit']??10);}}
-                if($count>$nativeLimit) {throw new \RuntimeException('Activez les invités supplémentaires et vérifiez leur limite dans les questions FluentBooking.');}
+            $rows=Identity::request($data,$input,$options);
+            if(!is_string($data['email']) || !is_email($data['email']) || !is_string($data['first_name']) || trim($data['first_name'])==='') {
+                throw new \RuntimeException('Le réservant doit indiquer un nom et un courriel valide.');
+            }
+            $answers=Options::answers($rows,$rows,$options['fields']);
+            $count=count($answers)+1;
+            if($count>$this->guestLimit($event)) {
+                throw new \RuntimeException('Le nombre de personnes dépasse la limite de cette réservation. Vérifiez les invités supplémentaires et le maximum autorisé.');
             }
             $quantity=$options['per_person_price']?$count:1;
             // Serialize admission on this event and exact native slot. Native records remain stock.
@@ -119,14 +110,13 @@ final class BookingAdapter
             }
             $used=Booking::where('event_id',$event->id)->where('start_time',$data['start_time'])->whereIn('status',['pending','scheduled','approved','completed'])->count();
             $seats=$count;
-            if(($options['per_person_seats'] || $attached) && $used+$seats>(int)$event->getMaxBookingPerSlot()) {throw new \RuntimeException('Il ne reste pas assez de places pour cette réservation.');}
+            if($used+$seats>(int)$event->getMaxBookingPerSlot()) {throw new \RuntimeException('Il ne reste pas assez de places pour cette réservation.');}
             $items=[];
-            foreach($event->getPaymentItems() as $item) {$items[]=['title'=>$item['title'],'cents'=>(int)round((float)$item['value']*100)];}
+            foreach($paymentItems as $item) {$items[]=['title'=>$item['title'],'cents'=>(int)round((float)$item['value']*100)];}
             $quote=Pricing::quote(array_sum(array_column($items,'cents')),$options,$answers);
-            $priced=(bool)array_filter($options['fields'],static fn($f)=>($f['pricing']??'none')!=='none');
             if($priced) {$items=[['title'=>'Réservation — '.$count.' personne(s)','cents'=>$quote['total']]];$quantity=1;}
             $token=wp_generate_uuid4();
-            $this->pending[$token]=['attached'=>$attached,'guest_amounts'=>$quote['guests'],'holder'=>$emails[$holder],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
+            $this->pending[$token]=['attached'=>true,'guest_amounts'=>$quote['guests'],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
             $data['_fba_token']=$token;
             $data['quantity']=$quantity;
             return $data;
@@ -137,13 +127,8 @@ final class BookingAdapter
         $token=$data['_fba_token']??'';
         if(!isset($this->pending[$token])) {return;}
         $snapshot=$this->pending[$token];
-        // Mark all child seats too, so unsupported reschedules cannot desynchronize a party.
-        if(strtolower($booking->email)!==strtolower($snapshot['holder'])) {
-            $own=array_values(array_filter($snapshot['guests'],static fn($g)=>strtolower($g['email'])===strtolower($booking->email)));
-            Helper::updateBookingMeta($booking->id,self::META,['seat'=>true,'guests'=>$own,'fields'=>$snapshot['fields']]);return;
-        }
-        if(!empty($snapshot['attached'])) {AttachedSeats::create($booking,$snapshot);}
-        unset($snapshot['holder'],$snapshot['lock']);
+        AttachedSeats::create($booking,$snapshot);
+        unset($snapshot['lock']);
         Helper::updateBookingMeta($booking->id,self::META,$snapshot);
         Helper::updateBookingMeta($booking->id,'quantity',$snapshot['quantity']);
         if($booking->getMeta(self::META,[])!==$snapshot) {throw new \RuntimeException('Les informations des invités n’ont pas pu être enregistrées.');}
@@ -172,8 +157,8 @@ final class BookingAdapter
         if(empty($snapshot['guests'])) {return;}
         echo '<section class="fba-booked-guests"><h3>Invités</h3><ul>';
         $labels=array_column($snapshot['fields'],'label','id');
-        foreach($snapshot['guests'] as $guest) {
-            echo '<li>'.esc_html($guest['name']);
+        foreach($snapshot['guests'] as $index=>$guest) {
+            echo '<li>'.esc_html($guest['name']?:'Invité '.($index+1));
             foreach($guest['fields'] as $id=>$value) {if($value!=='') {echo ' · '.esc_html(($labels[$id]??$id).' : '.$value);}}
             echo '</li>';
         }

@@ -1,5 +1,14 @@
 # 4.0.0-alpha.18
 
+## 4.0.0-alpha.20
+
+- Un seul formulaire et parcours pour les invités personnalisés, indépendamment des identités demandées.
+- Décompte automatique : une personne = une place ; suppression de la case ambiguë.
+- Même plafond au formulaire et au serveur, incluant la capacité native.
+- Suppression des manipulations des lignes Svelte et restauration de l’observation après retour navigateur.
+- Effacement des noms dans les places natives rattachées, en plus des réponses enregistrées.
+- Limites historiques conservées en attendant leur migration vers FluentBooking.
+
 ## 4.0.0-alpha.19
 
 - Options invités affichées uniquement après activation.

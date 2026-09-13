@@ -1,3 +1,5 @@
+Alpha.20 : parcours invités unifié, décompte automatique, suppression du couplage aux lignes Svelte, limites historiques conservées. Guide : [utilisation](invites-et-evolutions.md).
+
 Mise à jour alpha.19 : identité des invités facultative ou masquée, champs et choix tarifaires, affichage conditionnel. Voir [le guide actuel](invites-et-evolutions.md).
 
 > Alpha.18 : voir [le guide des options invités](invites-et-evolutions.md) pour les fonctionnalités ajoutées après le nettoyage décrit ci-dessous.

@@ -39,6 +39,7 @@ final class Privacy
             if(!empty($new['guests'])) {
                 $changed=false;$owner=$this->owned($booking,$email);
                 foreach($new['guests'] as &$guest) {if($owner || strcasecmp($guest['email']??'',$email)===0) {$guest['name']='';$guest['email']='';$guest['fields']=[];$changed=true;}} unset($guest);
+                if($changed && !empty($new['attached_seat'])) {Booking::where('id',$booking->id)->update(['first_name'=>'Invité','last_name'=>'']);}
                 if($changed) {Helper::updateBookingMeta($booking->id,\WaasKit\FluentBooking\Guests\BookingAdapter::META,$new);$removed=true;}
             }
             $q=$this->owned($booking,$email)?$booking->getMeta(RetiredProfiles::META,[]):[];if(!$q) {continue;}

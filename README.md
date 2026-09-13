@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.19** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
+Version **4.0.0-alpha.20** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
 
 Limite par réservation et options d’invités pour les événements de groupe : places par personne, prix proportionnel ou forfaitaire, identités facultatives ou masquées, et champs avec suppléments ou tarifs par choix. Le moteur utilise les réservations et commandes natives, sans table de stock parallèle. Les anciens moteurs expérimentaux restent retirés.
 

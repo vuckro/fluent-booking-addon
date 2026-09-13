@@ -1,8 +1,6 @@
-/* Extend native guest rows; the native form still owns submission and payment selection. */
+/* One guest form; FluentBooking still owns holder details, submission and payment. */
 (() => {
     const mounted = new WeakSet();
-    const observers = [];
-    window.addEventListener('pagehide', () => observers.forEach(observer => observer.disconnect()), {once:true});
     const boot = () => document.querySelectorAll('input[id^="fcalInputIDfba_extra_"]').forEach(transport => {
         if (mounted.has(transport)) return;
         const id = transport.id.replace('fcalInputIDfba_extra_', '');
@@ -15,9 +13,7 @@
         const summary = document.createElement('p');
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
-        let guestWrap = root.querySelector('.fcal_input_multi_guests_wrap');
-        if (config.attached) {
-            guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
+        const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
             const add = document.createElement('button'); add.type = 'button'; add.textContent = 'Ajouter un invité'; add.className = 'fba-add-guest';
             guestWrap.append(add); transport.closest('.fcal_form_item').before(guestWrap);
             add.addEventListener('click', () => {
@@ -26,16 +22,15 @@
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
                 ['name','email'].forEach(key => {
                     const label = document.createElement('label'); label.textContent = key === 'name' ? 'Nom de l’invité' : 'Courriel de l’invité';
-                    const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200;
+                    const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200; input.dataset.fbaIdentity = key;
                     input.required = config[key+'Mode'] === 'required'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
                 });
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Supprimer cet invité';
                 remove.addEventListener('click', () => { row.remove(); update(); }); row.append(remove);
-                guestWrap.insertBefore(row, add); update(); row.querySelector('input:not([type=hidden])')?.focus();
+                guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
-        }
-        (guestWrap || transport.closest('.fcal_form_item')).after(summary);
-        const rows = () => [...root.querySelectorAll('.fcal_multi_guest_input')];
+        guestWrap.after(summary);
+        const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
             const guests = rows();
@@ -70,11 +65,11 @@
                 });
                 row.append(panel);
             });
-            const payload = guests.map(row => ({name: row.querySelector('input[type=text]')?.value || '', email: row.querySelector('input[type=email]')?.value || '', fields: read(row)}));
+            const payload = guests.map(row => ({name: row.querySelector('[data-fba-identity=name]')?.value || '', email: row.querySelector('[data-fba-identity=email]')?.value || '', fields: read(row)}));
             const serialized = JSON.stringify(payload);
             if (transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
             const people = guests.length + 1;
-            if (config.attached) guestWrap.querySelector('.fba-add-guest').disabled = people >= config.limit;
+            guestWrap.querySelector('.fba-add-guest').disabled = people >= config.limit;
             const base = Math.round(config.unit * 100);
             let cents = base;
             payload.forEach(guest => {
@@ -90,27 +85,16 @@
                 cents += amount + extra;
             });
             const total = new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
-            const message = people + (people > 1 ? ' personnes' : ' personne') + ' · ' + (config.seats ? people + ' place(s) utilisées après confirmation' : 'comptage des places FluentBooking') + (cents > 0 ? ' · Total : ' + total : '');
+            const message = people + (people > 1 ? ' personnes' : ' personne') + ' · ' + people + ' place(s) utilisées après confirmation' + (cents > 0 ? ' · Total : ' + total : '');
             if (summary.textContent !== message) summary.textContent = message;
         };
         root.addEventListener('input', event => { if (event.target !== transport) update(); });
         root.addEventListener('change', update);
-        root.addEventListener('click', event => {
-            if (config.attached) return;
-            const button = event.target.closest('.fcal_multi_guest_input button');
-            if (!button || button.closest('.fba-guest-extra')) return;
-            const list = rows(); const index = list.indexOf(button.closest('.fcal_multi_guest_input'));
-            const values = list.map(read); values.splice(index, 1);
-            // Svelte reuses unkeyed rows after removal; move answers with the remaining guests.
-            setTimeout(() => { update(); rows().forEach((row, i) => row.querySelectorAll('[data-fba-answer]').forEach(input => { const value = values[i]?.[input.dataset.fbaAnswer] || ''; if (input.type === 'checkbox') input.checked = value === '1'; else if (input.type === 'radio') input.checked = value === input.value; else input.value = value; })); update(); }, 0);
-        }, true);
-        const observer = new MutationObserver(update);
-        observer.observe(guestWrap || root, {childList: true, subtree: true});
-        observers.push(observer);
         update();
     });
     const observer = new MutationObserver(boot);
     observer.observe(document.documentElement, {childList:true,subtree:true});
-    observers.push(observer);
+    window.addEventListener('pagehide', () => observer.disconnect());
+    window.addEventListener('pageshow', () => { observer.observe(document.documentElement, {childList:true,subtree:true}); boot(); });
     boot();
 })();
