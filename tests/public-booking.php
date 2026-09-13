@@ -85,6 +85,7 @@ try {
         $view=clone $booking;
         do_action_ref_array('fluent_booking/format_booking_schedule',[&$view]);
         $admin=wp_json_encode($view->custom_form_data,JSON_UNESCAPED_UNICODE);
+        check(!str_contains($admin,'fba_participants_email'),'admin hides the email-only technical field');
         check(str_contains($admin,'Âge : 8') && str_contains($admin,$attends?'— participe':'ne participe pas'),'native admin includes participation and guest answers');
         check($view->first_name===$booking->first_name && $view->email===$booking->email,'presentation preserves contact identity');
         $html=FluentBooking\App\Services\BookingService::getBookingConfirmationHtml($booking);

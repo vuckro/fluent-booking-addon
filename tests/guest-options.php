@@ -13,6 +13,7 @@ foreach(['scheduled','pending','cancelled','completed'] as $s){remove_all_action
 $store=new ConfigurationStore();$event=CalendarSlot::find(2);$before=$store->read('calendar_event',2);$countBefore=Booking::count();
 $wpdb->query('START TRANSACTION');
 try {
+ $event->max_book_per_slot=5;$event->save();
  $nativeFields=$event->getBookingFields();foreach($nativeFields as &$field){if(($field['name']??'')==='guests'){$field['enabled']=true;$field['limit']=3;}}unset($field);$event->setBookingFields($nativeFields);
  $options=Options::defaults();$options['native_tariffs']=false;$options['enabled']=true;$options['fields']=[['id'=>'category','label'=>'Catégorie','type'=>'select','required'=>true,'choices'=>['Adulte','Enfant']],['id'=>'note','label'=>'Précision','type'=>'text','required'=>false,'choices'=>[]]];
  $store->save('calendar_event',2,['guest_options'=>$options],$before['revision']);

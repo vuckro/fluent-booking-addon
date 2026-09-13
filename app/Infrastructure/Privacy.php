@@ -36,11 +36,22 @@ final class Privacy
         $rows=$this->rows($page); $removed=false;
         foreach($rows as $booking) {
             $new=$booking->getMeta(\WaasKit\FluentBooking\Guests\BookingAdapter::META,[]);
+            $changed=false;
             if(!empty($new['guests'])) {
                 $changed=false;$owner=$this->owned($booking,$email);
                 foreach($new['guests'] as &$guest) {if($owner || strcasecmp($guest['email']??'',$email)===0) {$guest['name']='';$guest['email']='';$guest['fields']=[];$changed=true;}} unset($guest);
                 if($changed && !empty($new['attached_seat'])) {Booking::where('id',$booking->id)->update(['first_name'=>'Invité','last_name'=>'']);}
                 if($changed) {Helper::updateBookingMeta($booking->id,\WaasKit\FluentBooking\Guests\BookingAdapter::META,$new);$removed=true;}
+            }
+            // The email summary is a cached copy of identities and answers.
+            // Erasing their source must also remove this copy (including solo contacts).
+            if ($changed || $this->owned($booking,$email)) {
+                $custom=(array)$booking->getMeta('custom_fields_data',[]);
+                if (isset($custom['fba_participants_email'])) {
+                    unset($custom['fba_participants_email']);
+                    Helper::updateBookingMeta($booking->id,'custom_fields_data',$custom);
+                    $removed=true;
+                }
             }
             $q=$this->owned($booking,$email)?$booking->getMeta(RetiredProfiles::META,[]):[];if(!$q) {continue;}
             foreach($q['participants'] as &$person) {$person['name']='';$person['email']='';$person['birth_date']='';$person['fields']=[];}

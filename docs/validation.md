@@ -115,3 +115,16 @@ sans toucher aux métadonnées enregistrées ni au shortcode des emails. Le bloc
 « Réservation et participants » reste l'unique présentation des participants sur
 la confirmation. `public-booking.php` vérifie ce comportement avec contact participant
 et non participant, et vérifie que le shortcode email conserve les noms et réponses.
+
+## Consolidation — alpha.40
+
+Le champ email technique est également retiré de la projection du back-office ;
+les données du shortcode restent enregistrées pour les emails. L'effacement des
+données personnelles supprime désormais cette copie HTML lorsqu'elle concerne la
+personne effacée. Les fixtures de capacité fixent explicitement leurs cinq places
+à l'intérieur de la transaction : leur résultat ne dépend plus du paramétrage local.
+
+Recette locale : suite PHP complète, syntaxe PHP, sept tests DOM de composants et
+parcours natif Stripe avec redémarrage. Réseau/Stripe et emails sont simulés, écritures
+annulées. Cette recette ne remplace pas la vérification de la version Pro et du paiement
+sur l'installation de production.

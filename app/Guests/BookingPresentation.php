@@ -76,6 +76,7 @@ final class BookingPresentation
         if (!$details) {return;}
         // Enrich native read-only custom data. Never rewrite contact identity or seats.
         $fields=(array)$booking->custom_form_data;
+        unset($fields['fba_participants_email']);
         $fields['fba_contact']=['label'=>'Réservé par', 'value'=>esc_html($details['contact'].' — '.($details['attends']?'participe':'ne participe pas').' · réservation #'.$details['holder_id']), 'type'=>'text'];
         foreach ($details['people'] as $index=>$person) {
             $fields['fba_participant_'.$index]=['label'=>'Participant : '.$person['name'], 'value'=>esc_html($this->description($person)), 'type'=>'text'];

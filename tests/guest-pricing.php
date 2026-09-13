@@ -13,6 +13,7 @@ foreach(['scheduled','pending','cancelled','completed'] as $s){remove_all_action
 $store=new ConfigurationStore();$event=CalendarSlot::find(2);$before=$store->read('calendar_event',2);$countBefore=Booking::count();
 $wpdb->query('START TRANSACTION');
 try {
+ $event->max_book_per_slot=5;$event->save();
  $nativeFields=$event->getBookingFields();foreach($nativeFields as &$field){if(($field['name']??'')==='guests'){$field['enabled']=true;$field['limit']=3;}}unset($field);$event->setBookingFields($nativeFields);
  $options=Options::defaults();$options['native_tariffs']=false;$options['enabled']=true;$options['name_mode']='hidden';$options['email_mode']='optional';
  $options['fields']=[['id'=>'category','label'=>'Tarif','type'=>'radio','required'=>true,'choices'=>['Adulte','Enfant'],'pricing'=>'replace','prices'=>[5000,2500]], ['id'=>'extra','label'=>'Atelier supplémentaire','type'=>'checkbox','required'=>false,'choices'=>[],'pricing'=>'add','prices'=>[1000]]];
@@ -35,6 +36,7 @@ try {
  $export=(new WaasKit\FluentBooking\Infrastructure\Privacy())->export('fba-holder@example.invalid');
  check(str_contains(json_encode($export),'Enfant'),'holder privacy export covers unnamed guests');
  (new WaasKit\FluentBooking\Infrastructure\Privacy())->erase('fba-holder@example.invalid');
+ check(!isset($booking->getMeta('custom_fields_data',[])['fba_participants_email']),'privacy erasure removes the email summary copy too');
  $children=Booking::where('parent_id',$booking->id)->get();
  check($children[0]->getMeta(BookingAdapter::META,[])['guests'][0]['fields']===[],'holder erasure also covers attached seat copies');
  $htmlVars=apply_filters('fluent_booking/public_event_vars',['form_fields'=>$event->getBookingFields()],$event);
