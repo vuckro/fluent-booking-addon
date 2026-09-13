@@ -1,45 +1,34 @@
-# Recette finale — 13 septembre 2026 — alpha.23
+# Recette avant main — 13 septembre 2026 — alpha.26
 
-**Prêt pour la recette fonctionnelle locale**, dans le périmètre décrit ci-dessous. Ce bilan ne vaut pas validation d’un encaissement réel ou de tous les environnements WordPress.
+La publication sur main reste une **alpha prête aux essais**, dans le périmètre ci-dessous.
 
-## Résultats
+## Vérifications exécutées
 
-| Domaine | Vérification | Résultat |
-| --- | --- | --- |
-| Serveur | 94 contrôles : droits, réglages, tarifs, commandes, places, annulation, migrations et anciens modes | Réussis |
-| Formulaires | 5 scénarios JavaScript : identité, champs, tarifs, suppression, repli et parcours natif | Réussis |
-| Parcours FluentBooking réel sous jsdom | Date → créneau → formulaire → retour → formulaire ; invité conservé, absence de doublon, choix transmis à une requête simulée | Réussi |
-| Chargement public | HTML courant, ressources alpha.23, tarif initial adulte 70 € | Vérifié sur localhost:10038 |
-| Accès admin | Lien Réglages dans la ligne de la liste WordPress des extensions | Vérifié |
-| Code | Syntaxes PHP/JavaScript, espaces du diff, archive de distribution | Vérifiés |
+- **111 contrôles PHP** réussis : unité 21, administration 15, invités 24, ancien moteur de prix 19, tarifs natifs 26, migration 6.
+- **6 scénarios DOM** réussis : administration, invités, identités et anciens prix, tarifs natifs, informations seules, parcours du vrai bundle FluentBooking.
+- Syntaxe de tous les fichiers PHP et JavaScript, vérification du diff et archive ZIP.
+- Page publique localhost HTTP 200 ; JavaScript servi identique au fichier du dépôt.
+- Réglages et réservations de test restaurés. Tests transactionnels locaux avec neutralisation des emails et appels externes.
 
-Les tests WordPress utilisent des transactions annulées et bloquent les envois et HTTP externes. Aucun enregistrement de test n’a été conservé. Le parcours JS utilise les fichiers réels de FluentBooking et des réponses réseau simulées : il ne soumet aucune réservation au site.
+Les scénarios couvrent notamment 70/55/125 €, rejet des tarifs falsifiés, cinq personnes pour cinq places, refus si capacité insuffisante, suppression et annulation des places rattachées, stabilité des montants historiques, export/effacement, champs obligatoires et bornes numériques. Les informations peuvent être activées sans tarification ; le paiement natif reste alors intact, y compris dans sa préparation.
 
-## Dernières corrections
+Le parcours du bundle natif se déroule sous jsdom, sur une fixture HTML locale avec configuration temporaire injectée hors site : date → créneau → formulaire → retour → formulaire → soumission simulée. Aucune réservation ni aucun paiement réel n’est envoyé. Il vérifie la conservation des invités, l’absence de doublons et la transmission du tarif choisi.
 
-- Le moteur de prix rejette explicitement un invité sans tarif, même si ce moteur est appelé directement.
-- Les champs d’identité obligatoires portent un astérisque.
-- Le résumé précise qu’il montre les valeurs enregistrées et se met à jour après enregistrement.
-- Le test du parcours natif est conservé dans `tests/native-page-dom.cjs` pour les prochaines évolutions.
+## Correction issue de l’audit
 
-## Recette à faire dans le navigateur
+Le démarrage d’un paiement en mode informations seules pouvait réinjecter les tarifs du snapshot. Le contexte de tarification est désormais réinitialisé et ce mode laisse les paramètres natifs intacts. Un test de régression couvre le callback, sans exécuter le prestataire de paiement.
 
-Sur l’événement collectif configuré avec Adulte 70 €, Enfant 55 €, capacité 5 :
+## Limites de validation
 
-1. Sans invité : sélectionner adulte → **70 €**, puis enfant → **55 €**.
-2. Choisir adulte pour soi, ajouter un invité nommé et choisir enfant → **125 €**, **2 places**. Le courriel de cet invité doit être masqué.
-3. Supprimer l’invité → **70 €**. Revenir au calendrier puis au formulaire : vérifier la conservation des données et l’absence de doublons.
-4. Ajouter des invités jusqu’à cinq personnes au total : l’ajout supplémentaire est bloqué. Une disponibilité devenue insuffisante doit être refusée par le serveur.
-5. Ajouter temporairement une question obligatoire par invité dans Modules, enregistrer et vérifier le champ public ainsi que son message de validation.
-6. Contrôler visuellement desktop/mobile, clair/sombre, navigation clavier et les liens admin.
-7. Faire une réservation de recette hors ligne, puis vérifier la commande, les participants, les places restantes et les notifications reçues. Tester ensuite Stripe en mode test avant tout paiement réel.
+Environnement testé : WordPress 7.1, FluentBooking/Pro 2.4.0 installés localement, PHP 8.2.29. La plage PHP 8.1+ n’a pas été testée sur chaque version. Compatibilité annoncée limitée à FluentBooking 2.4.x.
 
-Les points 6 et 7 ne sont pas validés par les tests DOM/serveur exécutés ici : aucun navigateur piloté, envoi reçu ni encaissement réel n’a été utilisé pour cette recette finale.
+Pas de validation universelle des thèmes/extensions, de contrôle visuel navigateur dans cette recette, de confirmation de réception des emails ou de paiement Stripe de bout en bout. Ces points restent à vérifier sur le site cible avant production :
 
-## Périmètre conservé
+1. Interface desktop/mobile, clair/sombre, navigation clavier.
+2. Réservation hors ligne : commande, participants, places restantes et communications.
+3. Stripe en mode test : paiement réussi/refusé, retour et confirmation.
+4. Migration sur une copie du site si départ depuis v3.3.6.
 
-FluentBooking 2.4.x, événement de groupe, durée unique, devise à deux décimales, paiement natif Stripe ou hors ligne. Les coupons, WooCommerce, le multi-durée, le report et la réactivation automatique restent hors périmètre. Les anciens montants enregistrés sont conservés.
+Les réservations de groupe sur créneau unique sont couvertes. Coupons, WooCommerce, multi-durée, reports et réactivation automatique restent exclus des personnalisations.
 
-Pour reproduire le test du vrai formulaire sous jsdom, fournir `WAASKIT_WP_PATH`, `FBA_PAGE_HTML` (HTML de la page publique du scénario Adulte 70 / Enfant 55) et `FBA_SLOTS_JSON` (réponse publique de disponibilités). Exécuter `node tests/native-page-dom.cjs` avec jsdom accessible. Les fixtures locales et le code natif ne sont pas embarqués dans l’extension.
-
-Voir le [guide de configuration des tarifs](tarifs-par-personne.md).
+Voir [les tests reproductibles](validation.md), [le guide](tarifs-par-personne.md) et [la migration](migration.md).

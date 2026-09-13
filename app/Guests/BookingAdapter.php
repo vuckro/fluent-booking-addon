@@ -20,7 +20,9 @@ final class BookingAdapter
         add_filter('fluent_booking/booking_data', function($data) {$this->paymentContext=null;return $data;},1);
         foreach(['stripe','offline'] as $method) {
             add_action('fluent_booking/payment/pay_order_with_'.$method,function($booking){
+                $this->paymentContext=null;
                 $snapshot=$booking->getMeta(self::META,[]);
+                if (!empty($snapshot['preserve_payments'])) {return;}
                 if(isset($snapshot['currency']) && $snapshot['currency']!==\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()) {throw new \RuntimeException('La devise a changé depuis la réservation.');}
                 $this->paymentContext=isset($snapshot['items'])?['event_id'=>(int)$booking->event_id,'items'=>$snapshot['items']]:null;
             },1);

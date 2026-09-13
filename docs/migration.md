@@ -1,4 +1,14 @@
-# Migration des anciennes limites vers FluentBooking
+# Migration vers la nouvelle base
+
+## Depuis la branche main v3.3.6
+
+La v4 est une réécriture en alpha, pas une mise à jour transparente de la v3. Les anciennes clés `fbgrp_one_per_spot`, `fbgrp_price_per_guest` et `fbgrp_hide_guest_email` ne sont pas automatiquement converties. Elles restent dans les données mais ne pilotent plus le plugin.
+
+Effectuez la transition sur une copie de test : sauvegardez les données et le code v3, vérifiez PHP 8.1+ et FluentBooking 2.4.x, puis configurez explicitement les événements dans Modules. Vérifiez les réservations et paiements historiques avant remplacement en production. Les coupons pris en charge par la v3 ne sont pas pris en charge par les personnalisations de cette alpha.
+
+Le script ci-dessous concerne uniquement les anciennes configurations des alphas v4. Il ne convertit pas les options v3. Un push GitHub ne déploie ni le plugin ni des réglages sur un autre site.
+
+## Migration des anciennes limites des alphas vers FluentBooking
 
 ## Site local traité le 13 septembre 2026
 

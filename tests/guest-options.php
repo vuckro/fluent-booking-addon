@@ -58,6 +58,17 @@ try {
  check($custom->getMeta(BookingAdapter::META,[])['guests'][0]['fields']['number']==='3','bounded answer persisted');
  $customOrder=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($custom,$event,['quantity'=>1]);
  check((int)$customOrder->total_amount===1429,'information-only mode preserves native payment amount');
+ // Invoke only the add-on's payment preparation, never the payment provider.
+ $callbacks=$wp_filter['fluent_booking/payment/pay_order_with_offline']->callbacks[1]??[];
+ $prepared=false;
+ foreach($callbacks as $callback) {
+     $fn=$callback['function'];
+     if($fn instanceof Closure && basename((new ReflectionFunction($fn))->getFileName())==='BookingAdapter.php') {$fn($custom);$prepared=true;}
+ }
+ check($prepared,'payment preparation callback checked without contacting provider');
+ $settings=apply_filters('fluent_booking/get_event_payment_settings',['items'=>[['title'=>'Native current','value'=>21]]],$event);
+ check($settings['items'][0]['value']===21,'information-only payment preparation leaves native settings untouched');
+
  $input['start_time']='2030-01-09 14:00:00';$input['end_time']='2030-01-09 14:30:00';$input['_fba_extras']=json_encode([['name'=>'Invité','fields'=>['number'=>'6']]]);
  check(is_wp_error(BookingService::createBooking($input,$event,['payment_method'=>'offline'])),'tampered number rejected in actual booking flow');
 } finally {$wpdb->query('ROLLBACK');wp_cache_flush();}

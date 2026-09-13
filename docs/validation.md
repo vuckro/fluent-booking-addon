@@ -1,31 +1,32 @@
-> **Alpha.22 :** le mode recommandé est désormais [Un tarif FluentBooking par personne](tarifs-par-personne.md). Les passages ci-dessous sur le multiplicateur et les champs tarifaires décrivent le mode antérieur, conservé pour les configurations existantes.
+# Tests — alpha.26
 
-# Validation — alpha.21
-
-Environnement local : WordPress 7.1, FluentBooking/Pro 2.4.0, PHP 8.2.29, MySQL InnoDB. Le plugin cible FluentBooking 2.4.x.
+Exécuter depuis la racine du plugin avec PHP 8.1+ ; les intégrations refusent un site autre que localhost/127.0.0.1. Configurer le socket MySQL de PHP si Local le nécessite.
 
 ```sh
 php tests/unit.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-options.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-pricing.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/native-tariffs.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/migration.php
 ```
 
-- Unitaire : les options de limite/décompte sont refusées ; calcul des tarifs, forfaits, suppléments et remplacements.
-- Administration : permissions, événement uniquement, révisions, titre Modules, absence du bloc et de l’héritage, résumé et liens natifs, options repliées.
-- Réservation : places natives, capacité insuffisante, tarifs 100/200/300 et forfait 100, choix tarifaires 135, absence de double multiplication, conservation des montants et réponses, annulation/suppression des places, export/effacement.
-- Migration : conversion des limites effectives de groupe/individuelles en simulation, aucune activation implicite des invités, restauration des fixtures et idempotence.
-- Les tests d’intégration s’exécutent dans une transaction annulée et vérifient la restauration des réglages. Les appels réseau, courriels et actions de notification sont neutralisés dans les fixtures de réservation.
+Les tests d’intégration utilisent l’événement local 2, des transactions annulées et vérifient la restauration des données. Les tests de réservation neutralisent les envois et HTTP externes. Utiliser une base locale jetable et InnoDB.
 
-Tests DOM avec jsdom installé dans un répertoire temporaire, sans dépendance ajoutée au plugin :
+Tests de formulaire avec jsdom installé séparément (aucune dépendance JS embarquée dans le plugin) :
 
 ```sh
-NODE_PATH=/chemin/temporaire/node_modules node tests/guests-dom.cjs
-NODE_PATH=/chemin/temporaire/node_modules node tests/guests-attached-dom.cjs
-NODE_PATH=/chemin/temporaire/node_modules node tests/guest-admin-dom.cjs
+NODE_PATH=/chemin/jsdom/node_modules node tests/guest-admin-dom.cjs
+NODE_PATH=/chemin/jsdom/node_modules node tests/guests-dom.cjs
+NODE_PATH=/chemin/jsdom/node_modules node tests/guests-attached-dom.cjs
+NODE_PATH=/chemin/jsdom/node_modules node tests/native-tariffs-dom.cjs
+NODE_PATH=/chemin/jsdom/node_modules node tests/guest-information-dom.cjs
 ```
 
-Ils couvrent les identités requises/masquées, radios/cases, récapitulatifs, suppression d’un invité sans perdre les réponses de l’autre et masquage des options admin.
+Le scénario `tests/native-page-dom.cjs` demande `WAASKIT_WP_PATH`, `FBA_PAGE_HTML` (fixture HTML de l’événement 2 avec personnalisation et tarifs 70/55) et `FBA_SLOTS_JSON` (réponse de disponibilités). Il charge le vrai bundle natif local, intercepte tous les appels réseau et ne soumet aucune réservation au site. Les fixtures ne sont pas distribuées.
 
-La syntaxe PHP/JS, le diff et le ZIP sont également vérifiés. Les anciens tests du module de limite ont été remplacés ; ils ne doivent plus être exécutés. Aucun paiement réel ni recette du vrai composant Svelte n’a été effectué. Les tests DOM ne constituent pas une validation visuelle du navigateur.
+```sh
+python3 scripts/package.py
+```
+
+Voir le [bilan de recette et les contrôles encore manuels](recette-finale.md). Les tests DOM ne prouvent pas un rendu visuel navigateur ni un paiement Stripe complet.

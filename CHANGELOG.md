@@ -1,3 +1,9 @@
+## 4.0.0-alpha.26
+
+- Vérification avant publication sur main : suite serveur, formulaires et archive.
+- Correction : le démarrage d’un paiement en mode informations seules ne réinjecte plus les tarifs du snapshot.
+- Documentation de la version courante, du périmètre testé et du passage depuis la v3.
+
 ## 4.0.0-alpha.25
 
 - Deux activations indépendantes : tarification par personne et informations des invités (nom, courriel, champs supplémentaires).
