@@ -90,7 +90,7 @@ html.fba-page { scrollbar-gutter:stable; }
 /* Override WordPress's dark text on hovered/focused select controls. */
 body.fba-admin .fba-settings select:is(:hover,:focus,:focus-visible) { color:var(--fba-text); background-color:var(--fba-surface); border-color:var(--fba-strong); }
 body.fba-admin .fba-settings select option { color:var(--fba-text); background-color:var(--fba-surface); }
-html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23c1c7d1' stroke-width='1.5' d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); }
+html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23c1c7d1' stroke-width='1.5' d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; background-size:20px 20px; }
 /* Context links and the two settings share the same light/dark palette. */
 .fba-settings .fba-context-help { margin:12px 0 24px; }
 .fba-settings input:disabled { opacity:.6; cursor:not-allowed; }
@@ -108,7 +108,7 @@ html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
 .fba-settings .fba-guest-details { margin-top:8px; padding-top:8px; border-top:1px solid var(--fba-line); }
 .fba-settings .fba-extra-field { margin:16px 0; padding:16px; border:1px solid var(--fba-line); border-radius:6px; }
 .fba-settings .fba-extra-field label { display:block; margin-bottom:16px; }
-.fba-settings .fba-extra-field input[type=text],.fba-settings .fba-extra-field textarea,.fba-settings .fba-extra-field select { display:block; width:100%; max-width:540px; background:var(--fba-surface); color:var(--fba-text); border:1px solid var(--fba-line); border-radius:6px; }
+.fba-settings .fba-extra-field input[type=text],.fba-settings .fba-extra-field textarea,.fba-settings .fba-extra-field select { display:block; width:100%; max-width:540px; background-color:var(--fba-surface); color:var(--fba-text); border:1px solid var(--fba-line); border-radius:6px; }
 .fba-settings .fba-extra-field [hidden] { display:none; }
 /* FluentBooking checkbox geometry, without WordPress's blue checkmark. */
 body.fba-admin .fba-settings input[type=checkbox] { appearance:none; -webkit-appearance:none; position:relative; box-sizing:border-box; flex-shrink:0; width:20px; height:20px; min-width:20px; margin:0 8px 0 0; vertical-align:middle; border:1px solid var(--fba-line); border-radius:4px; background:var(--fba-surface); box-shadow:none; cursor:pointer; }
@@ -147,6 +147,7 @@ body.fba-admin .fba-settings input[type=checkbox]:focus-visible { outline:1px so
 .fba-settings .fba-field-section > .description:last-child { margin:16px 0 0; }
 .fba-settings .fba-extra-field legend { padding:0 6px; }
 .fba-settings .fba-extra-field :is(input[type=text],textarea,select) { margin-top:8px; min-height:40px; padding:8px 12px; box-sizing:border-box; }
+.fba-settings .fba-extra-field select { padding-right:36px; }
 .fba-settings .fba-extra-field textarea { min-height:88px; resize:vertical; }
 body.fba-admin .fba-settings :is(.fba-add-field,.fba-remove-field,.fba-summary-links .button) { min-height:36px; padding:6px 12px; font-size:12px; }
 .fba-settings .fba-summary-links { padding-top:20px; border-top:1px solid var(--fba-line); }
