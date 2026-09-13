@@ -1,8 +1,18 @@
 /* One guest form; FluentBooking still owns holder details, submission and payment. */
 (() => {
     const mounted = new WeakSet();
-    const checkoutObservers = new Set();
-    const boot = () => document.querySelectorAll('input[id^="fcalInputIDfba_extra_"]').forEach(transport => {
+    const checkoutObservers = new Map();
+    const checkoutHandlers = new WeakMap();
+    // Capture runs before FluentBooking mounts Stripe Elements.
+    window.addEventListener('fluent_booking_payment_next_action_stripe', event => {
+        const root = event.detail?.form?.closest('.fcal_booking_form_wrap');
+        checkoutHandlers.get(root)?.(event);
+    }, true);
+    const boot = () => {
+        checkoutObservers.forEach((root, item) => {
+            if (!root.isConnected) { item.disconnect(); checkoutObservers.delete(item); }
+        });
+        document.querySelectorAll('input[id^="fcalInputIDfba_extra_"]').forEach(transport => {
         if (mounted.has(transport)) return;
         const id = transport.id.replace('fcalInputIDfba_extra_', '');
         const config = window.fbaGuestForms?.[id];
@@ -58,7 +68,7 @@
             if (holder) guestWrap.before(holder);
             if (participation) { (holder || guestWrap).before(participationLabel, participationHelp); }
             add.addEventListener('click', () => {
-                if (rows().length + (attends() ? 1 : 0) >= config.limit) return;
+                if (checkoutLocked || rows().length + (attends() ? 1 : 0) >= config.limit) return;
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
                 ['name','email'].forEach(key => {
@@ -68,7 +78,7 @@
                 });
                 if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de ce participant'));
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.className = 'fba-remove-guest'; remove.setAttribute('aria-label', 'Supprimer ce participant'); remove.title = 'Supprimer ce participant';
-                remove.addEventListener('click', () => { row.remove(); update(); }); row.append(remove);
+                remove.addEventListener('click', () => { if (!checkoutLocked) { row.remove(); update(); } }); row.append(remove);
                 guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
         const recap = document.createElement('div'); recap.className = 'fba-payment-recap';
@@ -78,34 +88,76 @@
         if (config.preservePayments) recap.hidden = true;
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         let checkoutLocked = false;
-        const lockForPayment = () => {
+        let checkoutReady = false;
+        let quotedCents = 0;
+        let submittedCents = null;
+        const previousDisabled = new Map();
+        const form = transport.closest('form');
+        const controls = () => [holder, participationLabel, guestWrap].filter(Boolean)
+            .flatMap(element => [...element.querySelectorAll('input, select, button')]);
+        const freeze = () => {
             if (checkoutLocked) return;
-            const processor = root.querySelector('.fluent_booking_payment_processor');
-            // Stripe freezes the amount in its PaymentIntent. Once its native
-            // checkout is mounted, changing this party would make the visible
-            // recap disagree with the payable amount.
-            if (!processor || processor.style.display === 'none' || !processor.querySelector('iframe, #fluent_booking_stipe_pay')) return;
             checkoutLocked = true;
-            root.classList.add('fba-checkout-locked');
-            [holder, participationLabel, guestWrap].filter(Boolean).forEach(element => {
-                element.querySelectorAll('input, select, button').forEach(control => { control.disabled = true; });
-                element.hidden = true;
-            });
-            participationHelp.hidden = true;
-            // The native Stripe screen is the authoritative payment state from
-            // this point. Do not leave a second, mutable-looking total beside it.
-            recap.hidden = true;
-            const notice = document.createElement('p');
-            notice.className = 'fba-payment-locked-notice';
-            notice.setAttribute('role', 'status');
-            notice.textContent = 'Le paiement a été préparé. Les participants et le montant sont maintenant figés. Pour modifier la réservation, revenez à l’étape précédente puis recommencez le paiement.';
-            processor.before(notice);
+            submittedCents = quotedCents;
+            controls().forEach(control => { previousDisabled.set(control, control.disabled); control.disabled = true; });
         };
-        const checkoutObserver = new MutationObserver(lockForPayment);
-        checkoutObserver.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['style']});
-        checkoutObservers.add(checkoutObserver);
+        const unfreeze = () => {
+            if (checkoutReady || !checkoutLocked) return;
+            checkoutLocked = false;
+            previousDisabled.forEach((disabled, control) => { control.disabled = disabled; });
+            previousDisabled.clear();
+        };
+        form?.addEventListener('submit', event => {
+            if (checkoutLocked) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+            update();
+            if (!form.checkValidity()) { event.preventDefault(); event.stopImmediatePropagation(); form.reportValidity(); return; }
+            freeze();
+            // Native validation can reject before starting an HTTP request.
+            setTimeout(() => { if (!root.querySelector('.fcal_btn_submitting')) unfreeze(); }, 0);
+        }, true);
+        const settleSubmission = () => {
+            if (!root.querySelector('.fcal_btn_submitting')) unfreeze();
+        };
+        const checkoutObserver = new MutationObserver(settleSubmission);
+        checkoutObserver.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['class']});
+        checkoutObservers.set(checkoutObserver, root);
+        checkoutHandlers.set(root, event => {
+            if (checkoutReady) { event.stopImmediatePropagation(); return; }
+            freeze();
+            checkoutReady = true;
+            const response = event.detail.response?.data;
+            const args = response?.data?.payment_args;
+            const intent = response?.intent;
+            const currency = String(args?.currency || '').toUpperCase();
+            const zeroDecimal = new Intl.NumberFormat('en', {style:'currency', currency:config.currency}).resolvedOptions().maximumFractionDigits === 0;
+            const cents = Number(args?.amount) * (zeroDecimal ? 100 : 1);
+            const consistent = Number.isSafeInteger(args?.amount) && args.amount > 0
+                && intent?.amount === args.amount && String(intent?.currency || '').toUpperCase() === currency
+                && currency === config.currency.toUpperCase()
+                && (config.preservePayments || submittedCents === cents);
+            const processor = root.querySelector('.fluent_booking_payment_processor');
+            const notice = document.createElement('p'); notice.className = 'fba-payment-locked-notice';
+            notice.setAttribute('role', consistent ? 'status' : 'alert');
+            if (!consistent || !processor) {
+                event.stopImmediatePropagation();
+                notice.textContent = 'Le montant du paiement ne correspond pas à la réservation. Aucun paiement ne peut être effectué sur cet écran. Contactez l’organisateur avant de recommencer.';
+                if (processor) processor.style.display = 'none';
+            } else {
+                root.classList.add('fba-checkout-locked');
+                [holder, participationLabel, guestWrap, participationHelp].filter(Boolean).forEach(element => { element.hidden = true; });
+                // Keep the frozen recap visible. The native label is calculated
+                // from the catalogue, so replace its presentation with the
+                // verified server amount without modifying Svelte-owned nodes.
+                processor.classList.add('fba-verified-checkout');
+                const total = document.createElement('h3'); total.className = 'fba-stripe-total';
+                total.textContent = 'Montant à payer : ' + format(cents); processor.prepend(total);
+                notice.textContent = 'Les participants et le montant sont confirmés pour ce paiement.';
+            }
+            recap.after(notice);
+        });
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
+            if (checkoutLocked) return;
             const guests = rows();
             if (holder) { holder.hidden = !attends(); holder.querySelector('select').disabled = !attends(); }
             if (participation) {
@@ -133,7 +185,7 @@
                         const group = document.createElement('fieldset'); const legend = document.createElement('legend'); legend.textContent = label.textContent; group.append(legend);
                         const groupName = 'fba_radio_' + id + '_' + field.id + '_' + crypto.randomUUID();
                         field.choices.forEach((value, index) => { const choice = document.createElement('label'); const radio = document.createElement('input'); radio.type = 'radio'; radio.name = groupName; radio.value = value; radio.dataset.fbaAnswer = field.id; radio.required = field.required; choice.append(radio, document.createTextNode(choiceLabel(value, index))); group.append(choice); });
-                        if (!field.required) { const clear = document.createElement('button'); clear.type = 'button'; clear.textContent = 'Effacer ce choix'; clear.addEventListener('click', () => { group.querySelectorAll('input').forEach(input => input.checked = false); update(); }); group.append(clear); }
+                        if (!field.required) { const clear = document.createElement('button'); clear.type = 'button'; clear.textContent = 'Effacer ce choix'; clear.addEventListener('click', () => { if (checkoutLocked) return; group.querySelectorAll('input').forEach(input => input.checked = false); update(); }); group.append(clear); }
                         panel.append(group); return;
                     }
                     const input = document.createElement(field.type === 'select' ? 'select' : 'input');
@@ -180,6 +232,7 @@
                 lines.replaceChildren(fragment);
                 recap.hidden = !config.tariffs.length;
             }
+            quotedCents = cents;
             const total = new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
             const message = people + (people > 1 ? ' personnes' : ' personne') + ' · ' + people + ' place(s) utilisées après confirmation' + (cents > 0 || (nativeTariffs && config.tariffs.length) ? ' · Total : ' + total : '');
             // The sidebar must not keep displaying the sum of all available choices.
@@ -219,10 +272,11 @@
             });
         }
         restoring = false; update();
-    });
+        });
+    };
     const observer = new MutationObserver(boot);
     observer.observe(document.documentElement, {childList:true,subtree:true});
-    window.addEventListener('pagehide', () => { observer.disconnect(); checkoutObservers.forEach(item => item.disconnect()); checkoutObservers.clear(); });
-    window.addEventListener('pageshow', () => { observer.observe(document.documentElement, {childList:true,subtree:true}); boot(); });
+    window.addEventListener('pagehide', () => { observer.disconnect(); checkoutObservers.forEach((root, item) => item.disconnect()); });
+    window.addEventListener('pageshow', () => { observer.observe(document.documentElement, {childList:true,subtree:true}); checkoutObservers.forEach((root, item) => { if (root.isConnected) item.observe(root, {childList:true,subtree:true,attributes:true,attributeFilter:['class']}); else checkoutObservers.delete(item); }); boot(); });
     boot();
 })();

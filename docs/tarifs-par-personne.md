@@ -57,3 +57,18 @@ Sauvegarde locale avant adoption : `.local-backups/native-tariffs-2026-09-13.jso
 ## Maintenance
 
 `enabled` conserve son rôle historique d’activation de la tarification. `customize_guests` active séparément les informations. Pour une ancienne configuration sans cette clé, sa valeur suit l’ancien interrupteur : aucune modification de comportement à la mise à jour. `Options::effective()` calcule les réglages utilisés sans effacer les valeurs enregistrées. Le mode informations seules marque le snapshot `preserve_payments` pour laisser les filtres de commandes et de lignes natifs intacts.
+
+### Passage au paiement
+
+Les choix deviennent un instantané enregistré avec la réservation. La commande et
+Stripe utilisent ces lignes, sans additionner tous les tarifs disponibles. Les
+participants ne sont plus modifiables dès l'envoi du formulaire. Si la validation
+native échoue, les contrôles redeviennent disponibles. Après préparation de Stripe,
+le récapitulatif reste visible et figé : le montant à payer vient de la réponse serveur,
+vérifiée contre le PaymentIntent et les choix soumis. En cas de désaccord, Stripe ne
+s'ouvre pas et un message demande de contacter l'organisateur.
+
+L'extension ne propose pas de modifier une réservation dont le paiement est déjà
+préparé : elle ne crée pas automatiquement un second paiement ou une seconde
+réservation. Un abandon peut laisser une réservation en attente dans FluentBooking ;
+sa gestion doit être incluse dans la recette de l'installation.

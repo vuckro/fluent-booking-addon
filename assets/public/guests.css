@@ -21,7 +21,7 @@
 .fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):focus-visible { outline:1px solid var(--fcal_dark); outline-offset:2px; }
 .fba-custom-guests button.fba-add-guest:disabled { opacity:.5; cursor:not-allowed; }
 .fba-custom-pricing :is(.fcal_payment_items_table,.fcal_payment_items,.fcal_payment_coupon),.fba-custom-pricing .fba-payment-methods > .fcal_input_content > .fcal_input_label { display:none; }
-.fba-payment-locked-notice { margin:16px 0; padding:12px 14px; border-radius:6px; background:var(--fba-muted,#f6f7f8); color:var(--fba-text,#253247); font-size:13px; line-height:1.5; }
+.fba-payment-locked-notice { margin:16px 0; padding:12px 14px; border-radius:6px; background:var(--fcal_thBG,#f6f7f8); color:var(--fcal_dark,#253247); font-size:13px; line-height:1.5; }
 .fba-custom-guests .fba-payment-recap { margin:24px 0; }
 .fba-custom-guests .fba-payment-recap h3 { margin:0 0 12px; font-size:16px; font-weight:600; color:var(--fcal_dark); }
 .fba-custom-guests .fba-payment-recap dl:empty { display:none; }
@@ -43,3 +43,6 @@
 .fba-custom-guests .fba-holder-participates { width:18px; height:18px; margin:0; accent-color:var(--fcal_dark); flex-shrink:0; }
 .fba-custom-guests .fba-participation-help { color:var(--fcal_dark); font-size:13px; line-height:1.5; margin:0 0 16px; }
 .fba-custom-guests .fba-remove-guest:disabled { opacity:.35; cursor:not-allowed; }
+
+.fba-verified-checkout > .label { display:none; }
+.fba-stripe-total { margin:0 0 12px; font-size:16px; color:var(--fcal_dark); }

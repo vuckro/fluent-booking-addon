@@ -63,3 +63,34 @@ Alpha.30 : ajout de `php tests/calendar-presentation.php` (24 contrôles), et de
 ## Recette de déploiement — alpha.33
 
 281 contrôles PHP réussis sur la suite complète, dont 5 contrôles de protection des opérations de groupe dans `nonparticipating.php`. Les 8 scénarios DOM ont également passé. Les 926 fichiers du cœur FluentBooking 2.4.0 ont été comparés aux SHA-256 de `https://downloads.wordpress.org/plugin-checksums/fluent-booking/2.4.0.json` : aucune différence, aucun PHP ajouté. Cette preuve concerne la partie gratuite, pas Pro. Voir `recette-finale.md` pour les validations externes encore nécessaires.
+
+## Paiement Stripe — alpha.36
+
+La préparation des commandes est vérifiée jusqu'au véritable adaptateur Stripe natif,
+avec HTTP intercepté. `tests/stripe-native-tariffs.php` utilise une réservation de
+source `web` : les hooks créent la commande puis appellent Stripe. Les cinq scénarios
+70 / 140 / 125 / 195 / 55 EUR vérifient l'égalité des lignes de commande, du total,
+de la requête `payment_intents` et de la réponse retournée au formulaire. Une quantité
+forgée à 999 ne modifie pas le tarif. Les communications sortantes sont bloquées et
+les données sont annulées par transaction. Aucune carte n'est débitée.
+
+`tests/native-stripe-dom.cjs` charge les vrais scripts locaux `app.js` et
+`stripe-checkout.js` dans jsdom ; seuls HTTP et Stripe.js sont simulés. Même environnement
+que `native-page-dom.cjs`, avec une fixture HTML actuelle de l'événement 2 (Stripe
+activé, tarifs Adulte 70 / Enfant 55, âge 8 accepté). Variantes :
+
+- sans variable : contact adulte + enfant, 125 EUR ;
+- `FBA_ALL_ADULT=1` : deux adultes, 140 EUR ;
+- `FBA_NONPARTICIPATING=1` : contact absent + enfant, 55 EUR ;
+- `FBA_MISMATCH=1` : réponse à 70 EUR pour une demande à 125 EUR, ouverture de Stripe bloquée.
+
+Le test vérifie le verrouillage pendant la requête, avant la réponse, le maintien du
+récapitulatif figé et l'affichage du montant serveur. `stripe-checkout-lock-dom.cjs`
+vérifie également la restauration des contrôles si la soumission native échoue avant
+le paiement. Le test AJAX `public-booking.php` et les tests unitaires de calcul,
+champs obligatoires, capacité et contact non participant passent aussi.
+
+Ces tests ne valident pas un débit bancaire, 3-D Secure, le webhook réel, le remboursement
+ou la réception d'un email. Ces étapes restent à tester en mode test Stripe avant de
+qualifier une installation de production. Le cœur Pro installé localement contient des
+adaptations ; une autre version Pro doit repasser cette recette.
