@@ -14,7 +14,7 @@ final class BookingAdapter
     private array $locks=[];
     private ?array $paymentContext=null;
     public function __construct(private ConfigurationStore $store) {}
-    public function options(int $id): array {return Options::validate($this->store->read('calendar_event',$id)['values']['guest_options']??[]);}
+    public function options(int $id): array {return Options::effective($this->store->read('calendar_event',$id)['values']['guest_options']??[]);}
     public function register(): void
     {
         add_filter('fluent_booking/booking_data', function($data) {$this->paymentContext=null;return $data;},1);
@@ -69,7 +69,7 @@ final class BookingAdapter
         }
         $price=0;
         foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
-        $config=['error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
+        $config=['preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
         $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
         wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.js'),true);
         wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.css'));
@@ -149,7 +149,7 @@ final class BookingAdapter
                 if($priced) {$items=[['title'=>'Réservation — '.$count.' personne(s)','cents'=>$quote['total']]];$quantity=1;}
             }
             $token=wp_generate_uuid4();
-            $this->pending[$token]=['holder_tariff'=>$tariffQuote['people'][0]??null,'attached'=>true,'guest_amounts'=>$quote['guests'],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
+            $this->pending[$token]=['preserve_payments'=>!$options['pricing_enabled'],'holder_tariff'=>$tariffQuote['people'][0]??null,'attached'=>true,'guest_amounts'=>$quote['guests'],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
             $data['_fba_token']=$token;
             $data['quantity']=$quantity;
             return $data;
@@ -170,7 +170,7 @@ final class BookingAdapter
     public function order(array $order,$booking,$event,$data): array
     {
         $snapshot=$booking->getMeta(self::META,[]);
-        if(!isset($snapshot['quantity'])) {return $order;}
+        if(!isset($snapshot['quantity']) || !empty($snapshot['preserve_payments'])) {return $order;}
         if($order['currency']!==$snapshot['currency']) {throw new \RuntimeException('La devise de cette réservation a changé. Vérification nécessaire.');}
         $order['subtotal']=array_sum(array_column($snapshot['items'],'cents'))*$snapshot['quantity'];
         $order['total_amount']=$order['subtotal'];$order['discount_total']=0;
@@ -179,7 +179,7 @@ final class BookingAdapter
     public function orderItems($order,$booking,$event,$data): void
     {
         $snapshot=$booking->getMeta(self::META,[]);
-        if(!isset($snapshot['quantity'])) {return;}
+        if(!isset($snapshot['quantity']) || !empty($snapshot['preserve_payments'])) {return;}
         $items=$order->items()->orderBy('id')->get();
         // Replace draft lines before the native transaction is created. One frozen line per person.
         foreach ($items as $item) {$item->delete();}

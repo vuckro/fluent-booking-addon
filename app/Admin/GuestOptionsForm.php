@@ -9,7 +9,7 @@ final class GuestOptionsForm
         $raw=$post['guest_options']??[];
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
-        foreach(['enabled','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        foreach(['enabled','customize_guests','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}
@@ -17,6 +17,7 @@ final class GuestOptionsForm
             if(!is_array($field)) {throw new \InvalidArgumentException('Champ invalide.');}
             if(trim((string)($field['label']??''))==='') {continue;}
             $value['fields'][]=['id'=>sanitize_key($field['id']??''),'label'=>trim($field['label']), 'type'=>$field['type']??'', 'required'=>($field['required']??'')==='1',
+                'min'=>($field['type']??'')==='number' && trim($field['min']??'')!=='' ? str_replace(',','.',trim($field['min'])) : null, 'max'=>($field['type']??'')==='number' && trim($field['max']??'')!=='' ? str_replace(',','.',trim($field['max'])) : null,
                 'pricing'=>$field['pricing']??'none', 'prices'=>self::prices($field['prices']??''),
                 'choices'=>array_values(array_filter(array_map('trim',explode("\n",str_replace("\r",'', $field['choices']??''))),static fn($s)=>$s!==''))];
         }
@@ -25,20 +26,15 @@ final class GuestOptionsForm
     public static function render(array $options): void
     {
         echo '<fieldset class="fba-policy fba-guest-options"><legend>Réserver avec des invités</legend>';
-        foreach(['enabled'=>[$options['native_tariffs']?'Un tarif par personne':'Personnaliser la réservation avec invités',$options['native_tariffs']?'Coché : chaque personne choisit son tarif FluentBooking. Décoché : le formulaire et le calcul natifs sont conservés.':'Active les options ci-dessous pour cet événement de groupe.'],
-            'per_person_price'=>['Multiplier le prix par le nombre de personnes','Coché : chaque personne part du tarif de base. Décoché : seul le réservant paie ce tarif. Les choix tarifaires des invités s’appliquent ensuite.']] as $key=>[$label,$help]) {
-            if($key==='per_person_price') {echo '<div class="fba-guest-details"'.(!$options['enabled']?' hidden':'').'>'; }
-            if($key==='per_person_price') {
-                if ($options['native_tariffs']) {
-                    echo '<input type="hidden" name="guest_options[native_tariffs]" value="1">';
-                } else {
-                    echo '<label class="fba-identity-option"><span>Tarification</span><select name="guest_options[native_tariffs]"><option value="1">Un tarif par personne</option><option value="0" selected>Ancien calcul personnalisé</option></select></label>';
-                }
-                echo '<p class="description">Le réservant et chaque invité choisissent parmi les tarifs FluentBooking. Le total additionne uniquement leurs choix. Avec un seul tarif, il s’applique automatiquement à chacun.</p>';
-            }
-            if ($key==='per_person_price' && $options['native_tariffs']) {continue;}
-            echo '<label class="fba-choice'.($key==='per_person_price'?' fba-legacy-pricing':'').'"><input type="checkbox" name="guest_options['.esc_attr($key).']" value="1"'.checked($options[$key],true,false).'><span><strong>'.esc_html($label).'</strong><span class="description">'.esc_html($help).'</span></span></label>';
+        echo '<label class="fba-choice"><input type="checkbox" name="guest_options[enabled]" value="1"'.checked($options['enabled'],true,false).'><span><strong>Un tarif par personne</strong><span class="description">Chaque personne choisit son tarif FluentBooking. Décoché : le calcul du prix reste natif.</span></span></label>';
+        if ($options['native_tariffs']) {
+            echo '<input type="hidden" name="guest_options[native_tariffs]" value="1">';
+        } else {
+            echo '<label class="fba-identity-option"><span>Tarification</span><select name="guest_options[native_tariffs]"><option value="1">Un tarif par personne</option><option value="0" selected>Ancien calcul personnalisé</option></select></label>';
+            echo '<label class="fba-choice fba-legacy-pricing"><input type="checkbox" name="guest_options[per_person_price]" value="1"'.checked($options['per_person_price'],true,false).'><span>Multiplier le tarif de base par le nombre de personnes</span></label>';
         }
+        echo '<label class="fba-choice"><input type="checkbox" name="guest_options[customize_guests]" value="1"'.checked($options['customize_guests'],true,false).'><span><strong>Personnaliser les informations des invités</strong><span class="description">Choisissez les informations à demander à chaque invité, indépendamment du tarif.</span></span></label>';
+        echo '<div class="fba-guest-details"'.(!$options['customize_guests']?' hidden':'').'>';
         foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
             echo '<label class="fba-identity-option"><span>'.esc_html($title).'</span><select name="guest_options['.$key.']">';
             foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
@@ -68,7 +64,10 @@ final class GuestOptionsForm
         echo '<fieldset class="fba-extra-field"><legend>Champ invité</legend><input type="hidden" data-field-id name="'.esc_attr($prefix.'[id]').'" value="'.esc_attr($field['id']).'">';
         echo '<label>Libellé<input type="text" maxlength="160" name="'.esc_attr($prefix.'[label]').'" value="'.esc_attr($field['label']).'" placeholder="Ex. Catégorie du participant"></label><label>Affichage<select name="'.esc_attr($prefix.'[type]').'">';
         foreach(['select'=>'Liste déroulante','radio'=>'Boutons radio','checkbox'=>'Case à cocher','text'=>'Texte libre','number'=>'Nombre'] as $type=>$title){echo '<option value="'.$type.'"'.selected($type,$field['type'],false).'>'.$title.'</option>';}
-        echo '</select></label><label class="fba-field-choices">Choix possibles, un par ligne<textarea name="'.esc_attr($prefix.'[choices]').'" placeholder="Adulte&#10;Enfant">'.esc_textarea(implode("\n",$field['choices'])).'</textarea></label>';
+        echo '</select></label><label class="fba-field-choices">Choix possibles, un par ligne<textarea name="'.esc_attr($prefix.'[choices]').'" placeholder="Option 1&#10;Option 2">'.esc_textarea(implode("\n",$field['choices'])).'</textarea></label>';
+        echo '<div class="fba-field-bounds"'.($field['type']!=='number'?' hidden':'').'>';
+        foreach(['min'=>'Minimum','max'=>'Maximum'] as $key=>$title) {echo '<label>'.$title.'<input type="number" step="any" name="'.esc_attr($prefix.'['.$key.']').'" value="'.esc_attr($field[$key]??'').'" placeholder="Sans limite"></label>';}
+        echo '</div>';
         echo '<div class="fba-field-pricing"><label>Effet sur le tarif de cet invité<select name="'.esc_attr($prefix.'[pricing]').'">';
         foreach(['none'=>'Aucun effet sur le prix','add'=>'Ajouter un supplément','replace'=>'Remplacer le tarif de cet invité'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($field['pricing']??'none',$mode,false).'>'.$label.'</option>';}
         echo '</select></label><label class="fba-field-prices">Prix par choix, dans le même ordre (un montant par ligne)<textarea name="'.esc_attr($prefix.'[prices]').'" placeholder="40,00&#10;25,00">'.esc_textarea(implode("\n",array_map(static fn($c)=>number_format($c/100,2,'.',''),$field['prices']??[]))).'</textarea><span class="description">Dans la devise FluentBooking. Pour une case : un seul montant, appliqué uniquement si elle est cochée. 0 est un tarif valide.</span></label></div><label><input type="checkbox" name="'.esc_attr($prefix.'[required]').'" value="1"'.checked($field['required'],true,false).'> Réponse obligatoire</label><button type="button" class="button fba-remove-field">Supprimer ce champ</button></fieldset>';

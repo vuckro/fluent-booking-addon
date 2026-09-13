@@ -1,13 +1,13 @@
-# Un tarif par personne — alpha.22
+# Tarifs et informations par invité — alpha.25
 
 ## Utilisation
 
 1. Dans les paiements de l’événement FluentBooking, créez les lignes **Adulte : 70 €** et **Enfant : 55 €**. Utilisez les paiements natifs, une durée unique et un événement de groupe.
 2. Activez **Invités supplémentaires** dans les questions FluentBooking. La capacité du créneau reste gérée par FluentBooking.
-3. Dans **Modules**, sélectionnez cet événement et cochez **Un tarif par personne** : les options de personnalisation apparaissent. Décochez puis enregistrez pour retrouver le formulaire et le calcul natifs.
-4. Choisissez **Nom obligatoire** et **Courriel masqué** pour les invités, puis enregistrez.
+3. Dans **Modules**, sélectionnez cet événement et cochez **Un tarif par personne** pour remplacer les lignes cumulatives par un choix de tarif pour chaque personne. Cette case ne contrôle plus les informations demandées aux invités.
+4. Cochez séparément **Personnaliser les informations des invités** pour afficher le nom, le courriel et les champs supplémentaires. Par exemple, choisissez **Nom obligatoire** et **Courriel masqué**, puis enregistrez.
 
-L’événement collectif local est déjà configuré ainsi. Ses tarifs natifs n’ont pas été modifiés. L’objet de la réunion reste une question native : vous pouvez le désactiver dans les questions FluentBooking.
+Cet exemple ne modifie pas les réglages enregistrés de vos événements. L’objet de la réunion reste une question native : vous pouvez le désactiver dans les questions FluentBooking.
 
 Le réservant choisit son tarif. Chaque invité choisit le sien. Le premier tarif est sélectionné initialement ; avec un seul tarif, chaque personne l’utilise. Le total affiche uniquement les choix retenus :
 
@@ -18,7 +18,15 @@ Le réservant choisit son tarif. Chaque invité choisit le sien. Le premier tari
 | Un adulte et un enfant | 125 € | 2 |
 | Deux adultes et un enfant | 195 € | 3 |
 
-Les montants de FluentBooking sont normalement des lignes additionnées. **Ce module les interprète comme des choix exclusifs**, uniquement sur les événements personnalisés utilisant ce mode. Si vous désactivez la personnalisation, FluentBooking retrouve son comportement natif : les lignes redeviennent cumulatives.
+Les montants de FluentBooking sont normalement des lignes additionnées. **Ce module les interprète comme des choix exclusifs**, uniquement sur les événements personnalisés utilisant ce mode. Si vous décochez « Un tarif par personne », FluentBooking retrouve son calcul natif : les lignes redeviennent cumulatives.
+
+## Informations indépendantes
+
+Les deux cases peuvent être cochées ensemble ou séparément. Sans tarif par personne, les informations des invités restent disponibles et le paiement natif est conservé. Sans personnalisation des informations, le nom et le courriel des invités sont obligatoires et les champs supplémentaires ne sont pas demandés. Les valeurs configurées sont conservées lorsque vous masquez ce bloc.
+
+Pour un champ **Nombre**, renseignez **Minimum** et/ou **Maximum** ; une borne vide signifie aucune limite de ce côté. Les bornes sont inclusives et peuvent être négatives ou décimales (jusqu’à quatre décimales). Un champ facultatif peut rester vide. Le serveur refuse une valeur hors limites ou un minimum supérieur au maximum.
+
+Les choix proposés dans les exemples sont « Option 1 » et « Option 2 » ; remplacez-les par vos libellés.
 
 ## Administration simplifiée
 
@@ -45,3 +53,7 @@ Le résumé présente le maximum possible sur un créneau vide, soit le minimum 
 `tests/native-tariffs-dom.cjs` vérifie les choix et le récapitulatif, l’identité masquée, l’âge et la suppression d’un invité. La recette locale a également exécuté le vrai bundle JavaScript FluentBooking avec le module sous jsdom, à partir du HTML public et des disponibilités lues, sans soumission réseau : passage calendrier → formulaire, 70/125/70, champ technique masqué et moyen de paiement conservé. Cela ne remplace pas une vérification visuelle dans un navigateur.
 
 Sauvegarde locale avant adoption : `.local-backups/native-tariffs-2026-09-13.json`, dans le dossier parent du dépôt (hors package).
+
+## Maintenance
+
+`enabled` conserve son rôle historique d’activation de la tarification. `customize_guests` active séparément les informations. Pour une ancienne configuration sans cette clé, sa valeur suit l’ancien interrupteur : aucune modification de comportement à la mise à jour. `Options::effective()` calcule les réglages utilisés sans effacer les valeurs enregistrées. Le mode informations seules marque le snapshot `preserve_payments` pour laisser les filtres de commandes et de lignes natifs intacts.

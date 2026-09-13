@@ -20,7 +20,7 @@
 .fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):hover { background:var(--fcal_thBG); color:var(--fcal_dark); }
 .fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):focus-visible { outline:1px solid var(--fcal_dark); outline-offset:2px; }
 .fba-custom-guests button.fba-add-guest:disabled { opacity:.5; cursor:not-allowed; }
-.fba-custom-guests :is(.fcal_payment_items_table,.fcal_payment_items,.fcal_payment_coupon),.fba-custom-guests .fba-payment-methods > .fcal_input_content > .fcal_input_label { display:none; }
+.fba-custom-pricing :is(.fcal_payment_items_table,.fcal_payment_items,.fcal_payment_coupon),.fba-custom-pricing .fba-payment-methods > .fcal_input_content > .fcal_input_label { display:none; }
 .fba-custom-guests .fba-payment-recap { margin:24px 0; }
 .fba-custom-guests .fba-payment-recap h3 { margin:0 0 12px; font-size:16px; font-weight:600; color:var(--fcal_dark); }
 .fba-custom-guests .fba-payment-recap dl:empty { display:none; }

@@ -48,5 +48,17 @@ try {
  (new WaasKit\FluentBooking\Infrastructure\Privacy())->erase('fba-test@example.invalid');
  $erased=$flat->getMeta(BookingAdapter::META,[]);
  check($erased['guests'][1]['fields']===[] && $erased['quantity']===1,'privacy erases answers and preserves quantity');
+ $options['enabled']=false;$options['customize_guests']=true;$options['native_tariffs']=true;$options['email_mode']='hidden';
+ $options['fields']=[['id'=>'number','label'=>'Nombre','type'=>'number','required'=>true,'choices'=>[],'min'=>'1','max'=>'5']];
+ $current=$store->read('calendar_event',2);$store->save('calendar_event',2,['guest_options'=>$options],$current['revision']);
+ $input['start_time']='2030-01-08 14:00:00';$input['end_time']='2030-01-08 14:30:00';unset($input['additional_guests']);
+ $input['_fba_extras']=json_encode([['name'=>'Invité','fields'=>['number'=>'3']]]);
+ $custom=BookingService::createBooking($input,$event,['payment_method'=>'offline']);
+ check(!is_wp_error($custom),is_wp_error($custom)?$custom->get_error_message():'information-only booking accepted without guest email');
+ check($custom->getMeta(BookingAdapter::META,[])['guests'][0]['fields']['number']==='3','bounded answer persisted');
+ $customOrder=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($custom,$event,['quantity'=>1]);
+ check((int)$customOrder->total_amount===1429,'information-only mode preserves native payment amount');
+ $input['start_time']='2030-01-09 14:00:00';$input['end_time']='2030-01-09 14:30:00';$input['_fba_extras']=json_encode([['name'=>'Invité','fields'=>['number'=>'6']]]);
+ check(is_wp_error(BookingService::createBooking($input,$event,['payment_method'=>'offline'])),'tampered number rejected in actual booking flow');
 } finally {$wpdb->query('ROLLBACK');wp_cache_flush();}
 check($store->read('calendar_event',2)===$before,'user settings preserved');check(Booking::count()===$countBefore,'no fixture booking retained');

@@ -1,3 +1,10 @@
+## 4.0.0-alpha.25
+
+- Deux activations indépendantes : tarification par personne et informations des invités (nom, courriel, champs supplémentaires).
+- Sans tarification personnalisée, le récapitulatif et les lignes de paiement natifs sont conservés.
+- Champs numériques : minimum et maximum facultatifs, validés dans le navigateur et sur le serveur ; bornes inclusives.
+- Exemples de choix génériques « Option 1 / Option 2 ». Les configurations précédentes conservent leur comportement.
+
 ## 4.0.0-alpha.24
 
 - Bloc invités public aligné sur la palette native, labels lisibles en sombre, champs homogènes, ajout discret et suppression compacte.

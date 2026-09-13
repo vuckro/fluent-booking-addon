@@ -12,6 +12,7 @@
         mounted.add(transport);
         transportItem.hidden = true;
         root.classList.add('fba-custom-guests');
+        root.classList.toggle('fba-custom-pricing', !config.preservePayments);
         if (config.error) {
             const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
             transportItem.before(message); root.querySelectorAll('[type=submit]').forEach(button => button.disabled = true); return;
@@ -36,7 +37,7 @@
             guestWrap.append(add);
             const payment = root.querySelector('.fcal_payment_items');
             const paymentItem = payment?.closest('.fcal_form_item');
-            if (paymentItem) {
+            if (paymentItem && !config.preservePayments) {
                 paymentItem.classList.add('fba-payment-methods');
                 paymentItem.querySelector('.fcal_input_content')?.setAttribute('aria-label','Moyen de paiement');
             }
@@ -60,6 +61,7 @@
         const title = document.createElement('h3'); title.textContent = 'Récapitulatif des paiements';
         const lines = document.createElement('dl'); recap.append(title, lines, summary); guestWrap.after(recap);
         if (!nativeTariffs) title.hidden = true;
+        if (config.preservePayments) recap.hidden = true;
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
@@ -91,7 +93,7 @@
                     if (field.type === 'select') {
                         const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Choisir…'; input.append(placeholder);
                         field.choices.forEach((value, index) => { const option = document.createElement('option'); option.value = value; option.textContent = choiceLabel(value, index); input.append(option); });
-                    } else { input.type = ['number','checkbox'].includes(field.type) ? field.type : 'text'; if (field.type === 'number') input.step = 'any'; else input.maxLength = 1000; }
+                    } else { input.type = ['number','checkbox'].includes(field.type) ? field.type : 'text'; if (field.type === 'number') { input.step = 'any'; if (field.min != null) input.min = field.min; if (field.max != null) input.max = field.max; } else input.maxLength = 1000; }
                     label.append(input);panel.append(label);
                 });
                 row.append(panel);

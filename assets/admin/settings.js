@@ -6,7 +6,7 @@
     const template = root.querySelector('template');
     let index = list.children.length;
     const refresh = () => {
-        const enabled = root.querySelector('[name="guest_options[enabled]"]');
+        const enabled = root.querySelector('[name="guest_options[customize_guests]"]');
         const details = root.querySelector('.fba-guest-details');
         details.hidden = !enabled.checked;
         enabled.setAttribute('aria-expanded', String(enabled.checked));
@@ -15,6 +15,7 @@
         list.querySelectorAll('.fba-extra-field').forEach(row => {
             const type = row.querySelector('select').value;
             row.querySelector('.fba-field-choices').hidden = !['select','radio'].includes(type);
+            row.querySelector('.fba-field-bounds')?.toggleAttribute('hidden', type !== 'number');
             const pricing = row.querySelector('.fba-field-pricing');
             pricing.hidden = native || !['select','radio','checkbox'].includes(type);
             if (!['select','radio','checkbox'].includes(type)) pricing.querySelector('select').value = 'none';

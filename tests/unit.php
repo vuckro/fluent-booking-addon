@@ -25,3 +25,19 @@ check(\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[['t
 rejects(fn()=>\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[[]]),'guest without tariff is never silently skipped');
 rejects(fn()=>\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[null]),'malformed guest rejected by pricing engine');
 check(Options::defaults()['native_tariffs']===true && Options::validate(['enabled'=>false])['native_tariffs']===false,'new mode default preserves pre-existing configurations');
+
+$legacy=Options::validate(['enabled'=>true,'native_tariffs'=>true]);
+check($legacy['customize_guests']===true,'existing customization retained');
+$info=Options::effective(['enabled'=>false,'customize_guests'=>true,'native_tariffs'=>true,'email_mode'=>'hidden']);
+check($info['enabled'] && !$info['pricing_enabled'] && !$info['native_tariffs'] && $info['email_mode']==='hidden','identity works without custom pricing');
+$price=Options::effective(['enabled'=>true,'customize_guests'=>false,'native_tariffs'=>true,'email_mode'=>'hidden']);
+check($price['pricing_enabled'] && $price['email_mode']==='required' && !$price['fields'],'pricing alone uses default identity');
+$f=['id'=>'number','label'=>'Nombre','type'=>'number','required'=>false,'choices'=>[],'min'=>'0','max'=>'10'];
+Options::validate(['fields'=>[$f]]);
+$answer=static fn($v)=>Options::answers([['email'=>'','fields'=>['number'=>$v]]],[['email'=>'','name'=>'']],[$f]);
+check($answer('0')[0]['fields']['number']==='0' && $answer('10')[0]['fields']['number']==='10','numeric endpoints accepted');
+check($answer('')[0]['fields']['number']==='','optional number can be blank');
+rejects(fn()=>$answer('-1'),'below minimum rejected server-side');
+rejects(fn()=>$answer('11'),'above maximum rejected server-side');
+rejects(fn()=>Options::validate(['fields'=>[array_replace($f,['min'=>'11'])]]),'inverted numeric bounds rejected');
+rejects(fn()=>Options::validate(['fields'=>[array_replace($f,['max'=>'NaN'])]]),'invalid numeric bounds rejected');
