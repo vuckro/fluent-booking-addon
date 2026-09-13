@@ -1,4 +1,4 @@
-# Agendas connectés — alpha.30
+# Agendas connectés — alpha.31
 
 Un événement de groupe Google ou Outlook peut être partagé par plusieurs réservations d’un créneau. Sa description est susceptible d’être visible par les contacts invités, même lorsque la liste des invités est masquée. Les snapshots individuels ne doivent donc pas être copiés dans cette description.
 
@@ -18,3 +18,9 @@ La description ne contient aucun compteur à actualiser. Les hooks ne s’exécu
 `php tests/calendar-presentation.php` : 24 contrôles sans réseau, exécutés aussi dans GitHub Actions sur PHP 8.1–8.4. Préservation du payload natif, absence de données personnelles, idempotence, Outlook texte/HTML et réservations non concernées.
 
 `tests/public-booking.php` vérifie en plus les filtres enregistrés sur une réservation réelle transactionnelle, avec et sans participation du contact. Aucun email ni événement Google/Outlook n’a été envoyé pendant cette recette. Vérifier le rendu chez le fournisseur avec une nouvelle réservation de test autorisée.
+
+## Protection des places rattachées (alpha.31)
+
+`CalendarContacts` enveloppe les callbacks des fournisseurs natifs au hook `wp_loaded`, après leur enregistrement. Une fiche marquée `attached_seat` ne déclenche aucune opération distante ; les collections de groupe transmises aux fournisseurs excluent ces fiches. Le stock et les contacts principaux restent inchangés. La protection couvre Google, Outlook, Apple et Nextcloud ; les descriptions personnalisées restent limitées à Google/Outlook.
+
+Cette adaptation est liée aux hooks observés en 2.4.0 et doit être retestée avant une mise à jour native. `tests/calendar-contacts.php` vérifie leur branchement sans réseau et la protection des notifications natives dans `SeatNotifications`. Les autres intégrations tierces ne sont pas interceptées.

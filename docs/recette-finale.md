@@ -1,34 +1,41 @@
-# Recette avant main — 13 septembre 2026 — alpha.26
+# Vérification avant production — 13 septembre 2026 — alpha.31
 
-La publication sur main reste une **alpha prête aux essais**, dans le périmètre ci-dessous.
+## Verdict
 
-## Vérifications exécutées
+**Prête pour une recette contrôlée ; ouverture générale en production non validée.** Les tests locaux passent, mais ils ne certifient ni la réception des emails, ni les fournisseurs de paiement/agendas, ni une distribution officielle FluentBooking. Ne pas confondre synchronisation du dépôt GitHub et déploiement sur un site client.
 
-- **111 contrôles PHP** réussis : unité 21, administration 15, invités 24, ancien moteur de prix 19, tarifs natifs 26, migration 6.
-- **6 scénarios DOM** réussis : administration, invités, identités et anciens prix, tarifs natifs, informations seules, parcours du vrai bundle FluentBooking.
-- Syntaxe de tous les fichiers PHP et JavaScript, vérification du diff et archive ZIP.
-- Page publique localhost HTTP 200 ; JavaScript servi identique au fichier du dépôt.
-- Réglages et réservations de test restaurés. Tests transactionnels locaux avec neutralisation des emails et appels externes.
+## Résultats locaux
 
-Les scénarios couvrent notamment 70/55/125 €, rejet des tarifs falsifiés, cinq personnes pour cinq places, refus si capacité insuffisante, suppression et annulation des places rattachées, stabilité des montants historiques, export/effacement, champs obligatoires et bornes numériques. Les informations peuvent être activées sans tarification ; le paiement natif reste alors intact, y compris dans sa préparation.
+- 266 contrôles PHP : unité, configuration, champs et bornes, tarifs natifs, migration, contact non participant, entrée AJAX publique et intégration des agendas/notifications.
+- 8 scénarios DOM : administration, invités, tarifs, informations seules, participation du contact et parcours du bundle natif.
+- Réservations de test transactionnelles annulées ; emails et HTTP externes bloqués dans les tests. Les tests ne créent pas d’événement Google et ne débitent aucun paiement.
+- Environnement : WordPress 7.1, PHP 8.2.29, FluentBooking et Pro annoncés 2.4.0. **Les sources natives locales contiennent des modifications : cette recette ne constitue pas une certification de la distribution officielle 2.4.0.**
 
-Le parcours du bundle natif se déroule sous jsdom, sur une fixture HTML locale avec configuration temporaire injectée hors site : date → créneau → formulaire → retour → formulaire → soumission simulée. Aucune réservation ni aucun paiement réel n’est envoyé. Il vérifie la conservation des invités, l’absence de doublons et la transmission du tarif choisi.
+Les contrôles couvrent 70 € adulte, 55 € enfant, 125 € pour les deux ; contact non participant + enfant = 55 € et une place ; validation serveur des tarifs et champs ; refus de zéro participant ou de six participants pour cinq places ; annulation groupée, suppression et préservation des montants historiques.
 
-## Correction issue de l’audit
+## Corrections trouvées pendant l’audit
 
-Le démarrage d’un paiement en mode informations seules pouvait réinjecter les tarifs du snapshot. Le contexte de tarification est désormais réinitialisé et ce mode laisse les paramètres natifs intacts. Un test de régression couvre le callback, sans exécuter le prestataire de paiement.
+Les gestionnaires de paiement natifs déclenchent aussi les hooks de réservation des fiches de places rattachées. Ces fiches ont volontairement un email vide. Elles pouvaient donc produire une tentative Google invalide et des notifications/rappels séparés.
 
-## Limites de validation
+`CalendarContacts` protège les callbacks des fournisseurs natifs après leur enregistrement : les fiches rattachées sont ignorées, et les collections de groupe sont filtrées sans modifier le stock. `SeatNotifications` protège les callbacks de notifications natifs, y compris les tâches asynchrones déjà en file. Le contact principal conserve ses communications, qu’il participe ou non. Aucun fichier FluentBooking n’est modifié par ces corrections.
 
-Environnement testé : WordPress 7.1, FluentBooking/Pro 2.4.0 installés localement, PHP 8.2.29. La plage PHP 8.1+ n’a pas été testée sur chaque version. Compatibilité annoncée limitée à FluentBooking 2.4.x.
+Les tests vérifient l’enregistrement réel des protections pour Google, Outlook, Apple et Nextcloud ainsi que les neuf hooks de notifications observés. Ils bloquent le réseau : **le succès chez ces fournisseurs reste à vérifier.** Les intégrations tierces ajoutant leurs propres callbacks ne sont pas couvertes par cette protection native.
 
-Pas de validation universelle des thèmes/extensions, de contrôle visuel navigateur dans cette recette, de confirmation de réception des emails ou de paiement Stripe de bout en bout. Ces points restent à vérifier sur le site cible avant production :
+## Conditions avant ouverture aux clients
 
-1. Interface desktop/mobile, clair/sombre, navigation clavier.
-2. Réservation hors ligne : commande, participants, places restantes et communications.
-3. Stripe en mode test : paiement réussi/refusé, retour et confirmation.
-4. Migration sur une copie du site si départ depuis v3.3.6.
+1. Installer sur une préproduction la distribution officielle FluentBooking/Pro compatible et cette alpha ; sauvegarder base et fichiers, puis refaire la recette. Ne pas remplacer silencieusement la copie locale modifiée.
+2. Vérifier desktop/mobile, clair/sombre, clavier et confirmation avec les thèmes/extensions réellement utilisés.
+3. Tester un contact participant avec un invité, puis un contact non participant avec un invité ; comparer commande, participants, champs, places restantes et confirmation.
+4. Tester l’annulation de la **réservation principale** et la restitution des places. Les invités rattachés appartiennent au même dossier : ne pas les annuler, supprimer ou rembourser individuellement. Leur gestion indépendante n’est pas prise en charge et peut désaligner le récapitulatif conservé.
+5. Sur un nouveau créneau, vérifier réellement la création Google/Outlook, l’ajout d’un deuxième contact et l’annulation. Ne pas attendre une correction rétroactive des anciens événements. Le lien de détails nécessite une connexion WordPress et un domaine accessible, pas localhost.
+6. Vérifier confirmations et rappels dans les boîtes du contact et de l’hôte. La simulation FluentSMTP visible dans les essais précédents ne prouve pas une livraison réelle. Ne la désactiver que pour une recette explicitement autorisée.
+7. Si Stripe est utilisé : en mode test, paiement réussi, refusé, abandon, reprise et webhook ; contrôler montant, statut et places. Vérifier séparément un remboursement. Aucun paiement Stripe réel n’a été exécuté dans cet audit.
+8. Avant une campagne à forte affluence, tester les soumissions concurrentes sur le serveur cible. Les refus de capacité sont testés ; aucun test de charge multi-processus n’a été effectué ici.
 
-Les réservations de groupe sur créneau unique sont couvertes. Coupons, WooCommerce, multi-durée, reports et réactivation automatique restent exclus des personnalisations.
+## Périmètre et exploitation
 
-Voir [les tests reproductibles](validation.md), [le guide](tarifs-par-personne.md) et [la migration](migration.md).
+Événements de groupe sur un créneau unique, devise à deux décimales, paiement natif Stripe ou hors ligne. Coupons, WooCommerce, récurrence, multi-durée, report et réactivation restent hors périmètre personnalisé. Conserver FluentBooking dans la branche compatible 2.4.x et refaire les tests avant toute mise à jour.
+
+Les réponses supplémentaires ne modifient pas les tarifs natifs ; les réservations déjà enregistrées conservent leur snapshot. En cas d’incident, fermer temporairement l’événement aux nouvelles réservations. Ne pas simplement désactiver l’add-on sur des dossiers personnalisés existants : les règles et présentations de ces dossiers en dépendent. Restaurer une sauvegarde uniquement en tenant compte des réservations et paiements survenus depuis.
+
+Voir [les commandes de test](validation.md), [les agendas connectés](agendas-connectes.md) et [le guide](tarifs-par-personne.md).

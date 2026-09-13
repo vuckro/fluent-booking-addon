@@ -51,3 +51,7 @@ Total actuel : **189 contrôles PHP et 8 scénarios DOM réussis**. Les 22 nouve
 La liste native conserve le nom du contact de la réservation principale (Papa). Déplier sa ligne affiche « Réservé par : Papa — ne participe pas » puis « Participant : Jean », son tarif et son âge. Cela préserve les coordonnées utilisées pour la facturation et les communications. Les intégrations externes continuent d’utiliser ce contact natif. Aucun nouveau test visuel navigateur ni test de réception des emails n’est revendiqué.
 
 Alpha.30 : ajout de `php tests/calendar-presentation.php` (24 contrôles), et de 4 contrôles des hooks connectés dans le parcours AJAX. Voir [le périmètre des agendas connectés](agendas-connectes.md).
+
+## Audit alpha.31 — 13 septembre 2026
+
+266 contrôles PHP passent, dont 39 nouveaux contrôles `tests/calendar-contacts.php` (WordPress local requis). Les tests de notifications incluent les anciennes tâches indexées par ID. Exécuter ce test avec le même `WAASKIT_WP_PATH` et socket MySQL que les autres tests d’intégration. Les 8 scénarios DOM passent. Voir `recette-finale.md` pour les limites et conditions de production ; les tests ne certifient pas les services externes.

@@ -1,3 +1,9 @@
+## 4.0.0-alpha.31
+
+- Correction : les places rattachées sans email ne déclenchent plus de création, modification ou suppression d’événement distant. Les groupes Google, Outlook, Apple et Nextcloud transmettent seulement les contacts.
+- Les notifications natives sont réservées à la réservation principale, y compris pour les tâches invitées déjà en file. Les rappels des places rattachées ne remplacent plus ceux du contact.
+- 266 contrôles PHP et recette de mise en production actualisée. Validation réelle des fournisseurs et distribution officielle FluentBooking encore requises.
+
 ## 4.0.0-alpha.30
 
 - Ajustement : description réduite à « Voir les détails de la réservation » et lien admin vers la réservation d’origine ; phrase de confirmation simplifiée.
