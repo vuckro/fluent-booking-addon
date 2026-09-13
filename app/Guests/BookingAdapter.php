@@ -71,12 +71,19 @@ final class BookingAdapter
         }
         $price=0;
         foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
-        $config=['preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
+        $config=['structuredPayload'=>$options['native_tariffs'] || $options['allow_nonparticipating'],'allowNonparticipating'=>$options['allow_nonparticipating'] && $this->guestsAllowed($event),'preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
         $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
         wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.js'),true);
         wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.css'));
         wp_add_inline_script('fba-guests','window.fbaGuestForms=window.fbaGuestForms||{};window.fbaGuestForms['.(int)$event->id.']='.wp_json_encode($config).';','before');
         return $vars;
+    }
+    private function guestsAllowed($event): bool
+    {
+        foreach ($event->getBookingFields() as $field) {
+            if (($field['name']??'')==='guests') {return !empty($field['enabled']);}
+        }
+        return false;
     }
     private function guestLimit($event): int
     {
@@ -104,12 +111,13 @@ final class BookingAdapter
                 throw new \RuntimeException('Les choix payants nécessitent un tarif de base unique et un paiement natif activé.');
             }
             $catalogue=$options['native_tariffs']?NativeTariffs::catalogue($event):null;
-            $holderTariff='';
-            if ($options['native_tariffs']) {
+            $holderTariff='';$holderParticipates=true;
+            if ($options['native_tariffs'] || $options['allow_nonparticipating']) {
                 $raw=$input['_fba_extras']??'';
                 if (!is_string($raw) || strlen($raw)>30000) {throw new \InvalidArgumentException('Informations de réservation invalides.');}
                 $payload=json_decode($raw,true,16,JSON_THROW_ON_ERROR);
                 if (!is_array($payload) || !is_array($payload['guests']??null) || !array_is_list($payload['guests'])) {throw new \InvalidArgumentException('Complétez les participants.');}
+                $holderParticipates=Participation::requested($payload,$options['allow_nonparticipating'] && $this->guestsAllowed($event));
                 $holderTariff=$payload['holder_tariff']??'';
                 $input['_fba_extras']=wp_json_encode($payload['guests']);
             }
@@ -118,7 +126,7 @@ final class BookingAdapter
                 throw new \RuntimeException('Le réservant doit indiquer un nom et un courriel valide.');
             }
             $answers=Options::answers($rows,$rows,$options['fields']);
-            $count=count($answers)+1;
+            $count=Participation::count(count($answers),$holderParticipates);
             if($count>$this->guestLimit($event)) {
                 throw new \RuntimeException('Le nombre de personnes dépasse la limite de cette réservation. Vérifiez les invités supplémentaires et le maximum autorisé.');
             }
@@ -138,20 +146,20 @@ final class BookingAdapter
             $tariffQuote=null;
             if ($options['native_tariffs'] && $catalogue) {
                 foreach ($rows as $i=>$row) {$rows[$i]['tariff']=$row['tariff']??'';}
-                $tariffQuote=NativeTariffs::quote($catalogue,$holderTariff,$rows);
-                foreach ($answers as $i=>&$answer) {$answer['tariff']=$tariffQuote['people'][$i+1];} unset($answer);
+                $tariffQuote=NativeTariffs::quote($catalogue,$holderTariff,$rows,$holderParticipates);
+                foreach ($answers as $i=>&$answer) {$answer['tariff']=$tariffQuote['people'][$i+($holderParticipates?1:0)];} unset($answer);
             }
             if ($options['native_tariffs']) {
                 $quantity=1;
-                $quote=['total'=>$tariffQuote['total']??0,'guests'=>array_column(array_slice($tariffQuote['people']??[],1),'cents')];
-                $items=array_map(static fn($person,$index)=>['title'=>($index===0?'Réservant':'Invité '.$index).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
+                $quote=['total'=>$tariffQuote['total']??0,'guests'=>array_column(array_slice($tariffQuote['people']??[],$holderParticipates?1:0),'cents')];
+                $items=array_map(static fn($person,$index)=>['title'=>($holderParticipates && $index===0?'Réservant':'Invité '.($index+($holderParticipates?0:1))).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
             }
             else {
                 $quote=Pricing::quote(array_sum(array_column($items,'cents')),$options,$answers);
                 if($priced) {$items=[['title'=>'Réservation — '.$count.' personne(s)','cents'=>$quote['total']]];$quantity=1;}
             }
             $token=wp_generate_uuid4();
-            $this->pending[$token]=['preserve_payments'=>!$options['pricing_enabled'],'holder_tariff'=>$tariffQuote['people'][0]??null,'attached'=>true,'guest_amounts'=>$quote['guests'],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
+            $this->pending[$token]=['holder_participates'=>$holderParticipates,'preserve_payments'=>!$options['pricing_enabled'],'holder_tariff'=>$holderParticipates?($tariffQuote['people'][0]??null):null,'attached'=>true,'guest_amounts'=>$quote['guests'],'count'=>$count,'quantity'=>$quantity,'seats'=>$seats,'guests'=>$answers,'fields'=>$options['fields'],'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency(),'items'=>$items,'lock'=>$lock];
             $data['_fba_token']=$token;
             $data['quantity']=$quantity;
             return $data;
@@ -193,7 +201,11 @@ final class BookingAdapter
     {
         $snapshot=$booking->getMeta(self::META,[]);
         if(empty($snapshot['guests'])) {return;}
-        echo '<section class="fba-booked-guests"><h3>Invités</h3><ul>';
+        echo '<section class="fba-booked-guests"><h3>Participants</h3>';
+        if (!empty($snapshot['attached_seat'])) {echo '<p>Participant rattaché à la réservation principale.</p>';}
+        elseif (($snapshot['holder_participates']??true)===false) {echo '<p>Le réservant est le contact et ne participe pas. Les participants sont listés ci-dessous.</p>';}
+        else {echo '<p>Le réservant participe également.</p>';}
+        echo '<ul>';
         $labels=array_column($snapshot['fields'],'label','id');
         foreach($snapshot['guests'] as $index=>$guest) {
             echo '<li>'.esc_html($guest['name']?:'Invité '.($index+1));

@@ -26,11 +26,12 @@ final class NativeTariffs
         return array_values($result);
     }
 
-    public static function quote(array $catalogue, $holder, array $guests): array
+    public static function quote(array $catalogue, $holder, array $guests, bool $holderParticipates = true): array
     {
+        Participation::count(count($guests),$holderParticipates);
         $lookup=array_column($catalogue,null,'id');
         $people=[];$total=0;
-        foreach (array_merge([$holder],array_map(static fn($guest)=>is_array($guest)?($guest['tariff']??null):null,$guests)) as $id) {
+        foreach (array_merge($holderParticipates?[$holder]:[],array_map(static fn($guest)=>is_array($guest)?($guest['tariff']??null):null,$guests)) as $id) {
             if (!is_string($id) || !isset($lookup[$id])) {
                 throw new \InvalidArgumentException('Choisissez un tarif valide pour chaque personne. Si les tarifs ont changé, rechargez la page.');
             }

@@ -9,7 +9,7 @@ final class GuestOptionsForm
         $raw=$post['guest_options']??[];
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
-        foreach(['enabled','customize_guests','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        foreach(['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}
@@ -33,6 +33,7 @@ final class GuestOptionsForm
             echo '<label class="fba-identity-option"><span>Tarification</span><select name="guest_options[native_tariffs]"><option value="1">Un tarif par personne</option><option value="0" selected>Ancien calcul personnalisé</option></select></label>';
             echo '<label class="fba-choice fba-legacy-pricing"><input type="checkbox" name="guest_options[per_person_price]" value="1"'.checked($options['per_person_price'],true,false).'><span>Multiplier le tarif de base par le nombre de personnes</span></label>';
         }
+        echo '<label class="fba-choice"><input type="checkbox" name="guest_options[allow_nonparticipating]" value="1"'.checked($options['allow_nonparticipating'],true,false).'><span><strong>Autoriser la réservation pour d’autres personnes</strong><span class="description">Le réservant peut choisir de ne pas participer. Il reste le contact qui paie et reçoit les messages ; seuls les participants occupent des places.</span></span></label>';
         echo '<label class="fba-choice"><input type="checkbox" name="guest_options[customize_guests]" value="1"'.checked($options['customize_guests'],true,false).'><span><strong>Personnaliser les informations des invités</strong><span class="description">Choisissez les informations à demander à chaque invité, indépendamment du tarif.</span></span></label>';
         echo '<div class="fba-guest-details"'.(!$options['customize_guests']?' hidden':'').'>';
         foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
@@ -40,7 +41,7 @@ final class GuestOptionsForm
             foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
             echo '</select></label>';
         }
-        echo '<p class="description">Chaque personne occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
+        echo '<p class="description">Chaque participant occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
         echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez uniquement les informations complémentaires utiles : âge, préférence ou remarque. Les tarifs se configurent dans les paiements FluentBooking.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}
         echo '</div><button type="button" class="button fba-add-field">Ajouter un champ</button><template id="fba-field-template">';

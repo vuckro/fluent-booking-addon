@@ -122,6 +122,7 @@ final class SettingsPage
             ['Maximum par réservation', $guestsAllowed ? min((int) ($native['limit'] ?? 10), (int) $event->getMaxBookingPerSlot()) . ' personnes' : '1 personne', 'Maximum possible sur un créneau vide ; diminue avec les réservations'],
         ];
         if ($enabled) {
+            $summary[] = ['Réservation pour autrui', $options['allow_nonparticipating'] ? 'Autorisée' : 'Désactivée', $options['allow_nonparticipating'] ? 'Le contact peut ne pas participer ; au moins un participant est requis' : 'Le réservant participe toujours'];
             $summary[] = ['Prix de base', $options['native_tariffs'] ? 'Au choix, par personne' : ($options['per_person_price'] ? 'Par personne' : 'Par réservation'), $options['pricing_enabled'] ? ($options['native_tariffs'] ? 'Un seul tarif pour vous et pour chaque invité' : 'Ancien calcul personnalisé') : 'Calcul natif FluentBooking conservé'];
             $summary[] = ['Identité des invités', 'Nom ' . $modes[$options['name_mode']], 'Courriel ' . $modes[$options['email_mode']]];
             $summary[] = ['Champs supplémentaires', count($options['fields']) ? count($options['fields']) . ' configuré(s)' : 'Aucun', count($options['fields']) ? implode(' · ', array_column($options['fields'], 'label')) : 'Aucune information complémentaire demandée'];

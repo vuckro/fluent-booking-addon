@@ -1,13 +1,15 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.26**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.27**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
-Une page **Modules** pour configurer chaque événement de groupe, avec deux options indépendantes :
+Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 
 - **Un tarif par personne** : le réservant et chaque invité choisissent un tarif défini dans FluentBooking. Seuls les tarifs choisis sont additionnés.
 - **Personnaliser les informations des invités** : nom et courriel obligatoires, facultatifs ou masqués ; champs texte, nombre (minimum/maximum), liste ou radios.
 
 Les personnalisations sont désactivées par défaut. Sans tarification personnalisée, le paiement natif est conservé. Chaque participant occupe une place native ; FluentBooking garde les capacités et disponibilités. Il n’existe plus de limite ni d’héritage parallèle dans l’add-on.
+
+Nouvelle option facultative : **[Réserver pour d’autres personnes](docs/reserver-pour-autrui.md)**. Le contact peut ne pas participer ; seuls les participants occupent des places et paient en mode par personne. Le contact reste affiché comme réservant dans FluentBooking.
 
 ## Utilisation et maintenance
 

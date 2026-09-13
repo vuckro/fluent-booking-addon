@@ -6,7 +6,7 @@ final class Options
 {
     public static function defaults(): array
     {
-        return ['enabled'=>false, 'customize_guests'=>null, 'native_tariffs'=>true, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
+        return ['enabled'=>false, 'allow_nonparticipating'=>false, 'customize_guests'=>null, 'native_tariffs'=>true, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
     }
     public static function validate(array $input): array
     {
@@ -15,9 +15,10 @@ final class Options
         $value = array_replace(self::defaults(), $input);
         // Existing configurations customized identity and pricing with one switch.
         if ($value['customize_guests'] === null) {$value['customize_guests']=$value['enabled'];}
-        foreach (['enabled','customize_guests','native_tariffs','per_person_price'] as $key) {
+        foreach (['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price'] as $key) {
             if (!is_bool($value[$key])) { throw new \InvalidArgumentException('Option invités invalide.'); }
         }
+        if ($value['allow_nonparticipating'] && $value['enabled'] && !$value['native_tariffs']) {throw new \InvalidArgumentException('La réservation pour autrui nécessite les tarifs natifs par personne, ou le calcul natif sans personnalisation du prix.');}
         if (!is_array($value['fields']) || !array_is_list($value['fields']) || count($value['fields']) > 8) { throw new \InvalidArgumentException('Maximum : 8 champs par invité.'); }
         foreach (['name_mode','email_mode'] as $key) { if (!in_array($value[$key], ['required','optional','hidden'],true)) {throw new \InvalidArgumentException('Affichage de l’identité invalide.');} }
         $ids=[]; $replacements=0;
@@ -60,7 +61,7 @@ final class Options
         } elseif (!$value['enabled']) {
             foreach($value['fields'] as &$field) {$field['pricing']='none';$field['prices']=[];} unset($field);
         }
-        $value['enabled']=$value['enabled'] || $value['customize_guests'];
+        $value['enabled']=$value['enabled'] || $value['customize_guests'] || $value['allow_nonparticipating'];
         return $value;
     }
 

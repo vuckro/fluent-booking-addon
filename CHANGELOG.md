@@ -1,3 +1,11 @@
+## 4.0.0-alpha.27
+
+- Option désactivée par défaut : réserver pour autrui sans participer.
+- Contact et participants distingués dans le snapshot et le détail ; une place native par participant réel.
+- En tarif par personne, seuls les participants paient ; les prix natifs par réservation restent inchangés.
+- Garde-fous : participant obligatoire, capacité, autorisation native des invités, choix falsifiés et anciens moteurs incompatibles.
+- Recette dédiée : serveur, champs, paiements, annulation et parcours natif simulé.
+
 ## 4.0.0-alpha.26
 
 - Vérification avant publication sur main : suite serveur, formulaires et archive.

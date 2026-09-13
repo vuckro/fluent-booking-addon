@@ -41,3 +41,11 @@ rejects(fn()=>$answer('-1'),'below minimum rejected server-side');
 rejects(fn()=>$answer('11'),'above maximum rejected server-side');
 rejects(fn()=>Options::validate(['fields'=>[array_replace($f,['min'=>'11'])]]),'inverted numeric bounds rejected');
 rejects(fn()=>Options::validate(['fields'=>[array_replace($f,['max'=>'NaN'])]]),'invalid numeric bounds rejected');
+
+use WaasKit\FluentBooking\Guests\Participation;
+check(Participation::requested([],false)===true,'old payload defaults to attending holder');
+rejects(fn()=>Participation::requested(['holder_participates'=>false],false),'forged opt-out rejected');
+rejects(fn()=>Participation::requested(['holder_participates'=>null],true),'null participation rejected');
+rejects(fn()=>Participation::count(0,false),'at least one actual participant required');
+check(Participation::count(5,false)===5 && Participation::count(4,true)===5,'one contact does not add an unwanted seat');
+check(\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[['tariff'=>'child']],false)['total']===5500,'nonattending holder has no tariff');

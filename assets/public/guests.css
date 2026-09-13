@@ -37,3 +37,8 @@
  .fba-custom-guests .fba-attached-guest > label,.fba-custom-guests .fba-guest-extra { grid-column:1 / -1; }
  .fba-custom-guests .fba-guest-extra { grid-template-columns:1fr; }
 }
+
+.fba-custom-guests .fba-participation-choice { display:flex; align-items:center; gap:10px; margin:20px 0 8px; color:var(--fcal_dark); font-size:14px; font-weight:600; }
+.fba-custom-guests .fba-holder-participates { width:18px; height:18px; margin:0; accent-color:var(--fcal_dark); flex-shrink:0; }
+.fba-custom-guests .fba-participation-help { color:var(--fcal_dark); font-size:13px; line-height:1.5; margin:0 0 16px; }
+.fba-custom-guests .fba-remove-guest:disabled { opacity:.35; cursor:not-allowed; }

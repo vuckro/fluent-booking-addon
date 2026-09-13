@@ -19,6 +19,7 @@
         }
         const format = cents => new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
         const nativeTariffs = Array.isArray(config.tariffs);
+        const structuredPayload = nativeTariffs || !!config.structuredPayload || !!config.allowNonparticipating;
         let saved = null;
         try { saved = transport.value ? JSON.parse(transport.value) : null; } catch (_) { /* A fresh form has no payload. */ }
         let restoring = !!saved;
@@ -29,6 +30,17 @@
             label.append(select); return label;
         };
         const holder = nativeTariffs && config.tariffs.length ? tariffControl('Votre tarif') : null;
+        const participation = config.allowNonparticipating ? document.createElement('input') : null;
+        const participationLabel = document.createElement('label');
+        const participationHelp = document.createElement('p'); participationHelp.className = 'fba-participation-help';
+        participationHelp.setAttribute('role', 'status');
+        if (participation) {
+            participation.type = 'checkbox'; participation.checked = saved?.holder_participates !== false;
+            participation.className = 'fba-holder-participates';
+            participationLabel.className = 'fba-participation-choice';
+            participationLabel.append(participation, document.createTextNode('Je participe également'));
+        }
+        const attends = () => !participation || participation.checked;
         const summary = document.createElement('p');
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
@@ -43,8 +55,9 @@
             }
             (paymentItem || transportItem).before(guestWrap);
             if (holder) guestWrap.before(holder);
+            if (participation) { (holder || guestWrap).before(participationLabel, participationHelp); }
             add.addEventListener('click', () => {
-                if (rows().length + 1 >= config.limit) return;
+                if (rows().length + (attends() ? 1 : 0) >= config.limit) return;
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
                 ['name','email'].forEach(key => {
@@ -66,8 +79,16 @@
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
             const guests = rows();
+            if (holder) { holder.hidden = !attends(); holder.querySelector('select').disabled = !attends(); }
+            if (participation) {
+                const count = guests.length + (attends() ? 1 : 0);
+                const error = count < 1 ? 'Ajoutez au moins un participant.' : count > config.limit ? 'Retirez un invité pour participer également : le maximum serait dépassé.' : '';
+                participation.setCustomValidity(error);
+                participationHelp.textContent = error || (attends() ? 'Vous comptez parmi les participants.' : 'Vous réservez pour les personnes ci-dessous. Vous restez le contact pour le paiement et les messages.');
+            }
             guests.forEach((row, index) => {
                 const heading = row.querySelector('.fba-guest-label');
+                row.querySelector('.fba-remove-guest').disabled = !attends() && guests.length === 1;
                 row.querySelector('.fba-remove-guest')?.setAttribute('aria-label', 'Supprimer l’invité ' + (index + 1));
                 if (heading && heading.textContent !== 'Invité ' + (index + 1)) heading.textContent = 'Invité ' + (index + 1);
                 if (row.querySelector('.fba-guest-extra')) return;
@@ -99,9 +120,9 @@
                 row.append(panel);
             });
             const payload = guests.map(row => ({name: row.querySelector('[data-fba-identity=name]')?.value || '', email: row.querySelector('[data-fba-identity=email]')?.value || '', fields: read(row), ...(nativeTariffs ? {tariff: row.querySelector('[data-fba-tariff]')?.value || ''} : {})}));
-            const serialized = JSON.stringify(nativeTariffs ? {holder_tariff: holder?.querySelector('select').value || '', guests: payload} : payload);
+            const serialized = JSON.stringify(structuredPayload ? {holder_participates: attends(), holder_tariff: attends() ? holder?.querySelector('select').value || '' : '', guests: payload} : payload);
             if (!restoring && transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
-            const people = guests.length + 1;
+            const people = guests.length + (attends() ? 1 : 0);
             guestWrap.querySelector('.fba-add-guest').disabled = people >= config.limit;
             const base = Math.round(config.unit * 100);
             let cents = base;
@@ -118,13 +139,14 @@
                 cents += amount + extra;
             });
             if (nativeTariffs) {
-                const selected = [holder?.querySelector('select').value, ...payload.map(guest => guest.tariff)];
+                const selected = [...(attends() ? [holder?.querySelector('select').value] : []), ...payload.map(guest => guest.tariff)];
                 const fragment = document.createDocumentFragment(); cents = 0;
                 selected.forEach((id, index) => {
                     const tariff = config.tariffs.find(t => t.id === id); if (!tariff) return;
                     cents += tariff.cents;
                     const line = document.createElement('div'); const label = document.createElement('dt'); const value = document.createElement('dd');
-                    label.textContent = (index === 0 ? 'Vous' : payload[index-1].name || 'Invité ' + index) + ' · ' + tariff.title;
+                    const guestIndex = index - (attends() ? 1 : 0);
+                    label.textContent = (guestIndex < 0 ? 'Vous' : payload[guestIndex].name || 'Invité ' + (guestIndex + 1)) + ' · ' + tariff.title;
                     value.textContent = format(tariff.cents); line.append(label, value); fragment.append(line);
                 });
                 lines.replaceChildren(fragment);
@@ -148,11 +170,15 @@
         };
         root.addEventListener('input', event => { if (event.target !== transport) update(); });
         root.addEventListener('change', update);
+        participation?.addEventListener('change', () => {
+            if (!attends() && !rows().length) add.click();
+            update();
+        });
         update();
         if (saved) {
-            const savedGuests = nativeTariffs ? saved.guests : saved;
+            const savedGuests = structuredPayload ? saved.guests : saved;
             if (holder && typeof saved.holder_tariff === 'string') holder.querySelector('select').value = saved.holder_tariff;
-            if (Array.isArray(savedGuests)) savedGuests.slice(0, config.limit - 1).forEach(guest => {
+            if (Array.isArray(savedGuests)) savedGuests.slice(0, config.limit - (attends() ? 1 : 0)).forEach(guest => {
                 add.click(); const row = rows().at(-1); if (!row) return;
                 ['name','email'].forEach(key => { const input = row.querySelector('[data-fba-identity='+key+']'); if (input && typeof guest[key] === 'string') input.value = guest[key]; });
                 const tariff = row.querySelector('[data-fba-tariff]'); if (tariff && typeof guest.tariff === 'string') tariff.value = guest.tariff;
