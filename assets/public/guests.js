@@ -89,12 +89,17 @@
             root.classList.add('fba-checkout-locked');
             [holder, participationLabel, guestWrap].filter(Boolean).forEach(element => {
                 element.querySelectorAll('input, select, button').forEach(control => { control.disabled = true; });
+                element.hidden = true;
             });
+            participationHelp.hidden = true;
+            // The native Stripe screen is the authoritative payment state from
+            // this point. Do not leave a second, mutable-looking total beside it.
+            recap.hidden = true;
             const notice = document.createElement('p');
             notice.className = 'fba-payment-locked-notice';
             notice.setAttribute('role', 'status');
-            notice.textContent = 'Le paiement a été préparé avec les participants indiqués. Pour modifier la réservation, revenez à l’étape précédente puis recommencez le paiement.';
-            recap.before(notice);
+            notice.textContent = 'Le paiement a été préparé. Les participants et le montant sont maintenant figés. Pour modifier la réservation, revenez à l’étape précédente puis recommencez le paiement.';
+            processor.before(notice);
         };
         const checkoutObserver = new MutationObserver(lockForPayment);
         checkoutObserver.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['style']});

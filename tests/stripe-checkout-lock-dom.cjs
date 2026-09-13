@@ -9,6 +9,7 @@ const {JSDOM}=require('jsdom'),fs=require('fs'),assert=require('assert');
   processor.style.display='block';processor.append(d.createElement('iframe'));
   await Promise.resolve();
   assert(add.disabled,'participants are locked once Stripe mounts');
+  assert(d.querySelector('.fba-payment-recap').hidden,'mutable participant recap is hidden during Stripe checkout');
   assert.match(d.querySelector('.fba-payment-locked-notice').textContent,/paiement a été préparé/);
   console.log('PASS Stripe checkout locks participant controls after the amount is frozen');
   w.dispatchEvent(new w.Event('pagehide'));w.close();
