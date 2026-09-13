@@ -1,19 +1,25 @@
-# Vérification avant production — 13 septembre 2026 — alpha.31
+# Vérification avant production — 13 septembre 2026 — alpha.33
 
 ## Verdict
 
-**Prête pour une recette contrôlée ; ouverture générale en production non validée.** Les tests locaux passent, mais ils ne certifient ni la réception des emails, ni les fournisseurs de paiement/agendas, ni une distribution officielle FluentBooking. Ne pas confondre synchronisation du dépôt GitHub et déploiement sur un site client.
+**Prête pour une recette contrôlée ; ouverture générale en production non validée.** Les tests locaux passent, mais ils ne certifient ni la réception des emails, ni les fournisseurs de paiement/agendas, ni la distribution officielle FluentBooking Pro. Ne pas confondre synchronisation du dépôt GitHub et déploiement sur un site client.
 
 ## Résultats locaux
 
-- 266 contrôles PHP : unité, configuration, champs et bornes, tarifs natifs, migration, contact non participant, entrée AJAX publique et intégration des agendas/notifications.
+- 281 contrôles PHP : unité, configuration, champs et bornes, tarifs natifs, migration, contact non participant, entrée AJAX publique et intégration des agendas/notifications.
 - 8 scénarios DOM : administration, invités, tarifs, informations seules, participation du contact et parcours du bundle natif.
 - Réservations de test transactionnelles annulées ; emails et HTTP externes bloqués dans les tests. Les tests ne créent pas d’événement Google et ne débitent aucun paiement.
-- Environnement : WordPress 7.1, PHP 8.2.29, FluentBooking et Pro annoncés 2.4.0. **Les sources natives locales contiennent des modifications : cette recette ne constitue pas une certification de la distribution officielle 2.4.0.**
+- Environnement : WordPress 7.1, PHP 8.2.29, FluentBooking et Pro annoncés 2.4.0. **FluentBooking gratuit : les 926 fichiers correspondent aux SHA-256 officiels WordPress.org 2.4.0, aucun fichier PHP supplémentaire. FluentBooking Pro : la copie locale contient des modifications ; la distribution officielle Pro reste à valider.**
 
 Les contrôles couvrent 70 € adulte, 55 € enfant, 125 € pour les deux ; contact non participant + enfant = 55 € et une place ; validation serveur des tarifs et champs ; refus de zéro participant ou de six participants pour cinq places ; annulation groupée, suppression et préservation des montants historiques.
 
+## Contrôle du paquet
+
+L’archive `fluent-booking-addon-4.0.0-alpha.33.zip` est reconstruite depuis le code validé ; chaque fichier est comparé au dépôt. Elle inclut le correctif des flèches en mode sombre et le réglage de couleur des emails. Syntaxe PHP/JavaScript et structure ZIP vérifiées. GitHub est synchronisé sur `codex/nonparticipating-booker` ; cette recette ne publie pas sur main et ne déploie aucun site.
+
 ## Corrections trouvées pendant l’audit
+
+Nouvelle protection alpha.33 : `BookingProtection` empêche la suppression native d’un groupe personnalisé avant les effets externes, y compris depuis un contact natif du même groupe. Un changement de statut isolé d’une place invitée est refusé ; la mise à jour depuis le contact reste autorisée. Cinq contrôles supplémentaires couvrent ces refus, la conservation des places et l’annulation principale.
 
 Les gestionnaires de paiement natifs déclenchent aussi les hooks de réservation des fiches de places rattachées. Ces fiches ont volontairement un email vide. Elles pouvaient donc produire une tentative Google invalide et des notifications/rappels séparés.
 
@@ -26,7 +32,7 @@ Les tests vérifient l’enregistrement réel des protections pour Google, Outlo
 1. Installer sur une préproduction la distribution officielle FluentBooking/Pro compatible et cette alpha ; sauvegarder base et fichiers, puis refaire la recette. Ne pas remplacer silencieusement la copie locale modifiée.
 2. Vérifier desktop/mobile, clair/sombre, clavier et confirmation avec les thèmes/extensions réellement utilisés.
 3. Tester un contact participant avec un invité, puis un contact non participant avec un invité ; comparer commande, participants, champs, places restantes et confirmation.
-4. Tester l’annulation de la **réservation principale** et la restitution des places. Les invités rattachés appartiennent au même dossier : ne pas les annuler, supprimer ou rembourser individuellement. Leur gestion indépendante n’est pas prise en charge et peut désaligner le récapitulatif conservé.
+4. Tester l’annulation de la **réservation principale** et la restitution des places. Les changements de statut isolés des places rattachées sont bloqués. La suppression via le contrôleur natif est également bloquée dès qu’un groupe contient un dossier personnalisé : FluentBooking supprimerait tout le groupe du créneau, y compris les autres dossiers. Utiliser l’annulation du dossier principal ; le remboursement doit être vérifié séparément côté paiement.
 5. Sur un nouveau créneau, vérifier réellement la création Google/Outlook, l’ajout d’un deuxième contact et l’annulation. Ne pas attendre une correction rétroactive des anciens événements. Le lien de détails nécessite une connexion WordPress et un domaine accessible, pas localhost.
 6. Vérifier confirmations et rappels dans les boîtes du contact et de l’hôte. La simulation FluentSMTP visible dans les essais précédents ne prouve pas une livraison réelle. Ne la désactiver que pour une recette explicitement autorisée.
 7. Si Stripe est utilisé : en mode test, paiement réussi, refusé, abandon, reprise et webhook ; contrôler montant, statut et places. Vérifier séparément un remboursement. Aucun paiement Stripe réel n’a été exécuté dans cet audit.

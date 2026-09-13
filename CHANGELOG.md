@@ -1,3 +1,10 @@
+## 4.0.0-alpha.33
+
+- Protection des dossiers personnalisés contre la suppression native de tout le groupe d’un créneau. Utiliser l’annulation de la réservation principale.
+- Refus des changements de statut isolés des places invitées ; propagation du statut principal conservée.
+- Nettoyage du réglage de couleur des emails lors d’une désinstallation avec suppression explicitement activée.
+- Archive reconstruite avec le correctif de flèche des listes en mode sombre ; recette complète : 281 contrôles PHP, 8 scénarios DOM. Contrôle des empreintes officielles du cœur FluentBooking 2.4.0 réussi.
+
 ## 4.0.0-alpha.32
 
 - Réglage global de couleur de la bordure des emails dans Modules, réservé aux administrateurs ; noir #111111 par défaut.

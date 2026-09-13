@@ -1,6 +1,6 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.32**, pour FluentBooking **2.4.x** et PHP **8.1+**.
+Version **4.0.0-alpha.33**, pour FluentBooking **2.4.x** et PHP **8.1+**.
 
 Une page **Modules** pour configurer chaque événement de groupe, avec des options indépendantes :
 
@@ -26,7 +26,7 @@ Dans **Modules → Apparence des emails**, un administrateur peut choisir la cou
 
 Périmètre : événements de groupe sur créneau unique, devise à deux décimales, paiements natifs Stripe ou hors ligne. Coupons, WooCommerce, multi-durée, reports et réactivation automatique restent exclus du mode personnalisé. Les anciens moteurs de prix sont conservés pour les configurations historiques uniquement.
 
-**Cette alpha n’est pas encore validée pour une ouverture générale en production.** Les corrections alpha.31 sont sur `codex/nonparticipating-booker`. Consultez la recette avant déploiement : distribution officielle FluentBooking, réception des emails, agendas connectés et paiement Stripe restent à valider sur le site cible. Le passage depuis la v3 demande une configuration explicite : ses options ne sont pas automatiquement converties.
+**Cette alpha n’est pas encore validée pour une ouverture générale en production.** Les corrections alpha.33 sont sur `codex/nonparticipating-booker`. Consultez la recette avant déploiement : distribution officielle FluentBooking, réception des emails, agendas connectés et paiement Stripe restent à valider sur le site cible. Le passage depuis la v3 demande une configuration explicite : ses options ne sont pas automatiquement converties.
 
 ```sh
 php tests/unit.php

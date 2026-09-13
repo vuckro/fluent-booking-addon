@@ -59,3 +59,7 @@ Alpha.30 : ajout de `php tests/calendar-presentation.php` (24 contrôles), et de
 ## Apparence des emails — alpha.32
 
 `tests/email-appearance.php`, avec `WAASKIT_WP_PATH` et le socket local : 10 contrôles réussis sur le modèle email natif après Emogrifier. Le hook `pre_wp_mail` bloque le transport ; les réglages sont restaurés par rollback. Vérifie la couleur par défaut/personnalisée, le retour au bleu, les valeurs invalides et l’absence de modification des emails hors mailer FluentBooking. Aucun email réellement envoyé.
+
+## Recette de déploiement — alpha.33
+
+281 contrôles PHP réussis sur la suite complète, dont 5 contrôles de protection des opérations de groupe dans `nonparticipating.php`. Les 8 scénarios DOM ont également passé. Les 926 fichiers du cœur FluentBooking 2.4.0 ont été comparés aux SHA-256 de `https://downloads.wordpress.org/plugin-checksums/fluent-booking/2.4.0.json` : aucune différence, aucun PHP ajouté. Cette preuve concerne la partie gratuite, pas Pro. Voir `recette-finale.md` pour les validations externes encore nécessaires.

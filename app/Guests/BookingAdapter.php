@@ -57,6 +57,7 @@ final class BookingAdapter
         (new CalendarPresentation())->register();
         (new CalendarContacts())->register();
         (new SeatNotifications())->register();
+        (new BookingProtection())->register();
         register_shutdown_function([$this,'unlock']);
         Booking::updated([AttachedSeats::class,'sync']);
         Booking::deleting([AttachedSeats::class,'remove']);

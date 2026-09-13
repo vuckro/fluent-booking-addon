@@ -49,6 +49,16 @@ try {
  $full=$create(20,false,array_fill(0,5,$guest));check(!is_wp_error($full),'five guests without attending contact accepted');
  check(Booking::where('parent_id',$full->id)->count()===4,'contact adds no sixth native seat');
  check(is_wp_error($create(20,false,[$guest])),'full native slot rejects next reservation');
+ $seat=Booking::where('parent_id',$full->id)->first();$seatStatus=$seat->status;
+ try {$seat->status='cancelled';$seat->save();check(false,'isolated cancellation refused');} catch(RuntimeException $e) {check(str_contains($e->getMessage(),'réservation principale'),'isolated guest cancellation refused with guidance');}
+ check(Booking::find($seat->id)->status===$seatStatus,'refused cancellation does not free a guest seat');
+ $downstream=false;$listener=static function()use(&$downstream){$downstream=true;};add_action('fluent_booking/before_delete_booking',$listener,2);
+ try {do_action('fluent_booking/before_delete_booking',$full);check(false,'unsafe group deletion refused');} catch(RuntimeException $e) {check(str_contains($e->getMessage(),'suppression native'),'native group deletion refused before side effects');} finally {remove_action('fluent_booking/before_delete_booking',$listener,2);}
+ check(!$downstream && Booking::where('parent_id',$full->id)->count()===4,'deletion guard preserves all participants and downstream integrations');
+ // A real native contact without a snapshot in the same slot must also be protected.
+ $native=Booking::create(['calendar_id'=>$full->calendar_id,'event_id'=>$full->event_id,'group_id'=>$full->group_id,'host_user_id'=>$full->host_user_id,'first_name'=>'Native','email'=>'native@example.invalid','status'=>'cancelled','start_time'=>$full->start_time,'end_time'=>$full->end_time,'slot_minutes'=>30,'person_time_zone'=>'UTC','event_type'=>$full->event_type]);
+ try {(new WaasKit\FluentBooking\Guests\BookingProtection())->beforeDelete($native);check(false,'mixed group deletion refused');} catch(RuntimeException $e) {check(str_contains($e->getMessage(),'suppression native'),'native contact cannot delete a mixed customized group');}
+ $native->delete();
  $full->status='cancelled';$full->save();check(Booking::where('parent_id',$full->id)->where('status','cancelled')->count()===4,'cancellation releases all attached participants');
  $again=$create(20,false,[$guest]);check(!is_wp_error($again),'cancelled slot can be booked again');
  try {$full->status='scheduled';$full->save();check(false,'reactivation guard');} catch(RuntimeException $e) {check(str_contains($e->getMessage(),'réactivation'),'reactivation still guarded');}
