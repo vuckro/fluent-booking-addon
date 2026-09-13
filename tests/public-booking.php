@@ -93,8 +93,6 @@ try {
             $seat=Booking::where('parent_id',$booking->id)->firstOrFail();
             do_action_ref_array('fluent_booking/format_booking_schedule',[&$seat]);
             check(str_contains(wp_json_encode($seat->custom_form_data,JSON_UNESCAPED_UNICODE),'Âge : 8'),'attached child exposes its own answers');
-            $links=apply_filters('fluent_booking/booking_meta_info_main_meta',[],$seat);
-            check(str_contains(wp_json_encode($links),'booking_id='.$booking->id),'attached child links to initiating reservation');
         }
         $booking->status='cancelled'; $booking->save();
         check(Booking::where('parent_id',$booking->id)->where('status','scheduled')->count()===0,'cancellation releases attached seats');

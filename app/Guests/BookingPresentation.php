@@ -9,7 +9,6 @@ final class BookingPresentation
     public function register(): void
     {
         add_action('fluent_booking/format_booking_schedule', [$this, 'admin']);
-        add_filter('fluent_booking/booking_meta_info_main_meta', [$this, 'adminLinks'], 10, 2);
         add_filter('fluent_booking/schedule_receipt_data', [$this, 'receipt'], 100, 2);
     }
 
@@ -83,12 +82,4 @@ final class BookingPresentation
         return $data;
     }
 
-    public function adminLinks(array $blocks, $booking): array
-    {
-        $details=$this->details($booking);
-        if (!$details || !$details['child'] || !$details['holder_id']) {return $blocks;}
-        $url=admin_url('admin.php?page=fluent-booking').'#/scheduled-events?period=all&booking_id='.$details['holder_id'];
-        $blocks[]=['id'=>'fba_parent_booking', 'title'=>'Réservation associée', 'content'=>'<p><a href="'.esc_url($url).'">Ouvrir la réservation de '.esc_html($details['contact']).' (#'.$details['holder_id'].')</a></p>'];
-        return $blocks;
-    }
 }

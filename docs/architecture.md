@@ -39,7 +39,7 @@ Un verrou MySQL sérialise l’admission des invités personnalisés sur un év�
 
 ## Présentation native — alpha.29
 
-`Guests/BookingPresentation` est une projection en lecture seule du snapshot `fba_guests_v1`. `format_booking_schedule` enrichit les informations affichées à l’ouverture de la ligne native ; `booking_meta_info_main_meta` fournit le lien de l’invité vers sa réservation principale. Le snapshot de la réservation principale affiche tout le groupe ; une place rattachée affiche uniquement son invité et son réservant.
+`Guests/BookingPresentation` est une projection en lecture seule du snapshot `fba_guests_v1`. `format_booking_schedule` enrichit les informations affichées à l’ouverture de la ligne native. Le bloc « Réservation associée » a été retiré pour éviter le doublon avec « Réservé par ». Le snapshot de la réservation principale affiche tout le groupe ; une place rattachée affiche uniquement son invité et son réservant.
 
 `schedule_receipt_data` utilise les sections de confirmation natives et leur palette clair/sombre. L’ancien hook `booking_details_header`, qui ajoutait un bloc non stylé avant le titre, est supprimé. Le titre de facturation est remplacé uniquement dans le HTML de ce reçu : FluentBooking 2.4 ne fournit pas de filtre spécifique pour ce titre. Vérifier le template natif lors d’un changement de version.
 
