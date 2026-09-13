@@ -1,54 +1,27 @@
-Alpha.20 : parcours invités unifié, décompte automatique, suppression du couplage aux lignes Svelte, limites historiques conservées. Guide : [utilisation](invites-et-evolutions.md).
+# Compte rendu — alpha.21
 
-Mise à jour alpha.19 : identité des invités facultative ou masquée, champs et choix tarifaires, affichage conditionnel. Voir [le guide actuel](invites-et-evolutions.md).
+## Retiré
 
-> Alpha.18 : voir [le guide des options invités](invites-et-evolutions.md) pour les fonctionnalités ajoutées après le nettoyage décrit ci-dessous.
+- Bloc et fonctionnalité « Limite de participants » propres à l’add-on.
+- Réglages globaux, réglages de calendrier et héritage.
+- Registre de règles, schéma de résolution, validateur de limite et adaptation de la limite publique.
+- Case « Décompter une place par personne » et sa clé de stockage.
+- API REST de configuration dédiée, non utilisée par l’interface.
+- CSS, JavaScript, tests et documents devenus obsolètes.
 
-> Alpha.17 : voir [le point sur les invités](invites-et-evolutions.md) pour le contrôle public, les places et le prix natifs. Le bilan ci-dessous décrit le nettoyage du socle.
+## Conservé
 
-# Base simplifiée — 4.0.0-alpha.16
+- Invités rattachés au réservant avec identité obligatoire, facultative ou masquée.
+- Champs supplémentaires, prix par personne/forfait, suppléments et remplacements de tarif.
+- Contrôles de sécurité, permissions, révisions, validation serveur et protection des anciennes réservations.
+- Capacité et limite natives FluentBooking comme sources uniques.
 
-## Décision
+## Interface
 
-Conserver un seul module : une limite de personnes par demande de réservation, appliquée au parcours natif FluentBooking. Les fonctions expérimentales ne sont plus proposées ni exécutées.
+Titre « Modules », sélection d’événement de groupe uniquement, bloc de fonctionnalité indépendant et « Résumé des réglages » séparé. Les valeurs enregistrées figurent dans le résumé. Les liens permettent d’ouvrir la réservation, les questions et les paiements natifs.
 
-## Retiré du code livré
+## Données
 
-- Formulaire de groupe et son adaptateur JavaScript au formulaire Svelte natif.
-- Catégories, champs personnalisés, âges et accompagnateurs.
-- Tarifs par catégorie, calculs et adaptations des commandes/Stripe.
-- Jauges partagées, retenues de places et verrou MySQL de capacité.
-- Import de profils, devis REST et API des participants expérimentaux.
-- Tests propres à ces moteurs retirés et styles de leur éditeur.
+Anciennes configurations sauvegardées puis migrées. Limites natives inchangées sur ce site ; choix tarifaires conservés. Aucune réservation ou commande modifiée. Voir [migration](migration.md).
 
-L’historique Git garde ces travaux, sans les embarquer dans le plugin courant.
-
-## Conservé et amélioré
-
-- Une seule page Modules, avec navigation FluentBooking, modes clair/sombre et styles isolés.
-- Un seul choix : reprendre les réglages communs, garder les limites natives ou fixer un maximum. Le nombre apparaît uniquement si nécessaire.
-- Résumé du réglage enregistré et origine distincte de l’activation et du maximum.
-- Accès à la page publique du contexte sélectionné, à côté d’« Afficher les réglages », lorsque FluentBooking la fournit, dans un nouvel onglet. Une page publique désactivée est signalée, sans être activée automatiquement.
-- Contrôle serveur, permissions natives, nonce, validation stricte et protection contre les sauvegardes concurrentes.
-- Diagnostics repliés, export de configuration REST authentifié en lecture seule.
-- Séparation du header, du formulaire et du raccordement à BookingService pour faciliter les prochaines modifications.
-
-## Données et mise à jour
-
-Avant modification, le site local ne contenait aucun profil expérimental enregistré/actif, aucune métadonnée de participants et aucune retenue de capacité. Aucune donnée utilisateur n’a été supprimée.
-
-Pour les autres installations, les profils historiques sont conservés en lecture seule, y compris lors d’une sauvegarde des limites simples. Un profil encore activé bloque les nouvelles demandes concernées : il faut vérifier les anciens engagements avant de supprimer manuellement sa configuration. La modification d’horaires et la réactivation des anciennes réservations enrichies restent protégées. L’export/effacement de leurs données par l’e-mail du réservant est conservé. La table historique n’est plus créée ni utilisée pour de nouvelles retenues.
-
-## Limites actuelles
-
-- Alpha : les contrôles locaux ne constituent pas une certification de stabilité en production.
-- Recette locale sur FluentBooking 2.4.0 ; garde de compatibilité 2.4.x. PHP 8.1 minimum.
-- Le module complète les limites natives : il ne gère pas la capacité cumulée d’une séance, les tarifs ou les paiements.
-- La limite intervient à la création via BookingService. Les modifications, reports, SQL direct et intégrations contournant ce service ne sont pas couverts par la limite simple.
-- Ce n’est pas un remplacement fonctionnel de la version 3.3.6. Pas de migration automatique des anciennes options.
-- Le header reprend des ressources natives mais reste une présentation propre à l’extension ; vérifier son rendu à chaque mise à jour majeure de FluentBooking.
-- Recette visuelle au navigateur restant à faire. Aucun paiement réel n’a été testé.
-
-## Suite conseillée
-
-Valider ce seul parcours en conditions réelles de test avant une version stable. Ajouter ensuite une fonction à la fois, avec un besoin explicite, une interface simple et sa recette complète. Les prix doivent rester natifs tant qu’une intégration de paiement complète n’est pas validée.
+La version est locale ; aucun push GitHub n’a été effectué. Voir [validation](validation.md) pour les contrôles réalisés et les limites de preuve.

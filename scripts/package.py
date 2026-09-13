@@ -8,6 +8,7 @@ assert f"VERSION = '{version}'" in (root / 'app/Plugin.php').read_text(), 'Versi
 output = root / 'dist' / f'fluent-booking-addon-{version}.zip'
 output.parent.mkdir(exist_ok=True)
 files = [root / name for name in ['wk-fluent-multireservation.php', 'autoload.php', 'uninstall.php', 'README.md', 'CHANGELOG.md']]
+files += [root / 'scripts' / 'migrate-native-limits.php']
 files += sorted((root / 'app').rglob('*.php'))
 files += sorted(path for path in (root / 'assets').rglob('*') if path.is_file())
 files += sorted((root / 'docs').glob('*.md'))

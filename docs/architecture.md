@@ -1,31 +1,36 @@
-# Architecture
+# Architecture après suppression des doublons — alpha.21
 
-- `Plugin.php` : démarrage, compatibilité et enregistrement des composants.
-- `Admin/SettingsPage.php` : page, contexte autorisé, sauvegarde et diagnostics.
-- `Admin/SettingsForm.php` : les deux options, leur vocabulaire et validation de saisie.
-- `Admin/Header.php` : navigation et ressources visuelles FluentBooking.
-- `Configuration/Schema.php` : valeurs autorisées, défauts, résolution des niveaux.
-- `Integrations/FluentBooking/ConfigurationStore.php` : option globale et métadonnées natives, révisions et exclusion des écritures simultanées.
-- `Integrations/FluentBooking/ParticipantLimitAdapter.php` : raccordement au filtre natif BookingService et comptage de ses données normalisées.
-- `Integrations/FluentBooking/GuestFields.php` : limite du composant public natif et validation des invités avant leur traitement par le contrôleur.
-- `Guests/Options.php` : schéma des questions et validation des réponses par invité.
-- `Guests/BookingAdapter.php` : raccordement au groupe natif, admission, réponses et quantité/prix de commande.
-- `Admin/GuestOptionsForm.php` : configuration événementielle des options et questions.
-- `Rules/` : règles pures, sans accès au réseau, à la base ou au paiement.
-- `Integrations/FluentBooking/ConfigurationApi.php` : export authentifié en lecture seule.
-- `Integrations/FluentBooking/RetiredProfiles.php` et `Infrastructure/Privacy.php` : protections et confidentialité des seules données historiques des alphas retirées.
-- `assets/admin/` : styles isolés, synchronisation du thème et petit enrichissement du formulaire. Aucun framework ni compilation frontend.
+## Parcours unique
 
-## Contrat de maintenance
+`Plugin` enregistre la page admin, les outils de confidentialité, le garde-fou historique et `Guests/BookingAdapter`. Aucune API REST propre ni registre générique de règles n’est enregistré.
 
-Les clés `enabled` et `max_participants` et le schéma 1 restent compatibles. `booking_profile` n’est plus une fonctionnalité : cette clé historique reste lisible et immuable afin de ne pas perdre les données d’une ancienne alpha.
+| Fichier | Responsabilité |
+| --- | --- |
+| `Admin/SettingsPage` | Sélection d’événement, permissions, sauvegarde, résumé enregistré et liens natifs |
+| `Admin/GuestOptionsForm` | Champs admin de personnalisation |
+| `Integrations/FluentBooking/ConfigurationStore` | Configuration par événement, révision et verrou de sauvegarde |
+| `Guests/Options` | Valeurs permises et validation des réponses |
+| `Guests/Identity` | Normalisation des invités ; compatibilité d’entrée BookingService |
+| `Guests/Pricing` | Calcul pur en centimes : remplacement puis suppléments |
+| `Guests/BookingAdapter` | Formulaire public, contrôle serveur, réservation et commandes natives |
+| `Guests/AttachedSeats` | Places natives rattachées au réservant, annulation et suppression |
+| `Infrastructure/Privacy` | Export et effacement, y compris les copies rattachées |
+| `Integrations/FluentBooking/RetiredProfiles` | Protection des anciennes réservations expérimentales uniquement |
 
-Ne pas ajouter de tarification à la règle de limite. Ne pas charger l’application JavaScript de FluentBooking sur cette page. Ne pas modifier les fichiers du plugin natif. Toute dépendance à ses modèles, URLs ou assets doit être testée sur la version ciblée.
+## Source unique des limites
 
-Les options invités sont enregistrées seulement sur un événement, sans ajouter un second mécanisme d’héritage. Une réservation principale conserve le groupe et son tarif ; chaque réservation invitée conserve ses propres réponses pour la confidentialité.
+La capacité et la limite d’invités sont lues depuis l’événement et ses questions FluentBooking. Le contrôle serveur de l’add-on subsiste parce que son formulaire personnalisé peut créer des invités sans identité. Ce contrôle applique les valeurs natives ; il ne définit aucune limite supplémentaire. Le comptage se fonde sur les réservations natives et n’utilise aucune table de stock parallèle.
 
-Les données saisies sont validées côté serveur même sans JavaScript. Les contrôles de permission et nonce restent au point d’entrée d’écriture. Le magasin contrôle la révision et vérifie la lecture après sauvegarde.
+## Stockage
 
-## Invités sans identité et choix tarifaires (alpha.19)
+Schéma 2 : `waaskit_fluent_booking_config` dans les métadonnées de l’événement, avec `revision` et `values.guest_options`. Les anciens niveaux site/calendrier et les clés de limite ont été supprimés. Les sauvegardes concurrentes sont protégées par une révision et un verrou ; une relecture vérifie l’écriture.
 
-`Guests/Identity` valide les modes d’identité et les données du formulaire. `Guests/Pricing` calcule en centimes le tarif du réservant et des invités : remplacement avant suppléments, indépendant des places. `Guests/AttachedSeats` crée les places natives liées au réservant et suit leur annulation/suppression sans faux contacts ni notifications individuelles. Depuis alpha.20, tous les invités personnalisés suivent le même parcours rattaché. Le formulaire natif reste utilisé seulement lorsque la personnalisation est désactivée. Les adaptateurs de paiement consomment le tarif enregistré ; ils ne recalculent pas les choix courants. Les champs ont des identifiants stables et les montants sont validés au serveur.
+Les réponses, libellés, montants et quantité sont conservés dans `fba_guests_v1` sur la réservation. Les paiements reprennent ces montants, pas un total reçu du navigateur. Les identités ne servent pas de compteur de places.
+
+## Compatibilité et limites techniques
+
+Le script de migration est distinct du runtime. Si une configuration ancienne est détectée, les réservations sont temporairement bloquées jusqu’à la migration explicite : on ne doit pas ignorer silencieusement une ancienne restriction. Les métadonnées de réservations expérimentales ne sont pas supprimées.
+
+Le formulaire ajoute son propre bloc à FluentBooking ; il ne manipule plus les lignes d’invités Svelte. Un observateur sert uniquement à repérer le montage du formulaire. Les lignes créées appartiennent à l’add-on.
+
+Un verrou MySQL sérialise l’admission des invités personnalisés sur un événement et un début de créneau. Ce verrou n’est pas une transaction distribuée couvrant les notifications, les intégrations tierces ou les paiements. La recette navigateur et Stripe reste nécessaire.

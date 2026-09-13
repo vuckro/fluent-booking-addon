@@ -21,14 +21,7 @@ html.fba-dark .fba-admin #wpfooter { color:var(--fba-muted); }
 .fba-settings .fba-card-header p { margin:6px 0 0; color:var(--fba-muted); }
 .fba-settings .fba-badge { background:var(--fba-wash); border-radius:4px; padding:4px 8px; font-size:11px; color:var(--fba-muted); }
 .fba-settings .fba-form { padding:0 24px; }
-.fba-settings .form-table { margin:0; }
-.fba-settings .form-table th { width:36%; font-weight:600; padding:26px 20px 26px 0; color:var(--fba-text); }
-.fba-settings .form-table td { padding:22px 0; }
-.fba-settings .form-table tr + tr { border-top:1px solid var(--fba-line); }
 .fba-settings select,.fba-settings input[type=number] { background-color:var(--fba-surface); min-height:40px; border:1px solid var(--fba-line); border-radius:6px; color:var(--fba-text); font-size:13px; }
-.fba-settings .form-table select { min-width:132px; }
-.fba-settings .form-table .small-text { width:132px; }
-.fba-settings .form-table .description { margin-top:9px; }
 /* Scope both normal and interaction states above WordPress admin specificity. */
 body.fba-admin .fba-settings .button { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; vertical-align:middle; gap:6px; min-height:40px; line-height:1.4; padding:8px 16px; border-radius:6px; border-color:var(--fba-line); background:var(--fba-surface); color:var(--fba-text); --wp-admin-theme-color:var(--fba-text); --wp-admin-theme-color-darker-10:var(--fba-strong); --wp-admin-theme-color-darker-20:var(--fba-strong); --wp-admin-theme-color--rgb:37,50,65; --wp-admin-border-width-focus:0px; }
 html.fba-dark .fba-settings .button { --wp-admin-theme-color--rgb:217,218,220; }
@@ -38,7 +31,6 @@ body.fba-admin .fba-settings .button.button-primary:not(:disabled):is(:hover,:fo
 body.fba-admin .fba-settings .button:not(:disabled):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; box-shadow:none; }
 .fba-settings :is(select,input,.button,summary):focus { border-color:var(--fba-strong); box-shadow:none; outline:none; }
 .fba-settings :is(select,input,.button,summary):focus-visible { outline:none; box-shadow:none; border-color:var(--fba-strong); }
-.fba-settings .fba-help { margin:0; padding-top:16px; border-top:1px solid var(--fba-line); }
 .fba-settings .submit { text-align:right; margin:0; padding:22px 0; }
 .fba-settings .fba-card-footer { padding:16px 24px; background:var(--fba-sunk); border-top:1px solid var(--fba-line); font-size:12px; line-height:1.6; color:var(--fba-muted); }
 .fba-settings > details { margin-top:22px; color:var(--fba-muted); }
@@ -51,9 +43,6 @@ body.fba-admin .fba-settings .button:not(:disabled):focus-visible { outline:1px 
  .fba-settings .fba-context select { flex:1; min-width:0; }
  .fba-settings .fba-card-header { padding:18px; }
  .fba-settings .fba-form { padding:0 18px; }
- .fba-settings .form-table th { width:auto; padding:20px 0 8px; }
- .fba-settings .form-table td { padding:0 0 20px; }
- .fba-settings .form-table select,.fba-settings .form-table .small-text { min-width:0; width:46%; }
  .fba-settings .fba-card-footer { padding:16px 18px; }
 }
 /* Native header dimensions and icons, scoped to the standalone Modules page. */
@@ -102,8 +91,6 @@ body.fba-admin .fba-settings select option { color:var(--fba-text); background-c
 html.fba-dark .fba-settings select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23c1c7d1' stroke-width='1.5' d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); }
 /* Context links and the two settings share the same light/dark palette. */
 .fba-settings .fba-context-help { margin:12px 0 24px; }
-.fba-settings .fba-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
-.fba-settings .fba-effective { padding:14px 0; border-top:1px solid var(--fba-line); color:var(--fba-text); }
 .fba-settings input:disabled { opacity:.6; cursor:not-allowed; }
 .fba-settings .fba-form select { max-width:100%; }
 .fba-settings .fba-form :is(select,input):focus-visible { outline:1px solid var(--fba-strong); outline-offset:2px; }
@@ -112,13 +99,7 @@ html.fba-dark .fba-admin .fba-settings a.button { color:var(--fba-text); }
 .fba-settings .fba-policy { margin:24px 0; padding:0; border:0; }
 .fba-settings .fba-policy legend { font-weight:600; margin-bottom:16px; }
 .fba-settings .fba-choice { display:flex; align-items:flex-start; gap:12px; padding:14px 0; cursor:pointer; }
-.fba-settings .fba-choice input[type=radio] { flex-shrink:0; margin:3px 0 0; background:var(--fba-surface); border-color:var(--fba-strong); box-shadow:none; }
-.fba-settings .fba-choice input[type=radio]:checked::before { background:var(--fba-text); }
-.fba-settings .fba-choice input[type=radio]:focus-visible { outline:1px solid var(--fba-strong); outline-offset:3px; }
 .fba-settings .fba-choice .description { display:block; margin:4px 0 0; }
-.fba-settings .fba-maximum { margin:12px 0 0 28px; padding:16px; background:var(--fba-sunk); border-radius:6px; }
-.fba-settings .fba-maximum[hidden] { display:none; }
-.fba-settings .fba-maximum label { display:inline-block; margin-right:10px; font-weight:600; }
 .fba-settings .fba-native-guide { margin-top:24px; }
 .fba-settings .fba-guide-body { padding:6px 24px 20px; }
 .fba-settings .fba-guide-body > p + p { padding-top:16px; border-top:1px solid var(--fba-line); }

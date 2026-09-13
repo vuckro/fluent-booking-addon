@@ -7,6 +7,7 @@ $remove = static function (): void {
     $wpdb->query('DROP TABLE IF EXISTS `' . esc_sql($wpdb->prefix . 'fba_capacity') . '`');
     delete_option('fba_db_version');
     delete_option('waaskit_fluent_booking_config');
+    delete_option('fba_native_settings_migrated');
     // Native booking records and historical payment data remain untouched.
     foreach (['fcal_meta'=>['key'=>'waaskit_fluent_booking_config'], 'fcal_booking_meta'=>['meta_key'=>'fba_party_v1']] as $suffix=>$where) {
         $table = $wpdb->prefix . $suffix;

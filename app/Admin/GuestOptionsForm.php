@@ -10,7 +10,6 @@ final class GuestOptionsForm
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
         foreach(['enabled','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
-        $value['per_person_seats']=true; // Legacy storage key; a person always occupies one seat.
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}

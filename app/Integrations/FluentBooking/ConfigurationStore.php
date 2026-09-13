@@ -1,61 +1,56 @@
 <?php
 namespace WaasKit\FluentBooking\Integrations\FluentBooking;
 
-use WaasKit\FluentBooking\Configuration\Schema;
+use FluentBooking\App\Models\Meta;
 use FluentBooking\App\Services\Helper;
-use FluentBooking\App\Models\CalendarSlot;
+use WaasKit\FluentBooking\Guests\Options;
 
+/** One configuration per event. Native questions own all participant limits. */
 final class ConfigurationStore
 {
     public const KEY = 'waaskit_fluent_booking_config';
+    public const VERSION = 2;
+    public const MIGRATED = 'fba_native_settings_migrated';
+
+    public static function migrationRequired(): bool
+    {
+        if ((int) get_option(self::MIGRATED, 0) === self::VERSION) { return false; }
+        if (get_option(self::KEY, false) !== false) { return true; }
+        foreach (Meta::where('key', self::KEY)->get() as $meta) {
+            if (!is_array($meta->value) || ($meta->value['schema'] ?? 0) !== self::VERSION) { return true; }
+        }
+        return false;
+    }
+
     public function read(string $scope, int $id = 0): array
     {
         $this->checkScope($scope, $id);
-        $raw = $scope === 'site' ? get_option(self::KEY, null) : Helper::getMeta($scope, $id, self::KEY);
+        $raw = Helper::getMeta($scope, $id, self::KEY);
         if ($raw === null || $raw === false) {
-            return ['schema' => Schema::VERSION, 'revision' => 0, 'values' => []];
+            return ['schema'=>self::VERSION, 'revision'=>0, 'values'=>[]];
         }
-        if (!is_array($raw) || ($raw['schema'] ?? null) !== Schema::VERSION || !is_int($raw['revision'] ?? null) || !is_array($raw['values'] ?? null)) {
-            throw new \RuntimeException('Configuration incompatible ou invalide. Aucune écriture effectuée.');
+        if (!is_array($raw) || ($raw['schema'] ?? null) !== self::VERSION
+            || !is_int($raw['revision'] ?? null) || !is_array($raw['values'] ?? null)) {
+            throw new \RuntimeException('Ancienne configuration : exécuter la migration documentée avant de modifier cet événement.');
         }
-        Schema::validate($raw['values']);
+        $this->validate($raw['values']);
         return $raw;
     }
+
     public function save(string $scope, int $id, array $values, int $revision): void
     {
         $this->checkScope($scope, $id);
-        Schema::validate($values);
-        if ($scope !== 'calendar_event' && array_key_exists('guest_options', $values)) { throw new \InvalidArgumentException('Les options invités se règlent sur un événement.'); }
-        // add_option is backed by a unique option_name: serialize writers per scope.
+        $this->validate($values);
         $lock = self::KEY . '_lock_' . $scope . '_' . $id;
         if (!add_option($lock, time(), '', false)) {
-            throw new \RuntimeException('Une écriture est déjà en cours. Réessayer ; si le verrou persiste, contacter un administrateur.');
+            throw new \RuntimeException('Une sauvegarde est en cours. Réessayez.');
         }
         try {
-            // Another request may have committed since this request first read options.
-            if ($scope === 'site') {
-                wp_cache_delete(self::KEY, 'options');
-                wp_cache_delete('notoptions', 'options');
-                wp_cache_delete('alloptions', 'options');
+            if ($this->read($scope, $id)['revision'] !== $revision) {
+                throw new \RuntimeException('Les réglages ont changé. Rechargez la page.');
             }
-            $current = $this->read($scope, $id);
-            if ($current['revision'] !== $revision) {
-                throw new \RuntimeException('Les réglages ont changé. Recharger la page avant de les modifier.');
-            }
-            // Retired settings remain immutable: changing basic limits must not erase them.
-            if (array_key_exists('booking_profile', $values)
-                && $values['booking_profile'] !== ($current['values']['booking_profile'] ?? null)) {
-                throw new \RuntimeException('Les anciens profils expérimentaux ne sont plus modifiables.');
-            }
-            if (array_key_exists('booking_profile', $current['values'])) {
-                $values['booking_profile'] = $current['values']['booking_profile'];
-            }
-            $next = ['schema'  => Schema::VERSION, 'revision' => $revision + 1, 'values' => $values];
-            if ($scope === 'site') {
-                update_option(self::KEY, $next, false);
-            } else {
-                Helper::updateMeta($scope, $id, self::KEY, $next);
-            }
+            $next = ['schema'=>self::VERSION, 'revision'=>$revision + 1, 'values'=>$values];
+            Helper::updateMeta($scope, $id, self::KEY, $next);
             if ($this->read($scope, $id) !== $next) {
                 throw new \RuntimeException('La sauvegarde n’a pas pu être vérifiée.');
             }
@@ -63,25 +58,22 @@ final class ConfigurationStore
             delete_option($lock);
         }
     }
-    public function effective(string $scope, int $id = 0): array
+
+    private function validate(array $values): void
     {
-        $layers = ['site' => $this->read('site')['values']];
-        if ($scope === 'calendar') {
-            $layers['agenda'] = $this->read('calendar', $id)['values'];
-        } elseif ($scope === 'calendar_event') {
-            $event = CalendarSlot::find($id);
-            if (!$event) {
-                throw new \InvalidArgumentException('Événement introuvable.');
-            }
-            $layers['agenda'] = $this->read('calendar', (int) $event->calendar_id)['values'];
-            $layers['événement'] = $this->read('calendar_event', $id)['values'];
+        if (array_diff(array_keys($values), ['guest_options'])) {
+            throw new \InvalidArgumentException('Les limites se règlent dans FluentBooking, pas dans cet add-on.');
         }
-        return Schema::resolve($layers);
+        if (array_key_exists('guest_options', $values)) {
+            if (!is_array($values['guest_options'])) { throw new \InvalidArgumentException('Options invalides.'); }
+            Options::validate($values['guest_options']);
+        }
     }
+
     private function checkScope(string $scope, int $id): void
     {
-        if (!in_array($scope, ['site', 'calendar', 'calendar_event'], true) || ($scope === 'site' ? $id !== 0 : $id <= 0)) {
-            throw new \InvalidArgumentException('Contexte invalide.');
+        if ($scope !== 'calendar_event' || $id <= 0) {
+            throw new \InvalidArgumentException('Choisissez un événement.');
         }
     }
 }

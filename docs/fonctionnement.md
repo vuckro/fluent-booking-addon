@@ -1,23 +1,46 @@
-# Configurer en quelques instants
+# Utiliser Modules
 
-1. Dans **À configurer**, commencez par les **réglages communs à tous les calendriers**, puis cliquez sur **Afficher les réglages**.
-2. Choisissez **Garder uniquement les limites FluentBooking**, ou **Fixer un maximum de personnes par réservation**.
-3. Si vous fixez un maximum, saisissez un nombre : par exemple **4** pour le réservant et 3 invités. Enregistrez.
+L’add-on personnalise uniquement les invités des événements de groupe. Il ne possède plus de module « Limite de participants » ni de réglages globaux ou par calendrier.
 
-Pour une exception, sélectionnez ensuite le calendrier ou l’événement concerné. Vous pouvez garder la règle commune, fixer un autre maximum ou retirer uniquement la limite ajoutée par l’extension.
+## Où régler quoi ?
 
-Le choix « Utiliser les réglages communs » affiche la règle qu’il reprend. Pour un événement, il reprend les réglages de son calendrier. Les prochaines modifications de cette règle commune se transmettent automatiquement.
+| Besoin | Emplacement |
+| --- | --- |
+| Nombre de places du créneau | Événement FluentBooking |
+| Autorisation des invités et maximum par réservation | Questions FluentBooking → Invités supplémentaires |
+| Disponibilités, durée, lieu | FluentBooking |
+| Tarif de base, devise et moyen de paiement | Paiements FluentBooking |
+| Nom/courriel obligatoire, facultatif ou masqué | Modules → événement |
+| Champs et choix tarifaires des invités | Modules → événement |
 
-Le résumé en bas indique ce qui est enregistré. Vos changements ne s’appliquent qu’après avoir cliqué sur Enregistrer. Une ancienne configuration enregistrée sans changement conserve son fonctionnement.
+## Configuration
 
-Le lien à côté d’Afficher ouvre la page publique du calendrier ou de l’événement affiché dans un nouvel onglet, lorsqu’elle est activée dans FluentBooking.
+1. Sélectionner un événement de groupe dans **Modules**, puis **Afficher les réglages**. Le lien de réservation est placé à côté.
+2. Dans les questions FluentBooking, activer **Invités supplémentaires** et régler le maximum souhaité. Le lien figure dans **Résumé des réglages**.
+3. Cocher **Personnaliser la réservation avec invités** : les options apparaissent. Décocher masque les options sans effacer les valeurs affichées ; enregistrer pour appliquer.
+4. Choisir le tarif de base **par personne** ou **une fois pour la réservation**.
+5. Choisir pour le nom et le courriel : obligatoire, facultatif ou masqué.
+6. Ajouter uniquement les champs nécessaires : liste, radios, case, texte ou nombre.
+7. Enregistrer. Le résumé inférieur décrit les réglages enregistrés, pas les modifications encore non sauvegardées.
 
-La limite porte sur une seule réservation. La capacité totale du créneau et les paiements restent gérés dans FluentBooking. Les diagnostics sont destinés aux administrateurs.
+## Calcul des prix
 
-## Ajouter des invités
+Chaque choix de liste, radio ou case peut n’avoir aucun effet, ajouter un supplément ou remplacer le tarif de cet invité. Pour une liste : les montants sont saisis dans le même ordre que les choix, un par ligne. Pour une case : un seul montant s’applique lorsqu’elle est cochée. Les montants sont dans la devise FluentBooking.
 
-Sélectionnez un événement. Dans le bloc Invités, places et prix, ouvrez les questions et activez **Invités supplémentaires**. Le bouton Ajouter un invité suit désormais le maximum de personnes défini dans l’extension : 2 personnes autorise 1 invité, 1 personne n’en autorise aucun.
+Le réservant paie le tarif de base. Chaque invité part de ce même tarif si le mode par personne est coché, sinon de 0. Un choix peut remplacer ce montant ; les suppléments s’ajoutent ensuite. Un seul champ peut remplacer le tarif pour éviter les contradictions. Les suppléments ne sont pas multipliés par la taille du groupe.
 
-Pour un événement de groupe, FluentBooking crée une réservation native par personne : une réservation pour 2 utilise 2 places sur les 5 du créneau. Le prix natif est également multiplié par le nombre de personnes. Ne pas ajouter un second débit de places.
+Exemple : base 50 €, adulte 50 €, enfant 25 €, supplément 10 €. Réservant + adulte avec supplément + enfant = **135 €**, pour **3 places**. Un invité gratuit consomme aussi une place.
 
-Le nom et le courriel de chaque invité peuvent être obligatoires, facultatifs ou masqués. Les options permettent d’ajouter des champs et des choix tarifaires : suppléments ou remplacement du tarif de cet invité. Voir [le guide invités](invites-et-evolutions.md).
+## Informations et réservations
+
+Les invités personnalisés sont toujours rattachés au réservant, qui reçoit les communications du groupe. Aucun faux courriel ni contact individuel n’est créé. Un courriel facultatif est validé lorsqu’il est renseigné. Les réponses et montants sont conservés avec la réservation ; modifier un tarif ultérieurement ne change pas les anciennes commandes.
+
+L’annulation ou la suppression du réservant libère également les places rattachées. Les outils de confidentialité WordPress couvrent les réponses et noms conservés dans ces places.
+
+## Limites actuelles
+
+- FluentBooking 2.4.x ; événements de groupe sur un créneau unique.
+- Choix payants : tarif de base unique, paiement natif activé, devise à deux décimales, Stripe ou paiement hors ligne.
+- Coupons, WooCommerce, autres passerelles, récurrence, reports et réactivations non pris en charge dans le mode personnalisé.
+- Pas de calcul automatique selon l’âge ni de règles conditionnelles entre champs.
+- Tests serveur et DOM effectués ; recette du véritable formulaire et de Stripe en mode test encore nécessaire avant production.

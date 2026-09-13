@@ -1,33 +1,29 @@
-> Alpha.18 : 18 assertions supplémentaires dans `tests/guest-options.php` et un test DOM dans `tests/guests-dom.cjs`. Voir [le guide des invités](invites-et-evolutions.md).
+# Validation — alpha.21
 
-# Validation alpha.17
+Environnement local : WordPress 7.1, FluentBooking/Pro 2.4.0, PHP 8.2.29, MySQL InnoDB. Le plugin cible FluentBooking 2.4.x.
 
-## Exécuté localement
+```sh
+php tests/unit.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-options.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-pricing.php
+WAASKIT_WP_PATH=/chemin/wordpress php tests/migration.php
+```
 
-- 22 assertions unitaires : valeurs strictes, héritage, faux/0 explicites, limites, registre et validation des choix simplifiés du formulaire.
-- 23 assertions d’intégration WordPress : permissions, stockage, révisions concurrentes, refus natif, rendu HTML, retrait du runtime expérimental, conservation et protection des profils historiques.
-- 7 assertions avec BookingService natif : les événements individuel et de groupe acceptent deux personnes, refusent une troisième et n’insèrent rien en cas de refus.
-- Syntaxe PHP et JavaScript, intégrité du ZIP et absence des anciens moteurs dans celui-ci.
+- Unitaire : les options de limite/décompte sont refusées ; calcul des tarifs, forfaits, suppléments et remplacements.
+- Administration : permissions, événement uniquement, révisions, titre Modules, absence du bloc et de l’héritage, résumé et liens natifs, options repliées.
+- Réservation : places natives, capacité insuffisante, tarifs 100/200/300 et forfait 100, choix tarifaires 135, absence de double multiplication, conservation des montants et réponses, annulation/suppression des places, export/effacement.
+- Migration : conversion des limites effectives de groupe/individuelles en simulation, aucune activation implicite des invités, restauration des fixtures et idempotence.
+- Les tests d’intégration s’exécutent dans une transaction annulée et vérifient la restauration des réglages. Les appels réseau, courriels et actions de notification sont neutralisés dans les fixtures de réservation.
 
-FluentBooking/Pro 2.4.0, WordPress 7.1, PHP Local 8.2.29. Les écritures des tests sont annulées par transaction. Le test BookingService bloque e-mails et HTTP. Aucun paiement ni réservation de test n’est conservé.
+Tests DOM avec jsdom installé dans un répertoire temporaire, sans dépendance ajoutée au plugin :
 
-## Vérifications ciblées supplémentaires
+```sh
+NODE_PATH=/chemin/temporaire/node_modules node tests/guests-dom.cjs
+NODE_PATH=/chemin/temporaire/node_modules node tests/guests-attached-dom.cjs
+NODE_PATH=/chemin/temporaire/node_modules node tests/guest-admin-dom.cjs
+```
 
-16 assertions sur l’événement 2 : limite publique 2, questions natives inchangées, saisie validée avant troncature, création native de 2 places sur 5, refus du troisième participant et des e-mails dupliqués, commande native 20 × 2 = 40, limite 1, restitution exacte des réglages et absence de réservations de test.
+Ils couvrent les identités requises/masquées, radios/cases, récapitulatifs, suppression d’un invité sans perdre les réponses de l’autre et masquage des options admin.
 
-La page publique a été lue par HTTP : le champ invités reçoit la limite actuellement enregistrée (1). Une requête HTTP volontairement incomplète, donc incapable de créer une réservation, avec un invité a reçu HTTP 422 et le message de limite. Ce contrôle ne remplace pas une recette visuelle du composant Svelte.
-
-Les tests ne prouvent pas une exclusion atomique entre deux réservations concurrentes : cette version conserve le moteur de capacité natif.
-
-## À vérifier avant production
-
-- Parcours navigateur réel : sélection du contexte, sauvegarde, héritage, clavier, rendu clair/sombre et mobile.
-- Ouverture des pages publiques activées, navigation vers les calendriers et comportement lorsque la page publique est désactivée.
-- Parcours public réel de réservation et intégrations tierces utilisées par le site.
-- Compatibilité avant toute mise à jour de FluentBooking. Les tests locaux ne justifient pas de déclarer toutes les versions 2.4.x certifiées.
-
-Les tests de paiement et de concurrence de capacité des anciennes alphas ne valident pas cette base : ces fonctions sont retirées. La CI existante vérifie syntaxe et tests unitaires sur PHP 8.1–8.4 ; elle n’a pas été relancée à distance pour cette modification locale.
-
-## Alpha.19
-
-Tests ajoutés : `guest-pricing.php` (18 assertions : identité absente, tarifs remplacés et suppléments, capacité, annulation/suppression, export/effacement et restauration des données). `guest-admin-dom.cjs` vérifie le masquage conditionnel sans perte des sélections. `guests-attached-dom.cjs` vérifie le total 135, les radios et cases, puis la suppression qui conserve le choix enfant et le total 75. Les tests existants restent exécutés. Les tests DOM ne constituent pas une recette du navigateur et aucun paiement réel n’est déclenché.
+La syntaxe PHP/JS, le diff et le ZIP sont également vérifiés. Les anciens tests du module de limite ont été remplacés ; ils ne doivent plus être exécutés. Aucun paiement réel ni recette du vrai composant Svelte n’a été effectué. Les tests DOM ne constituent pas une validation visuelle du navigateur.

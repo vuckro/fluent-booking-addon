@@ -13,7 +13,7 @@ final class SettingsPage
     public function register(): void
     {
         add_action('admin_menu', function () {
-            $hook = add_submenu_page('fluent-booking', 'Fluent Booking Addon', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
+            $hook = add_submenu_page('fluent-booking', 'Modules', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
             add_filter('admin_body_class', static function ($classes) use ($hook) {
                 return get_current_screen()->id === $hook ? $classes . ' fba-admin' : $classes;
             });
@@ -38,12 +38,7 @@ final class SettingsPage
 
     public static function allowed(string $scope, int $id): bool
     {
-        if ($scope === 'site') { return $id === 0 && current_user_can('manage_options'); }
-        if ($id <= 0) { return false; }
-        if ($scope === 'calendar') {
-            return (bool) Calendar::find($id) && (current_user_can('manage_options') || PermissionManager::canWriteCalendar($id));
-        }
-        return $scope === 'calendar_event' && (bool) CalendarSlot::find($id)
+        return $scope === 'calendar_event' && $id > 0 && (bool) CalendarSlot::find($id)
             && (current_user_can('manage_options') || PermissionManager::canUpdateCalendarEvent($id));
     }
     private function url(string $scope = 'site', int $id = 0): string
@@ -59,11 +54,8 @@ final class SettingsPage
         try {
             if (!Plugin::compatible()) { throw new \RuntimeException('Version FluentBooking non prise en charge.'); }
             $stored = $this->store->read($scope, $id);
-            $values = SettingsForm::parse(wp_unslash($_POST), $scope, $stored['values'], $this->store->effective($scope, $id));
-            if ($scope === 'calendar_event') {
-                $values['guest_options'] = GuestOptionsForm::parse(wp_unslash($_POST));
-                if ($values['guest_options']['enabled'] && !CalendarSlot::find($id)->isMultiGuestEvent()) { throw new \InvalidArgumentException('Choisissez un événement de groupe pour ces options invités.'); }
-            }
+            $values = ['guest_options'=>GuestOptionsForm::parse(wp_unslash($_POST))];
+            if (!CalendarSlot::find($id)->isMultiGuestEvent()) { throw new \InvalidArgumentException('Choisissez un événement de groupe.'); }
             $revision = filter_var($_POST['revision'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
             if ($revision === false || $revision === null) { throw new \InvalidArgumentException('Révision invalide.'); }
             $this->store->save($scope, $id, $values, $revision);
@@ -81,35 +73,31 @@ final class SettingsPage
         if (isset($_GET['context']) && is_string($_GET['context']) && preg_match('/^(site|calendar|calendar_event):([0-9]+)$/D', $_GET['context'], $match)) {
             $scope = $match[1]; $id = (int) $match[2];
         }
-        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Fluent Booking Addon</h1><p>Choisissez un calendrier, puis le nombre de personnes autorisées par réservation.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
-        echo '<h2>Modules</h2>';
+        if ($scope !== 'calendar_event') {
+            $scope='calendar_event';$id=0;
+            foreach(CalendarSlot::all() as $event) {if($event->isMultiGuestEvent() && self::allowed($scope,(int)$event->id)) {$id=(int)$event->id;break;}}
+        }
+        echo '<div class="wrap fba-settings"><header class="fba-header"><div><h1>Modules</h1><p>Personnalisez les informations et les tarifs des invités de votre événement.</p></div><a href="https://github.com/vuckro/fluent-booking-addon" target="_blank" rel="noopener noreferrer">Version alpha par WaasKit <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a></header>';
         $this->navigation($scope, $id);
         if (!self::allowed($scope, $id)) {
-            echo '<p>Sélectionnez un calendrier ou un événement accessible.</p></div>'; return;
+            echo '<p>Sélectionnez un événement de groupe accessible.</p></div>'; return;
         }
         try {
             $stored = $this->store->read($scope, $id);
-            $effective = $this->store->effective($scope, $id);
         } catch (\Throwable $error) {
             echo '<div class="notice notice-error inline"><p>' . esc_html($error->getMessage()) . '</p></div></div>'; return;
         }
         if (isset($_GET['saved'])) { echo '<div class="notice notice-success inline"><p>Réglages enregistrés.</p></div>'; }
-        if (!empty($effective['booking_profile']['value']['enabled'])) {
-            echo '<div class="notice notice-warning inline"><p>Un ancien profil expérimental est encore actif pour ce contexte. Les nouvelles réservations concernées sont bloquées. Un administrateur doit examiner ce profil avant de revenir aux réglages natifs.</p></div>';
-        }
-        echo '<section class="fba-card" aria-labelledby="fba-participants"><header class="fba-card-header"><div><h3 id="fba-participants">Limite de participants</h3><p>Exemple : autoriser une réservation pour 4 personnes maximum, même si le créneau contient davantage de places.</p></div></header>';
+        if (!CalendarSlot::find($id)->isMultiGuestEvent()) {echo '<p>La personnalisation est disponible sur les événements de groupe.</p></div>';return;}
+        echo '<section class="fba-card"><header class="fba-card-header"><div><h3>Invités et tarifs</h3><p>Les places et le maximum de personnes se règlent dans FluentBooking.</p></div></header>';
         echo '<form class="fba-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field('waaskit_fb_save_' . $scope . '_' . $id);
         foreach (['action' => 'waaskit_fb_save', 'scope' => $scope, 'object_id' => $id, 'revision' => $stored['revision']] as $key => $value) {
             echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
         }
-         $parent = $scope === 'calendar_event'
-            ? $this->store->effective('calendar', (int) CalendarSlot::find($id)->calendar_id)
-            : $this->store->effective('site');
-        SettingsForm::render($scope, $stored['values'], $effective, $parent);
-        if ($scope === 'calendar_event' && CalendarSlot::find($id)->isMultiGuestEvent()) { GuestOptionsForm::render(\WaasKit\FluentBooking\Guests\Options::validate($stored['values']['guest_options'] ?? [])); }
+        GuestOptionsForm::render(\WaasKit\FluentBooking\Guests\Options::validate($stored['values']['guest_options'] ?? []));
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
-        echo '</form><footer class="fba-card-footer">La limite de personnes complète la capacité des créneaux. Les options invités peuvent modifier le prix des nouvelles réservations ; les réservations existantes conservent leur tarif. Les reports ne sont pas pris en charge dans le mode personnalisé.</footer></section>';
+        echo '</form><footer class="fba-card-footer">Ces options s’appliquent aux nouvelles réservations. Les réservations existantes conservent leur tarif ; leur report n’est pas pris en charge dans ce mode.</footer></section>';
         $this->guestGuidance($scope, $id);
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
@@ -119,48 +107,41 @@ final class SettingsPage
 
     private function guestGuidance(string $scope, int $id): void
     {
-        echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Invités, places et prix</h3><p>Les réglages associés se trouvent dans l’événement FluentBooking.</p></div></header><div class="fba-guide-body">';
-        if ($scope !== 'calendar_event') {
-            echo '<p>Pour autoriser des invités, sélectionnez un événement ci-dessus, puis cochez <strong>Invités supplémentaires</strong> dans ses questions.</p></div></section>';
-            return;
+        $event=CalendarSlot::find($id);
+        $options=\WaasKit\FluentBooking\Guests\Options::validate($this->store->read('calendar_event',$id)['values']['guest_options']??[]);
+        $native=['enabled'=>false,'limit'=>1];
+        foreach($event->getBookingFields() as $field) {if(($field['name']??'')==='guests') {$native=$field;}}
+        $base=admin_url('admin.php?page=fluent-booking#/calendars/'.(int)$event->calendar_id.'/slot-settings/'.$id.'/');
+        $modes=['required'=>'obligatoire','optional'=>'facultatif','hidden'=>'masqué'];
+        $summary=[
+            'Personnalisation'=>$options['enabled']?'Activée':'Désactivée — fonctionnement natif FluentBooking',
+            'Invités supplémentaires'=>!empty($native['enabled'])?'Autorisés dans FluentBooking':'Désactivés dans FluentBooking',
+            'Capacité du créneau'=>(int)$event->getMaxBookingPerSlot().' personnes',
+            'Maximum par réservation'=>!empty($native['enabled'])?(int)($native['limit']??10).' personnes (dans la limite des places disponibles)':'1 personne',
+        ];
+        if($options['enabled']) {
+            $summary['Nom et courriel']='Nom '.$modes[$options['name_mode']].' ; courriel '.$modes[$options['email_mode']];
+            $summary['Prix de base']=$options['per_person_price']?'Par personne, puis application des choix tarifaires':'Une fois par réservation, puis application des choix tarifaires';
+            $summary['Champs supplémentaires']=(string)count($options['fields']);
         }
-        $event = CalendarSlot::find($id);
-        $base = admin_url('admin.php?page=fluent-booking#/calendars/' . (int) $event->calendar_id . '/slot-settings/' . $id . '/');
-        $enabled = false;
-        foreach ($event->getMeta('booking_fields', []) as $field) {
-            if (($field['name'] ?? '') === 'guests') { $enabled = !empty($field['enabled']); }
-        }
-        echo '<p><strong>1. Autoriser les invités</strong><br>Cochez <strong>Invités supplémentaires</strong> dans les questions de l’événement. État actuel : ' . ($enabled ? 'activé' : 'désactivé') . '. <a href="' . esc_url($base . 'question-settings') . '">Ouvrir les questions</a>.</p>';
-        if ($event->isMultiGuestEvent()) {
-            echo '<p><strong>2. Compter les places</strong><br>Sur cet événement de groupe, FluentBooking compte déjà <strong>une place par personne</strong>, réservant compris. La capacité est de <strong>' . (int) $event->getMaxBookingPerSlot() . ' personnes par créneau</strong>. Une réservation pour 2 personnes utilise 2 places ; la limite ci-dessus contrôle uniquement le nombre de personnes dans une même demande.</p>';
-            echo '<p><strong>3. Définir le prix</strong><br>Définissez le tarif de base dans FluentBooking, puis choisissez ci-dessus si ce prix doit être multiplié par le nombre de personnes. Sans personnalisation, FluentBooking conserve son comportement natif. <a href="' . esc_url($base . 'payment-settings') . '">Ouvrir les paiements</a>.</p>';
-        } else {
-            echo '<p><strong>Places et prix</strong><br>Cet événement n’est pas un événement de groupe. Ses invités ne sont pas comptés comme des places individuelles. Utilisez un événement de groupe pour réserver une place et appliquer un tarif par personne.</p>';
-        }
-        echo '<details><summary>Informations demandées aux invités</summary><p>Par défaut, le formulaire natif exige un nom et un courriel distinct. Dans les options personnalisées, chaque champ peut devenir facultatif ou masqué. Les invités sont alors rattachés au réservant, qui reçoit les communications du groupe. Les champs supplémentaires peuvent collecter une information, ajouter un supplément ou remplacer le tarif d’un invité.</p></details></div></section>';
+        echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Résumé des réglages</h3><p>Valeurs enregistrées. Vos changements s’appliquent après enregistrement.</p></div></header><div class="fba-guide-body"><dl class="fba-system-list">';
+        foreach($summary as $label=>$value) {echo '<div><dt>'.esc_html($label).'</dt><dd>'.esc_html($value).'</dd></div>';}
+        echo '</dl><p><a href="'.esc_url($base.'question-settings').'">Invités et limite : ouvrir les questions FluentBooking</a> · <a href="'.esc_url($base.'payment-settings').'">Tarif de base : ouvrir les paiements</a></p></div></section>';
     }
 
     private function navigation(string $scope, int $id): void
     {
         echo '<form class="fba-context" method="get" action="' . esc_url(admin_url('admin.php')) . '"><input type="hidden" name="page" value="waaskit-fluent-booking"><label for="fba-context">À configurer</label><select id="fba-context" name="context">';
-        if (self::allowed('site', 0)) { $this->contextOption('Réglages communs à tous les calendriers', 'site', 0, $scope, $id); }
-        $events = [];
-        foreach (CalendarSlot::all() as $event) { $events[(int) $event->calendar_id][] = $event; }
-        foreach (Calendar::all() as $calendar) {
-            $calendarId = (int) $calendar->id;
-            if (self::allowed('calendar', $calendarId)) {
-                $this->contextOption('Calendrier : ' . $calendar->title, 'calendar', $calendarId, $scope, $id);
-            }
-            foreach ($events[$calendarId] ?? [] as $event) {
-                if (self::allowed('calendar_event', (int) $event->id)) {
-                    $this->contextOption('Événement : ' . $event->title . ' (' . $calendar->title . ')', 'calendar_event', (int) $event->id, $scope, $id);
-                }
+        foreach (CalendarSlot::all() as $event) {
+            if ($event->isMultiGuestEvent() && self::allowed('calendar_event',(int)$event->id)) {
+                $calendar=Calendar::find($event->calendar_id);
+                $this->contextOption($event->title.' ('.($calendar->title??'').')','calendar_event',(int)$event->id,$scope,$id);
             }
         }
         echo '</select> <button class="button" type="submit">Afficher les réglages</button>';
         $this->calendarLink($scope, $id);
         echo '</form>';
-        echo '<p class="description fba-context-help">Pour commencer, configurez les réglages communs. Sélectionnez ensuite un calendrier ou un événement uniquement si vous souhaitez une règle différente.</p>';
+        echo '<p class="description fba-context-help">Choisissez l’événement dont vous souhaitez personnaliser les invités. Les capacités, disponibilités et tarifs de base restent dans FluentBooking.</p>';
     }
 
     private function calendarLink(string $scope, int $id): void
@@ -169,8 +150,7 @@ final class SettingsPage
         $publicUrl = '';
         if ($scope === 'calendar_event') {
             $publicUrl = CalendarSlot::find($id)->getPublicUrl();
-        } elseif ($scope === 'calendar') {
-            $publicUrl = Calendar::find($id)->getLandingPageUrl();
+
         }
         if ($publicUrl) {
             echo '<a class="button" href="' . esc_url($publicUrl) . '" target="_blank" rel="noopener noreferrer">' . ($scope === 'calendar_event' ? 'Voir la page de réservation' : 'Voir le calendrier') . ' <span aria-hidden="true">↗</span><span class="screen-reader-text"> (nouvel onglet)</span></a>';
@@ -190,17 +170,7 @@ final class SettingsPage
         foreach (['WordPress' => get_bloginfo('version'), 'PHP' => PHP_VERSION, 'FluentBooking' => defined('FLUENT_BOOKING_VERSION') ? FLUENT_BOOKING_VERSION : 'absent', 'Pro' => defined('FLUENT_BOOKING_PRO_VERSION') ? FLUENT_BOOKING_PRO_VERSION : 'absent', 'Compatibilité du socle' => Plugin::compatible() ? '2.4.x détectée ; recette exécutée sur 2.4.0' : 'non prise en charge'] as $name => $value) {
             echo '<div><dt>' . esc_html($name) . '</dt><dd>' . esc_html($value) . '</dd></div>';
         }
-        echo '<div><dt>Modules disponibles</dt><dd>Limite de participants par demande</dd></div>';
-        echo '</dl></section><section><h3>Migration historique — simulation uniquement</h3><p>Aucune ancienne option ne modifie automatiquement les nouvelles règles ou les paiements.</p><ul>';
-        $found = false;
-        foreach (CalendarSlot::all() as $event) {
-            $settings = is_array($event->settings) ? $event->settings : [];
-            $legacy = array_intersect_key($settings, array_flip(['fbgrp_one_per_spot', 'fbgrp_price_per_guest', 'fbgrp_hide_guest_email']));
-            if (!$legacy) { continue; }
-            $found = true;
-            echo '<li>' . esc_html($event->title . ' (#' . $event->id . ') : ' . wp_json_encode($legacy)) . ' — correspondance à valider ; aucune conversion.</li>';
-        }
-        if (!$found) { echo '<li>Aucun ancien réglage détecté.</li>'; }
-        echo '</ul></section></div>';
+        echo '<div><dt>Modules disponibles</dt><dd>Informations et tarifs par invité</dd></div>';
+        echo '</dl></section></div>';
     }
 }

@@ -3,12 +3,10 @@ namespace WaasKit\FluentBooking;
 
 use WaasKit\FluentBooking\Admin\SettingsPage;
 use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
-use WaasKit\FluentBooking\Rules\Registry;
-use WaasKit\FluentBooking\Rules\ParticipantLimit;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.20';
+    public const VERSION = '4.0.0-alpha.21';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
@@ -30,15 +28,17 @@ final class Plugin
         }
         if (!class_exists('FluentBooking\\App\\Models\\CalendarSlot')) { return; }
         $store = new ConfigurationStore();
-        $registry = new Registry();
-        $registry->add(new ParticipantLimit());
-        do_action('waaskit_fluent_booking/register_rules', $registry);
         (new SettingsPage($store))->register();
+        if (ConfigurationStore::migrationRequired()) {
+            $message='Fluent Booking Addon : migration des anciens réglages requise. Consultez docs/migration.md avant de rouvrir les réservations.';
+            add_action('admin_notices', static function () use ($message) {echo '<div class="notice notice-error"><p>'.esc_html($message).'</p></div>';});
+            add_filter('fluent_booking/booking_data',static fn()=>new \WP_Error('fba_migration_required',$message,['status'=>503]));
+            \FluentBooking\App\Models\Booking::creating(static function () use ($message) {throw new \RuntimeException($message);});
+            return;
+        }
         (new \WaasKit\FluentBooking\Infrastructure\Privacy())->register();
-        (new \WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationApi($store))->register();
-        (new \WaasKit\FluentBooking\Integrations\FluentBooking\RetiredProfiles($store))->register();
+        (new \WaasKit\FluentBooking\Integrations\FluentBooking\RetiredProfiles())->register();
         (new \WaasKit\FluentBooking\Guests\BookingAdapter($store))->register();
-        (new \WaasKit\FluentBooking\Integrations\FluentBooking\GuestFields($store))->register();
-        (new \WaasKit\FluentBooking\Integrations\FluentBooking\ParticipantLimitAdapter($store, $registry))->register();
+
     }
 }

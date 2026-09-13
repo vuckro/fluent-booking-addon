@@ -1,5 +1,14 @@
 # 4.0.0-alpha.18
 
+## 4.0.0-alpha.21
+
+- Suppression complète du module de limite de participants, du registre de règles et de l’héritage site/calendrier/événement.
+- Configuration uniquement par événement de groupe ; valeurs natives comme source unique des limites.
+- API REST dédiée et ancienne option de décompte supprimées.
+- Titre Modules, bloc de fonctionnalité indépendant et résumé des réglages enregistrés.
+- Migration CLI avec sauvegarde, contrôle des anciennes limites et conservation des options invités.
+- Documentation réécrite et tests actualisés.
+
 ## 4.0.0-alpha.20
 
 - Un seul formulaire et parcours pour les invités personnalisés, indépendamment des identités demandées.

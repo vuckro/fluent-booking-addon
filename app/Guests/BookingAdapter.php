@@ -32,7 +32,8 @@ final class BookingAdapter
             return $settings;
         },100,2);
         add_filter('fluent_booking/public_event_vars',[$this,'publicVars'],110,2);
-        add_filter('fluent_booking/initialize_booking_data',function($data,$posted,$event){$data['_fba_extras']=$posted['fba_extra_'.$event->id]??'[]';return $data;},110,3);
+        add_filter('fluent_booking/initialize_booking_data',function($data,$posted,$event){$data['_fba_extras']=$posted['fba_extra_'.$event->id]??'[]';$data['_fba_requested_count']=1+count((array)($posted['guests']??[]));return $data;},110,3);
+        add_filter('fluent_booking/schedule_validation_rules_data', function($rules,$posted,$event) {if($this->options((int)$event->id)['enabled']) {unset($rules['rules']['guests']);} return $rules;},100,3);
         add_filter('fluent_booking/booking_data',[$this,'validate'],200,4);
         add_action('fluent_booking/after_booking_meta_update',[$this,'persist'],1,4);
         add_filter('fluent_booking/create_draft_order',[$this,'order'],100,4);
@@ -70,8 +71,6 @@ final class BookingAdapter
         foreach($event->getBookingFields() as $field) {
             if(($field['name']??'')==='guests' && !empty($field['enabled'])) {$limit=max(1,(int)($field['limit']??10));}
         }
-        $settings=$this->store->effective('calendar_event',(int)$event->id);
-        if($settings['enabled']['value'] && $settings['max_participants']['value']>0) {$limit=min($limit,$settings['max_participants']['value']);}
         return min($limit,(int)$event->getMaxBookingPerSlot());
     }
     public function validate($data,$event,$custom,$input)

@@ -13,9 +13,10 @@ foreach(['scheduled','pending','cancelled','completed'] as $s){remove_all_action
 $store=new ConfigurationStore();$event=CalendarSlot::find(2);$before=$store->read('calendar_event',2);$countBefore=Booking::count();
 $wpdb->query('START TRANSACTION');
 try {
+ $nativeFields=$event->getBookingFields();foreach($nativeFields as &$field){if(($field['name']??'')==='guests'){$field['enabled']=true;$field['limit']=3;}}unset($field);$event->setBookingFields($nativeFields);
  $options=Options::defaults();$options['enabled']=true;$options['name_mode']='hidden';$options['email_mode']='optional';
  $options['fields']=[['id'=>'category','label'=>'Tarif','type'=>'radio','required'=>true,'choices'=>['Adulte','Enfant'],'pricing'=>'replace','prices'=>[5000,2500]], ['id'=>'extra','label'=>'Atelier supplémentaire','type'=>'checkbox','required'=>false,'choices'=>[],'pricing'=>'add','prices'=>[1000]]];
- $store->save('calendar_event',2,['enabled'=>true,'max_participants'=>3,'guest_options'=>$options],$before['revision']);
+ $store->save('calendar_event',2,['guest_options'=>$options],$before['revision']);
  $event->updateMeta('payment_settings',['enabled'=>'yes','driver'=>'native','offline_enabled'=>'yes','items'=>[['title'=>'Réservation','value'=>50]]]);
  $input=['email'=>'fba-holder@example.invalid','first_name'=>'Holder','last_name'=>'Test','start_time'=>'2031-01-03 14:00:00','end_time'=>'2031-01-03 14:30:00','person_time_zone'=>'UTC','source'=>'web','status'=>'scheduled','payment_method'=>'offline','_fba_extras'=>json_encode([['email'=>'','name'=>'','fields'=>['category'=>'Adulte','extra'=>'1']],['email'=>'','name'=>'','fields'=>['category'=>'Enfant','extra'=>'']]])];
  $booking=BookingService::createBooking($input,$event,['payment_method'=>'offline']);
@@ -40,7 +41,7 @@ try {
  check(count(array_filter($htmlVars['form_fields'],static fn($f)=>($f['name']??'')==='guests' && !empty($f['enabled'])))===0,'native identity form replaced in attached mode');
  $booking->delete();check(Booking::where('parent_id',$booking->id)->count()===0,'deleting holder removes attached seats');
  $options['name_mode']='required';$options['email_mode']='required';
- $current=$store->read('calendar_event',2);$store->save('calendar_event',2,['enabled'=>true,'max_participants'=>3,'guest_options'=>$options],$current['revision']);
+ $current=$store->read('calendar_event',2);$store->save('calendar_event',2,['guest_options'=>$options],$current['revision']);
  $input['additional_guests']=[['name'=>'Adult','email'=>'adult@example.invalid'],['name'=>'Child','email'=>'child@example.invalid']];
  $input['_fba_extras']=json_encode([['email'=>'adult@example.invalid','fields'=>['category'=>'Adulte','extra'=>'1']],['email'=>'child@example.invalid','fields'=>['category'=>'Enfant','extra'=>'']]]);
  $native=BookingService::createBooking($input,$event,['payment_method'=>'offline']);

@@ -1,28 +1,36 @@
-# Migration et exploitation
+# Migration des anciennes limites vers FluentBooking
 
-La version actuelle inventorie `fbgrp_one_per_spot`, `fbgrp_price_per_guest` et `fbgrp_hide_guest_email` sans modifier ces données. L'inventaire est visible uniquement aux administrateurs dans les diagnostics. Il n'exécute aucune migration et ne touche pas aux réservations ni aux commandes.
+## Site local traité le 13 septembre 2026
 
-La facturation par personne ne peut pas être déduite d'un ancien prix seulement visuel. Une migration future devra produire des correspondances explicites et conserver les instantanés appliqués aux réservations.
+La migration vers le schéma 2 a été effectuée avec sauvegarde préalable. Aucune ancienne limite supplémentaire n’était active : les questions et limites natives des événements 1 et 2 sont restées identiques. Les options de l’événement 2 ont été conservées, notamment ses choix Adulte/Enfant et leurs tarifs. La seule clé invitée retirée est `per_person_seats`, devenue inutile : une personne occupe toujours une place.
 
-## Retour à la version précédente
+Sauvegarde locale, hors plugin : `../.local-backups/native-settings-2026-09-13.json`. Elle n’est pas incluse dans le ZIP ou Git.
 
-1. Mettre en pause les événements utilisant des règles nouvelles si leur retrait pouvait modifier les admissions.
-2. Désactiver la version alpha.
-3. Restaurer le code du tag `archive/pre-rewrite-2026-09-12` dans le dossier de plugin approprié, puis activer l'ancienne version si nécessaire.
-4. Vérifier ses options et les parcours avant réouverture.
+## Autres installations provenant des alphas précédentes
 
-Ne pas restaurer aveuglément une ancienne base si des réservations ont été créées entre-temps. Le socle conserve ses réglages après désactivation ou suppression et n'ajoute aucun traitement de suppression automatique.
+Effectuer une sauvegarde de base, utiliser des tables transactionnelles InnoDB et suspendre les modifications des réglages pendant la migration. Le script ne modifie aucune réservation ni commande.
 
-## Verrou de configuration
+Simulation :
 
-En cas d'arrêt brutal de PHP pendant une écriture, un verrou peut persister. Vérifier qu'aucune écriture n'est encore en cours, sauvegarder puis supprimer uniquement l'option `waaskit_fluent_booking_config_lock_<scope>_<id>` concernée. Aucun déverrouillage automatique par expiration n'est utilisé, pour éviter qu'un processus lent continue à écrire après perte de son verrou.
+```sh
+WAASKIT_WP_PATH=/chemin/wordpress php scripts/migrate-native-limits.php
+```
 
-## Distribution
+Application avec fichier de sauvegarde neuf, situé hors répertoire public :
 
-Le ZIP doit contenir le point d'entrée, `autoload.php`, `app/`, README et documentation. Exclure `.git`, les fichiers de tests, les sauvegardes et les secrets. L'identité WordPress comprend le dossier et le fichier principal : conserver le fichier historique ne règle pas à lui seul un changement de dossier.
+```sh
+WAASKIT_WP_PATH=/chemin/wordpress \
+FBA_MIGRATE_APPLY=1 \
+FBA_MIGRATE_BACKUP=/chemin/prive/sauvegarde.json \
+php scripts/migrate-native-limits.php
+```
 
-L'interface de cette alpha est en français. Le domaine de traduction est déclaré ; la couverture gettext complète et les catalogues de traduction restent à finaliser avant distribution multilingue.
+Le script résout une dernière fois les anciennes valeurs site → calendrier → événement. Une restriction active est transférée vers la question native d’invités en conservant la valeur la plus restrictive. Pour les événements individuels, la limite native porte sur les invités supplémentaires ; pour les groupes, elle inclut le réservant. Une limite d’une personne désactive les invités. Le script n’active jamais les invités précédemment désactivés.
 
-## Profils alpha.10–14 retirés
+Ensuite, il conserve les options invités par événement, retire les configurations globales/calendriers et écrit le schéma 2. Les écritures sont relues et regroupées dans une transaction. Les changements détectés pendant le traitement provoquent un arrêt. Un profil expérimental actif nécessite un examen manuel et bloque la conversion.
 
-Les profils sont conservés et non modifiables dans cette base. Un profil activé suspend les nouvelles réservations concernées. Sauvegarder les données et vérifier les réservations, paiements et retenues historiques avant toute suppression manuelle de cette clé. Aucune suppression de profil ni réouverture automatique n’est effectuée. Les outils de confidentialité restent accessibles pour les données liées à l’e-mail du réservant.
+Le script est idempotent : une installation déjà migrée n’est pas retraitée. Il ne crée aucune règle pour les futurs événements : ceux-ci suivent exclusivement FluentBooking.
+
+## Retour arrière
+
+Revenir au code alpha.20 puis restaurer les métadonnées de configuration et de questions contenues dans la sauvegarde, ainsi que l’ancienne option globale ; retirer le marqueur `fba_native_settings_migrated`. Ne pas restaurer une base complète plus ancienne après de nouvelles réservations. Il n’existe pas de restauration automatique dans l’interface.

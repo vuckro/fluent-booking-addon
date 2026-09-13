@@ -1,34 +1,27 @@
 # Fluent Booking Addon
 
-Version **4.0.0-alpha.20** — base simplifiée pour FluentBooking 2.4.x, PHP 8.1+.
+Version **4.0.0-alpha.21**, pour FluentBooking 2.4.x et PHP 8.1+.
 
-Limite par réservation et options d’invités pour les événements de groupe : places par personne, prix proportionnel ou forfaitaire, identités facultatives ou masquées, et champs avec suppléments ou tarifs par choix. Le moteur utilise les réservations et commandes natives, sans table de stock parallèle. Les anciens moteurs expérimentaux restent retirés.
+Une page **Modules** pour personnaliser les invités des événements de groupe : identités facultatives ou masquées, champs supplémentaires, forfait ou tarif par personne, suppléments et prix par choix.
 
-Dans **Fluent Booking → Modules**, sélectionner tous les calendriers, un calendrier ou un événement. Choisir de reprendre les réglages communs, de garder uniquement les limites FluentBooking ou de fixer un maximum. Le nombre n’est demandé que dans ce dernier cas. Le résumé indique les valeurs enregistrées et leur provenance. Le bouton de consultation publique apparaît si la page du calendrier est activée dans FluentBooking.
+**FluentBooking garde la gestion des capacités, du maximum de personnes, des disponibilités et du tarif de base.** L’add-on ne possède plus de limite ni de système d’héritage parallèle.
 
-Cette alpha n’est pas un remplacement fonctionnel de la 3.3.6 ni une version certifiée pour la production. Les modifications et reports ne sont pas couverts. Le mode personnalisé est désactivé par défaut. Son tarif de base vient de FluentBooking ; l’extension contrôle la quantité facturée et conserve le montant de la réservation.
+- [Utilisation et limites](docs/fonctionnement.md)
+- [Architecture](docs/architecture.md)
+- [Suppression des doublons : compte rendu](docs/compte-rendu.md)
+- [Migration des anciennes alphas](docs/migration.md)
+- [Tests et validation](docs/validation.md)
 
-- [Compte rendu : conservé, retiré, limites et suite](docs/compte-rendu.md)
-- [Fonctionnement des réglages](docs/fonctionnement.md)
-- [Architecture et maintenance](docs/architecture.md)
-- [Validation](docs/validation.md)
-- [Invités : logique actuelle et champs à faire évoluer](docs/invites-et-evolutions.md)
-- [Migration et données historiques](docs/migration.md)
-
-## Vérifier et distribuer
+Le mode personnalisé est désactivé par défaut. Il reste en alpha : événements de groupe sur créneau unique, Stripe ou paiement hors ligne, sans coupons ni reports. Recette navigateur et Stripe en mode test nécessaire avant production.
 
 ```sh
 php tests/unit.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/integration.php
-WAASKIT_WP_PATH=/chemin/wordpress php tests/booking-service.php
-WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-logic.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-options.php
 WAASKIT_WP_PATH=/chemin/wordpress php tests/guest-pricing.php
 python3 scripts/package.py
 ```
 
-Les tests d’intégration nécessitent un site localhost jetable, des tables InnoDB, un événement natif et le socket PHP/MySQL adapté à Local. Les écritures de test sont annulées par transaction.
-
-Le ZIP exclut les tests, Git et les données locales. Aucune nouvelle table n’est nécessaire. Les données sont conservées par défaut à la désinstallation ; la suppression volontaire requiert `FBA_DELETE_DATA_ON_UNINSTALL=true`. Aucun push ne synchronise la base et aucune mise à jour automatique n’est installée.
+Le ZIP exclut Git, les tests et les données locales. Aucune table de stock parallèle. Les données sont conservées à la désinstallation ; l’effacement volontaire requiert `FBA_DELETE_DATA_ON_UNINSTALL=true`. Pas de synchronisation de base ni de mise à jour automatique.
 
 Licence GPL-2.0-or-later.

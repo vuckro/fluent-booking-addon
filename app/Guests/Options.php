@@ -6,13 +6,13 @@ final class Options
 {
     public static function defaults(): array
     {
-        return ['enabled'=>false, 'per_person_seats'=>true, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
+        return ['enabled'=>false, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
     }
     public static function validate(array $input): array
     {
         if (array_diff(array_keys($input), array_keys(self::defaults()))) { throw new \InvalidArgumentException('Option invités inconnue.'); }
         $value = array_replace(self::defaults(), $input);
-        foreach (['enabled','per_person_seats','per_person_price'] as $key) {
+        foreach (['enabled','per_person_price'] as $key) {
             if (!is_bool($value[$key])) { throw new \InvalidArgumentException('Option invités invalide.'); }
         }
         if (!is_array($value['fields']) || !array_is_list($value['fields']) || count($value['fields']) > 8) { throw new \InvalidArgumentException('Maximum : 8 champs par invité.'); }
