@@ -107,3 +107,11 @@ et la conservation de coordonnées en sessionStorage sont supprimés. Le bouton
 rechargement et l'absence d'appel réseau et de données conservées. Les tests de
 montants et de verrouillage Stripe sont conservés. Le rechargement n'annule pas
 un paiement ; les places des tentatives impayées dépendent de l'expiration native.
+
+## Confirmation — alpha.39
+
+Le champ technique `fba_participants_email` est exclu des sections du reçu public,
+sans toucher aux métadonnées enregistrées ni au shortcode des emails. Le bloc
+« Réservation et participants » reste l'unique présentation des participants sur
+la confirmation. `public-booking.php` vérifie ce comportement avec contact participant
+et non participant, et vérifie que le shortcode email conserve les noms et réponses.

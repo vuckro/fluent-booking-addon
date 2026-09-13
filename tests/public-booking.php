@@ -90,6 +90,10 @@ try {
         $html=FluentBooking\App\Services\BookingService::getBookingConfirmationHtml($booking);
         check(!str_contains($html,'fba-booked-guests') && str_contains($html,'Réservation et participants') && str_contains($html,'Âge : 8'),'confirmation uses native sections with guest answers');
         check(str_contains($html,'Informations de facturation'),'confirmation uses billing heading');
+        check(!str_contains($html,'fba_participants_email') && !str_contains($html,'Contact de réservation'),'confirmation does not expose the email-only duplicate');
+        $emailSummary=FluentBooking\App\Services\EditorShortCodeParser::parse('{{booking.custom.fba_participants_email}}',$booking);
+        check(str_contains($emailSummary,'Contact de réservation') && str_contains($emailSummary,'Participants') && str_contains($emailSummary,'Âge : 8'),'email shortcode still includes the stored participants after receipt rendering');
+
         if (!$attends) {check(str_contains($html,'ne participe pas au rendez-vous') && !str_contains($html,'La personne qui a réservé participe également.'),'confirmation never presents nonparticipant as attending');}
         if ($attends) {
             $seat=Booking::where('parent_id',$booking->id)->firstOrFail();

@@ -85,6 +85,9 @@ final class BookingPresentation
 
     public function receipt(array $data, $booking): array
     {
+        // Email-only metadata is rendered by native receipts as a custom field.
+        // Hide its projection, never delete the value used by email shortcodes.
+        unset($data['sections']['fba_participants_email']);
         $details=$this->details($booking);
         if (!$details) {return $data;}
         $data['sections']['what']['content']=esc_html($booking->calendar_event->title);
