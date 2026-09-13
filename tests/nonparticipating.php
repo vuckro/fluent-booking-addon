@@ -38,7 +38,7 @@ try {
      check((int)$order->total_amount===$amount && (int)$order->items()->sum('item_total')===$amount,'order charges participants exactly once');
      check(count($snapshot['guests'])===count($guests),'first participant retained in snapshot');
  }
- ob_start();(new BookingAdapter($store))->summary($booking);$html=ob_get_clean();check(str_contains($html,'ne participe pas') && str_contains($html,'Participant'),'booking detail distinguishes contact and participants');
+ (new WaasKit\FluentBooking\Guests\BookingPresentation())->admin($booking);$html=wp_json_encode($booking->custom_form_data,JSON_UNESCAPED_UNICODE);check(str_contains($html,'ne participe pas') && str_contains($html,'Participant'),'booking detail distinguishes contact and participants');
  check(is_wp_error($create(20,false,[])),'zero participants rejected');
  check(is_wp_error($create(20,'false',[$guest])),'non-boolean participation rejected');
  check(is_wp_error($create(20,false,[array_replace($guest,['fields'=>['age'=>'0']])])),'first participant field validated');

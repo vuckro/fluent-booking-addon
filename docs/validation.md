@@ -1,4 +1,4 @@
-# Tests — alpha.28
+# Tests — alpha.29
 
 Exécuter depuis la racine du plugin avec PHP 8.1+ ; les intégrations refusent un site autre que localhost/127.0.0.1. Configurer le socket MySQL de PHP si Local le nécessite.
 
@@ -43,3 +43,9 @@ La recette précédente ne traversait pas le gestionnaire public PHP : les tests
 `tests/public-booking.php` reproduisait « Syntax error » avant le correctif. Il appelle maintenant les deux actions natives de réservation (connecté et anonyme), avec `wp_slash` comme WordPress, et intercepte uniquement la sortie JSON. Le gestionnaire réel vérifie un créneau disponible, crée la réservation, ses participants et sa confirmation. Le test contrôle ensuite les commandes hors ligne via OrderHelper. Il couvre également le contact non participant, les bornes d’âge, le nom obligatoire, les tarifs falsifiés, la capacité, le JSON invalide et le mode informations seules. Le Request natif déjà nettoyé est contrôlé séparément pour prévenir un double déséchappement.
 
 Total actuel : **189 contrôles PHP et 8 scénarios DOM réussis**. Les 22 nouveaux contrôles s’exécutent en processus PHP local, pas via un navigateur ou une requête HTTP complète. Emails, synchronisations externes et actions de notification sont neutralisés ; toutes les écritures sont annulées. Cela ne constitue pas un paiement Stripe ni une vérification de réception des emails.
+
+## Présentation des réservations — alpha.29
+
+**200 contrôles PHP réussis.** Le test AJAX couvre maintenant les données transmises aux vues natives, les réponses de chaque invité, le lien enfant → réservant, la confirmation et son titre de facturation. Les contacts, tarifs et réponses historiques ne sont pas réécrits. Les réservations locales existantes 417, 418 et 419 ont aussi été vérifiées en lecture seule : Marie, 8 ans ; Jean, 10 ans ; Papa non participant.
+
+La liste native conserve le nom du contact de la réservation principale (Papa). Déplier sa ligne affiche « Réservé par : Papa — ne participe pas » puis « Participant : Jean », son tarif et son âge. Cela préserve les coordonnées utilisées pour la facturation et les communications. Les intégrations externes continuent d’utiliser ce contact natif. Aucun nouveau test visuel navigateur ni test de réception des emails n’est revendiqué.

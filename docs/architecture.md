@@ -36,3 +36,11 @@ Le script de migration est distinct du runtime. Si une configuration ancienne es
 Le formulaire ajoute son propre bloc à FluentBooking ; il ne manipule plus les lignes d’invités Svelte. Un observateur sert uniquement à repérer le montage du formulaire. Les lignes créées appartiennent à l’add-on.
 
 Un verrou MySQL sérialise l’admission des invités personnalisés sur un événement et un début de créneau. Ce verrou n’est pas une transaction distribuée couvrant les notifications, les intégrations tierces ou les paiements. La recette navigateur et Stripe reste nécessaire.
+
+## Présentation native — alpha.29
+
+`Guests/BookingPresentation` est une projection en lecture seule du snapshot `fba_guests_v1`. `format_booking_schedule` enrichit les informations affichées à l’ouverture de la ligne native ; `booking_meta_info_main_meta` fournit le lien de l’invité vers sa réservation principale. Le snapshot de la réservation principale affiche tout le groupe ; une place rattachée affiche uniquement son invité et son réservant.
+
+`schedule_receipt_data` utilise les sections de confirmation natives et leur palette clair/sombre. L’ancien hook `booking_details_header`, qui ajoutait un bloc non stylé avant le titre, est supprimé. Le titre de facturation est remplacé uniquement dans le HTML de ce reçu : FluentBooking 2.4 ne fournit pas de filtre spécifique pour ce titre. Vérifier le template natif lors d’un changement de version.
+
+Les noms des contacts et leurs emails restent inchangés : aucune transformation des identités pour maquiller les lignes natives, aucun changement de prix ni de stock. Les réservations historiques gardent les libellés et réponses de leur snapshot, même si les champs de l’événement changent ensuite.

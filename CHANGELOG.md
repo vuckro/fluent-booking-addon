@@ -1,3 +1,11 @@
+## 4.0.0-alpha.29
+
+- Les fiches natives affichent le réservant, sa participation, les participants, leurs tarifs et leurs réponses conservées.
+- Les places invitées renvoient vers leur réservation principale ; les réservations existantes bénéficient du nouvel affichage sans migration.
+- Confirmation : remplacement du bloc hors mise en page par des sections natives, rôles explicites et titre « Informations de facturation ».
+- Le contact non participant n’est plus présenté comme participant dans la confirmation ; le bouton personnel d’ajout au calendrier y est retiré.
+- Présentation isolée du calcul et du stockage dans BookingPresentation ; 200 contrôles PHP réussis.
+
 ## 4.0.0-alpha.28
 
 - Correction de « Syntax error » à la réservation : déséchappement des données JSON uniquement à l’entrée AJAX publique WordPress, sans double traitement du contrôleur REST.

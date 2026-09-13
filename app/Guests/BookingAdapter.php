@@ -53,7 +53,7 @@ final class BookingAdapter
         add_action('fluent_booking/after_booking_meta_update',[$this,'persist'],1,4);
         add_filter('fluent_booking/create_draft_order',[$this,'order'],100,4);
         add_action('fluent_booking/after_order_items_created',[$this,'orderItems'],100,4);
-        add_action('fluent_booking/booking_details_header', [$this,'summary']);
+        (new BookingPresentation())->register();
         register_shutdown_function([$this,'unlock']);
         Booking::updated([AttachedSeats::class,'sync']);
         Booking::deleting([AttachedSeats::class,'remove']);
@@ -212,25 +212,6 @@ final class BookingAdapter
             $order->items()->create(['booking_id'=>$booking->id,'item_name'=>$item['title'],'item_price'=>$item['cents'],'quantity'=>$snapshot['quantity'],'item_total'=>$item['cents']*$snapshot['quantity'],'rate'=>1,'type'=>'single','line_meta'=>wp_json_encode($item)]);
         }
     }
-    public function summary($booking): void
-    {
-        $snapshot=$booking->getMeta(self::META,[]);
-        if(empty($snapshot['guests'])) {return;}
-        echo '<section class="fba-booked-guests"><h3>Participants</h3>';
-        if (!empty($snapshot['attached_seat'])) {echo '<p>Participant rattaché à la réservation principale.</p>';}
-        elseif (($snapshot['holder_participates']??true)===false) {echo '<p>Le réservant est le contact et ne participe pas. Les participants sont listés ci-dessous.</p>';}
-        else {echo '<p>Le réservant participe également.</p>';}
-        echo '<ul>';
-        $labels=array_column($snapshot['fields'],'label','id');
-        foreach($snapshot['guests'] as $index=>$guest) {
-            echo '<li>'.esc_html($guest['name']?:'Invité '.($index+1));
-            if (!empty($guest['tariff']['title'])) {echo ' · '.esc_html($guest['tariff']['title']);}
-            foreach($guest['fields'] as $id=>$value) {if($value!=='') {echo ' · '.esc_html(($labels[$id]??$id).' : '.$value);}}
-            echo '</li>';
-        }
-        echo '</ul></section>';
-    }
-
     public function unlock(?string $one=null): void
     {
         global $wpdb;

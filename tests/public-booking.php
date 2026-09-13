@@ -76,6 +76,22 @@ try {
         check($snapshot['count']===($attends?2:1) && 1+Booking::where('parent_id',$booking->id)->count()===($attends?2:1),'public reservation uses only participant seats');
         $order=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($booking,$event,['quantity'=>999]);
         check((int)$order->total_amount===($attends?12500:5500),'stored order matches chosen tariffs');
+        $view=clone $booking;
+        do_action_ref_array('fluent_booking/format_booking_schedule',[&$view]);
+        $admin=wp_json_encode($view->custom_form_data,JSON_UNESCAPED_UNICODE);
+        check(str_contains($admin,'Âge : 8') && str_contains($admin,$attends?'— participe':'ne participe pas'),'native admin includes participation and guest answers');
+        check($view->first_name===$booking->first_name && $view->email===$booking->email,'presentation preserves contact identity');
+        $html=FluentBooking\App\Services\BookingService::getBookingConfirmationHtml($booking);
+        check(!str_contains($html,'fba-booked-guests') && str_contains($html,'Réservation et participants') && str_contains($html,'Âge : 8'),'confirmation uses native sections with guest answers');
+        check(str_contains($html,'Informations de facturation'),'confirmation uses billing heading');
+        if (!$attends) {check(str_contains($html,'il ne participe pas') && !str_contains($html,'Le réservant participe.'),'confirmation never presents nonparticipant as attending');}
+        if ($attends) {
+            $seat=Booking::where('parent_id',$booking->id)->firstOrFail();
+            do_action_ref_array('fluent_booking/format_booking_schedule',[&$seat]);
+            check(str_contains(wp_json_encode($seat->custom_form_data,JSON_UNESCAPED_UNICODE),'Âge : 8'),'attached child exposes its own answers');
+            $links=apply_filters('fluent_booking/booking_meta_info_main_meta',[],$seat);
+            check(str_contains(wp_json_encode($links),'booking_id='.$booking->id),'attached child links to initiating reservation');
+        }
         $booking->status='cancelled'; $booking->save();
         check(Booking::where('parent_id',$booking->id)->where('status','scheduled')->count()===0,'cancellation releases attached seats');
     }
