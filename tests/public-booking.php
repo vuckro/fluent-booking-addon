@@ -73,9 +73,9 @@ try {
         $booking=Booking::where('hash',$response['booking_hash'])->firstOrFail();
         $snapshot=$booking->getMeta(BookingAdapter::META,[]);
         $google=apply_filters('fluent_booking/google_event_data',['summary'=>'Group'], $booking, []);
-        check(str_contains($google['description']??'', 'Réservation de groupe') && !str_contains($google['description'],$guest['name']),'registered Google hook describes real booking without personal data');
+        check(str_contains($google['description']??'', 'Voir les détails de la réservation') && !str_contains($google['description'],$guest['name']),'registered Google hook describes real booking without personal data');
         $outlook=apply_filters('fluent_booking/outlook_event_data',['subject'=>'Group'], $booking);
-        check(str_contains($outlook['body']['content']??'', 'droits d’accès requis'),'registered Outlook hook provides protected organizer access');
+        check(str_contains($outlook['body']['content']??'', 'booking_id='.$booking->id),'registered Outlook hook provides protected organizer access');
         check($snapshot['guests'][0]['name']===$guest['name'],'accents, apostrophes, quotes and backslashes survive request and storage');
         check($snapshot['count']===($attends?2:1) && 1+Booking::where('parent_id',$booking->id)->count()===($attends?2:1),'public reservation uses only participant seats');
         $order=(new FluentBookingPro\App\Services\OrderHelper())->processDraftOrder($booking,$event,['quantity'=>999]);
@@ -88,7 +88,7 @@ try {
         $html=FluentBooking\App\Services\BookingService::getBookingConfirmationHtml($booking);
         check(!str_contains($html,'fba-booked-guests') && str_contains($html,'Réservation et participants') && str_contains($html,'Âge : 8'),'confirmation uses native sections with guest answers');
         check(str_contains($html,'Informations de facturation'),'confirmation uses billing heading');
-        if (!$attends) {check(str_contains($html,'il ne participe pas') && !str_contains($html,'Le réservant participe.'),'confirmation never presents nonparticipant as attending');}
+        if (!$attends) {check(str_contains($html,'ne participe pas au rendez-vous') && !str_contains($html,'Le réservant participe.'),'confirmation never presents nonparticipant as attending');}
         if ($attends) {
             $seat=Booking::where('parent_id',$booking->id)->firstOrFail();
             do_action_ref_array('fluent_booking/format_booking_schedule',[&$seat]);

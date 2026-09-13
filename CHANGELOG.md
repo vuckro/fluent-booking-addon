@@ -1,5 +1,7 @@
 ## 4.0.0-alpha.30
 
+- Ajustement : description réduite à « Voir les détails de la réservation » et lien admin vers la réservation d’origine ; phrase de confirmation simplifiée.
+
 - Description informative lors de la création d’événements de groupe Google et Outlook : distinction entre contacts invités et participants, lien vers les réservations protégées de l’administration.
 - Aucun nom, âge, réponse, tarif individuel ou lien de confirmation personnel ajouté à l’événement partagé.
 - Conservation des invitations, statuts RSVP, dates, titre et contenus préexistants ; aucun compteur dynamique susceptible de devenir périmé.

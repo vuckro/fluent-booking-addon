@@ -67,7 +67,7 @@ final class BookingPresentation
         if (!$details) {return $data;}
         $data['sections']['what']['content']=esc_html($booking->calendar_event->title);
         $data['sections']['who']=['title'=>'Réservation et participants', 'content'=>[
-            '<strong>Réservé par : '.esc_html($details['contact']).'</strong><br>'.($details['attends']?'Le réservant participe.':'Le réservant est le contact uniquement : il ne participe pas.'),
+            '<strong>Réservé par : '.esc_html($details['contact']).'</strong><br>'.($details['attends']?'Le réservant participe.':'Cette personne a réservé pour les participants ci-dessous et ne participe pas au rendez-vous.'),
         ]];
         foreach ($details['people'] as $person) {
             $data['sections']['who']['content'][]='<strong>'.esc_html($person['name']).'</strong><br>'.esc_html($this->description($person));

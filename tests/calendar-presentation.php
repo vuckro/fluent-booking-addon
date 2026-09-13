@@ -8,7 +8,7 @@ function esc_html($value) {return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 function check($ok,$message) {if (!$ok) {throw new RuntimeException($message);} echo "PASS $message\n";}
 final class CalendarBookingFixture
 {
-    public function __construct(public array $snapshot, public bool $group=true) {}
+    public function __construct(public array $snapshot, public bool $group=true, public int $id=516) {}
     public function getMeta($key,$default=[]) {return $this->snapshot;}
     public function isMultiGuestBooking() {return $this->group;}
 }
@@ -18,11 +18,12 @@ $google=['summary'=>'Agenda collectif','attendees'=>[['email'=>'contact@example.
 $result=$view->google($google,$booking);
 check(isset($result['description']),'Google group event gets a description');
 $unchanged=$result;unset($unchanged['description']);check($unchanged===$google,'native attendees, RSVP, title, dates and metadata remain unchanged');
-foreach (['Jean','private@example.test','Âge : 10','5500','Enfant','meeting_hash','booking_id='] as $private) {
+foreach (['Jean','private@example.test','Âge : 10','5500','Enfant','meeting_hash'] as $private) {
     check(!str_contains($result['description'],$private),'description excludes private datum '.$private);
 }
-check(str_contains($result['description'],'droits d’accès requis'),'description identifies protected organizer access');
-check(str_contains($result['description'],'ne participent pas nécessairement'),'contact and participant roles explained');
+check(str_contains($result['description'],'/wp-admin/admin.php?page=fluent-booking#/scheduled-events?period=all&booking_id=516'),'description links to the originating booking');
+check(count(explode("\n",$result['description']))===2,'description contains only a label and a link');
+check(str_ends_with($view->google($google,new CalendarBookingFixture($booking->snapshot,true,742))['description'],'booking_id=742'),'booking link is generated dynamically');
 check($view->google($result,$booking)===$result,'Google formatting is idempotent');
 $existing=$google+['description'=>'Existing integration content'];
 check(str_starts_with($view->google($existing,$booking)['description'],'Existing integration content'),'existing description preserved');
@@ -32,7 +33,7 @@ foreach ([new CalendarBookingFixture([]),new CalendarBookingFixture(['attached'=
 }
 $outlook=['subject'=>'Agenda collectif','attendees'=>$google['attendees'],'location'=>['displayName'=>'Lieu']];
 $result=$view->outlook($outlook,$booking);
-check($result['body']['contentType']==='text' && str_contains($result['body']['content'],'Réservation de groupe'),'Outlook gets a text description');
+check($result['body']['contentType']==='text' && str_contains($result['body']['content'],'Voir les détails de la réservation'),'Outlook gets a text description');
 $unchanged=$result;unset($unchanged['body']);check($unchanged===$outlook,'Outlook native event fields preserved');
 check($view->outlook($result,$booking)===$result,'Outlook formatting is idempotent');
 $outlook['body']=['contentType'=>'HTML','content'=>'<p>Existing content</p>'];
