@@ -3,7 +3,7 @@
 .fba-custom-guests .fba-guest-extra label { display:flex; flex-direction:column; gap:6px; font-size:14px; color:var(--fcal_dark); }
 .fba-custom-guests .fba-guest-extra :is(input,select) { width:100%; box-sizing:border-box; padding:10px; border:1px solid var(--fcal_slot_border); border-radius:6px; background:var(--fcal_cal_bg); color:var(--fcal_dark); }
 .fba-custom-guests .fba-guest-summary { padding:14px; border:1px solid var(--fcal_slot_border); border-radius:6px; color:var(--fcal_dark); }
-.fba-custom-guests .fcal_payment_items_table,.fba-custom-guests .fcal_payment_coupon { display:none; }
+.fba-custom-guests .fcal_payment_items_table,.fba-custom-guests .fcal_payment_items,.fba-custom-guests .fcal_payment_coupon { display:none; }
 
 .fba-custom-guests .fba-guest-extra :is(input[type=radio],input[type=checkbox]) { width:auto; min-width:16px; accent-color:var(--fcal-accent,#253241); }
 .fba-custom-guests .fba-guest-extra fieldset { border:0; padding:0; margin:0; }
@@ -15,3 +15,15 @@
 .fba-custom-guests .fba-attached-guest > :is(.fba-guest-label,.fba-guest-extra,button) { grid-column:1 / -1; }
 .fba-custom-guests .fba-attached-guest > label { display:flex; flex-direction:column; gap:6px; }
 @media(max-width:600px) { .fba-custom-guests .fba-attached-guest { grid-template-columns:1fr; } }
+
+.fba-custom-guests .fba-tariff-choice { display:flex; flex-direction:column; gap:8px; margin:16px 0; color:var(--fcal_dark); font-weight:600; }
+.fba-custom-guests .fba-tariff-choice select { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--fcal_slot_border); border-radius:6px; background:var(--fcal_cal_bg); color:var(--fcal_dark); }
+.fba-custom-guests .fba-attached-guest > .fba-tariff-choice { grid-column:1 / -1; margin:0; }
+.fba-custom-guests .fba-payment-recap { margin:24px 0; color:var(--fcal_dark); }
+.fba-custom-guests .fba-payment-recap h3 { margin:0 0 12px; font-size:16px; }
+.fba-custom-guests .fba-payment-recap dl { margin:0; }
+.fba-custom-guests .fba-payment-recap dl > div { display:flex; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--fcal_slot_border); }
+.fba-custom-guests .fba-payment-recap dd { margin:0; white-space:nowrap; }
+
+.fluent_booking_app.fba-priced-event .fcal_slot_payment_item { display:none; }
+.fba-sidebar-total { color:var(--fcal_dark); margin:12px 0; }

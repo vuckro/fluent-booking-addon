@@ -7,15 +7,36 @@
         const config = window.fbaGuestForms?.[id];
         const root = transport.closest('.fcal_booking_form_wrap');
         if (!config || !root) return;
+        const transportItem = transport.closest('.fcal_form_item');
+        if (!transportItem) return;
         mounted.add(transport);
-        transport.closest('.fcal_form_item').hidden = true;
+        transportItem.hidden = true;
         root.classList.add('fba-custom-guests');
+        if (config.error) {
+            const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
+            transportItem.before(message); root.querySelectorAll('[type=submit]').forEach(button => button.disabled = true); return;
+        }
+        const format = cents => new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
+        const nativeTariffs = Array.isArray(config.tariffs);
+        let saved = null;
+        try { saved = transport.value ? JSON.parse(transport.value) : null; } catch (_) { /* A fresh form has no payload. */ }
+        let restoring = !!saved;
+        const tariffControl = (title) => {
+            const label = document.createElement('label'); label.className = 'fba-tariff-choice'; label.append(document.createTextNode(title));
+            const select = document.createElement('select'); select.dataset.fbaTariff = ''; select.required = true;
+            config.tariffs.forEach(tariff => { const option = document.createElement('option'); option.value = tariff.id; option.textContent = tariff.title + ' — ' + format(tariff.cents); select.append(option); });
+            label.append(select); return label;
+        };
+        const holder = nativeTariffs && config.tariffs.length ? tariffControl('Votre tarif') : null;
         const summary = document.createElement('p');
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
         const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
             const add = document.createElement('button'); add.type = 'button'; add.textContent = 'Ajouter un invité'; add.className = 'fba-add-guest';
-            guestWrap.append(add); transport.closest('.fcal_form_item').before(guestWrap);
+            guestWrap.append(add);
+            const payment = root.querySelector('.fcal_payment_items');
+            (payment || transportItem).before(guestWrap);
+            if (holder) guestWrap.before(holder);
             add.addEventListener('click', () => {
                 if (rows().length + 1 >= config.limit) return;
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
@@ -23,13 +44,17 @@
                 ['name','email'].forEach(key => {
                     const label = document.createElement('label'); label.textContent = key === 'name' ? 'Nom de l’invité' : 'Courriel de l’invité';
                     const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200; input.dataset.fbaIdentity = key;
-                    input.required = config[key+'Mode'] === 'required'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
+                    input.required = config[key+'Mode'] === 'required'; input.disabled = config[key+'Mode'] === 'hidden'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
                 });
+                if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de cet invité'));
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Supprimer cet invité';
                 remove.addEventListener('click', () => { row.remove(); update(); }); row.append(remove);
                 guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
-        guestWrap.after(summary);
+        const recap = document.createElement('div'); recap.className = 'fba-payment-recap';
+        const title = document.createElement('h3'); title.textContent = 'Récapitulatif des paiements';
+        const lines = document.createElement('dl'); recap.append(title, lines, summary); guestWrap.after(recap);
+        if (!nativeTariffs) title.hidden = true;
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         const read = row => Object.fromEntries([...row.querySelectorAll('[data-fba-answer]')].filter(el => el.type !== 'radio' || el.checked).map(el => [el.dataset.fbaAnswer, el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value]));
         const update = () => {
@@ -65,9 +90,9 @@
                 });
                 row.append(panel);
             });
-            const payload = guests.map(row => ({name: row.querySelector('[data-fba-identity=name]')?.value || '', email: row.querySelector('[data-fba-identity=email]')?.value || '', fields: read(row)}));
-            const serialized = JSON.stringify(payload);
-            if (transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
+            const payload = guests.map(row => ({name: row.querySelector('[data-fba-identity=name]')?.value || '', email: row.querySelector('[data-fba-identity=email]')?.value || '', fields: read(row), ...(nativeTariffs ? {tariff: row.querySelector('[data-fba-tariff]')?.value || ''} : {})}));
+            const serialized = JSON.stringify(nativeTariffs ? {holder_tariff: holder?.querySelector('select').value || '', guests: payload} : payload);
+            if (!restoring && transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
             const people = guests.length + 1;
             guestWrap.querySelector('.fba-add-guest').disabled = people >= config.limit;
             const base = Math.round(config.unit * 100);
@@ -84,13 +109,54 @@
                 });
                 cents += amount + extra;
             });
+            if (nativeTariffs) {
+                const selected = [holder?.querySelector('select').value, ...payload.map(guest => guest.tariff)];
+                const fragment = document.createDocumentFragment(); cents = 0;
+                selected.forEach((id, index) => {
+                    const tariff = config.tariffs.find(t => t.id === id); if (!tariff) return;
+                    cents += tariff.cents;
+                    const line = document.createElement('div'); const label = document.createElement('dt'); const value = document.createElement('dd');
+                    label.textContent = (index === 0 ? 'Vous' : payload[index-1].name || 'Invité ' + index) + ' · ' + tariff.title;
+                    value.textContent = format(tariff.cents); line.append(label, value); fragment.append(line);
+                });
+                lines.replaceChildren(fragment);
+                recap.hidden = !config.tariffs.length;
+            }
             const total = new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
-            const message = people + (people > 1 ? ' personnes' : ' personne') + ' · ' + people + ' place(s) utilisées après confirmation' + (cents > 0 ? ' · Total : ' + total : '');
+            const message = people + (people > 1 ? ' personnes' : ' personne') + ' · ' + people + ' place(s) utilisées après confirmation' + (cents > 0 || (nativeTariffs && config.tariffs.length) ? ' · Total : ' + total : '');
+            // The sidebar must not keep displaying the sum of all available choices.
+            if (nativeTariffs) {
+                const page = root.closest('.fluent_booking_app');
+                if (page) {
+                    page.classList.add('fba-priced-event');
+                    page.querySelectorAll('.fcal_slot_payment_item').forEach(el => {
+                        let value = el.parentElement.querySelector('.fba-sidebar-total');
+                        if (!value) { value = document.createElement('div'); value.className = 'fba-sidebar-total'; el.after(value); }
+                        if (value.textContent !== total) value.textContent = total;
+                    });
+                }
+            }
             if (summary.textContent !== message) summary.textContent = message;
         };
         root.addEventListener('input', event => { if (event.target !== transport) update(); });
         root.addEventListener('change', update);
         update();
+        if (saved) {
+            const savedGuests = nativeTariffs ? saved.guests : saved;
+            if (holder && typeof saved.holder_tariff === 'string') holder.querySelector('select').value = saved.holder_tariff;
+            if (Array.isArray(savedGuests)) savedGuests.slice(0, config.limit - 1).forEach(guest => {
+                add.click(); const row = rows().at(-1); if (!row) return;
+                ['name','email'].forEach(key => { const input = row.querySelector('[data-fba-identity='+key+']'); if (input && typeof guest[key] === 'string') input.value = guest[key]; });
+                const tariff = row.querySelector('[data-fba-tariff]'); if (tariff && typeof guest.tariff === 'string') tariff.value = guest.tariff;
+                row.querySelectorAll('[data-fba-answer]').forEach(input => {
+                    const value = guest.fields?.[input.dataset.fbaAnswer] || '';
+                    if (input.type === 'checkbox') input.checked = value === '1';
+                    else if (input.type === 'radio') input.checked = input.value === value;
+                    else input.value = value;
+                });
+            });
+        }
+        restoring = false; update();
     });
     const observer = new MutationObserver(boot);
     observer.observe(document.documentElement, {childList:true,subtree:true});

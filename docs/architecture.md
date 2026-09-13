@@ -1,3 +1,5 @@
+> **Alpha.22 :** le mode recommandé est désormais [Un tarif FluentBooking par personne](tarifs-par-personne.md). Les passages ci-dessous sur le multiplicateur et les champs tarifaires décrivent le mode antérieur, conservé pour les configurations existantes.
+
 # Architecture après suppression des doublons — alpha.21
 
 ## Parcours unique

@@ -14,7 +14,7 @@ $store=new ConfigurationStore();$event=CalendarSlot::find(2);$before=$store->rea
 $wpdb->query('START TRANSACTION');
 try {
  $nativeFields=$event->getBookingFields();foreach($nativeFields as &$field){if(($field['name']??'')==='guests'){$field['enabled']=true;$field['limit']=3;}}unset($field);$event->setBookingFields($nativeFields);
- $options=Options::defaults();$options['enabled']=true;$options['fields']=[['id'=>'category','label'=>'Catégorie','type'=>'select','required'=>true,'choices'=>['Adulte','Enfant']],['id'=>'note','label'=>'Précision','type'=>'text','required'=>false,'choices'=>[]]];
+ $options=Options::defaults();$options['native_tariffs']=false;$options['enabled']=true;$options['fields']=[['id'=>'category','label'=>'Catégorie','type'=>'select','required'=>true,'choices'=>['Adulte','Enfant']],['id'=>'note','label'=>'Précision','type'=>'text','required'=>false,'choices'=>[]]];
  $store->save('calendar_event',2,['guest_options'=>$options],$before['revision']);
  $event->updateMeta('payment_settings',['enabled'=>'yes','driver'=>'native','offline_enabled'=>'yes','items'=>[['title'=>'Prix par personne','value'=>100]]]);
  $input=['email'=>'fba-test@example.invalid','first_name'=>'Holder','last_name'=>'Test','start_time'=>'2030-01-03 14:00:00','end_time'=>'2030-01-03 14:30:00','person_time_zone'=>'UTC','source'=>'web','status'=>'scheduled','payment_method'=>'offline','additional_guests'=>[['email'=>'guest1@example.invalid','name'=>'Guest 1'],['email'=>'guest2@example.invalid','name'=>'Guest 2']], '_fba_extras'=>json_encode([['email'=>'guest1@example.invalid','fields'=>['category'=>'Adulte','note'=>'']],['email'=>'guest2@example.invalid','fields'=>['category'=>'Enfant','note'=>'Allergie']]])];

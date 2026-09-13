@@ -1,3 +1,5 @@
+> **Alpha.22 :** le mode recommandé est désormais [Un tarif FluentBooking par personne](tarifs-par-personne.md). Les passages ci-dessous sur le multiplicateur et les champs tarifaires décrivent le mode antérieur, conservé pour les configurations existantes.
+
 # Validation — alpha.21
 
 Environnement local : WordPress 7.1, FluentBooking/Pro 2.4.0, PHP 8.2.29, MySQL InnoDB. Le plugin cible FluentBooking 2.4.x.

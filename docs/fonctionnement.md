@@ -1,3 +1,5 @@
+> **Alpha.22 :** le mode recommandé est désormais [Un tarif FluentBooking par personne](tarifs-par-personne.md). Les passages ci-dessous sur le multiplicateur et les champs tarifaires décrivent le mode antérieur, conservé pour les configurations existantes.
+
 # Utiliser Modules
 
 L’add-on personnalise uniquement les invités des événements de groupe. Il ne possède plus de module « Limite de participants » ni de réglages globaux ou par calendrier.

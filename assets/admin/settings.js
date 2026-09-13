@@ -10,12 +10,15 @@
         const details = root.querySelector('.fba-guest-details');
         details.hidden = !enabled.checked;
         enabled.setAttribute('aria-expanded', String(enabled.checked));
+        const native = root.querySelector('[name="guest_options[native_tariffs]"]')?.value === '1';
+        root.querySelector('.fba-legacy-pricing')?.toggleAttribute('hidden', native);
         list.querySelectorAll('.fba-extra-field').forEach(row => {
             const type = row.querySelector('select').value;
             row.querySelector('.fba-field-choices').hidden = !['select','radio'].includes(type);
             const pricing = row.querySelector('.fba-field-pricing');
-            pricing.hidden = !['select','radio','checkbox'].includes(type);
-            if (pricing.hidden) pricing.querySelector('select').value = 'none';
+            pricing.hidden = native || !['select','radio','checkbox'].includes(type);
+            if (!['select','radio','checkbox'].includes(type)) pricing.querySelector('select').value = 'none';
+            if (native && pricing.querySelector('select').value !== 'none') pricing.hidden = false;
             row.querySelector('.fba-field-prices').hidden = pricing.querySelector('select').value === 'none';
         });
         root.querySelector('.fba-add-field').disabled = list.children.length >= 8;

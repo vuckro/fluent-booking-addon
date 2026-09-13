@@ -14,7 +14,7 @@ $store=new ConfigurationStore();$event=CalendarSlot::find(2);$before=$store->rea
 $wpdb->query('START TRANSACTION');
 try {
  $nativeFields=$event->getBookingFields();foreach($nativeFields as &$field){if(($field['name']??'')==='guests'){$field['enabled']=true;$field['limit']=3;}}unset($field);$event->setBookingFields($nativeFields);
- $options=Options::defaults();$options['enabled']=true;$options['name_mode']='hidden';$options['email_mode']='optional';
+ $options=Options::defaults();$options['native_tariffs']=false;$options['enabled']=true;$options['name_mode']='hidden';$options['email_mode']='optional';
  $options['fields']=[['id'=>'category','label'=>'Tarif','type'=>'radio','required'=>true,'choices'=>['Adulte','Enfant'],'pricing'=>'replace','prices'=>[5000,2500]], ['id'=>'extra','label'=>'Atelier supplémentaire','type'=>'checkbox','required'=>false,'choices'=>[],'pricing'=>'add','prices'=>[1000]]];
  $store->save('calendar_event',2,['guest_options'=>$options],$before['revision']);
  $event->updateMeta('payment_settings',['enabled'=>'yes','driver'=>'native','offline_enabled'=>'yes','items'=>[['title'=>'Réservation','value'=>50]]]);

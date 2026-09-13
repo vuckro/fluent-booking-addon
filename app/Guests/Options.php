@@ -6,13 +6,14 @@ final class Options
 {
     public static function defaults(): array
     {
-        return ['enabled'=>false, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
+        return ['enabled'=>false, 'native_tariffs'=>true, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
     }
     public static function validate(array $input): array
     {
         if (array_diff(array_keys($input), array_keys(self::defaults()))) { throw new \InvalidArgumentException('Option invités inconnue.'); }
+        if ($input && !array_key_exists('native_tariffs',$input)) {$input['native_tariffs']=false;}
         $value = array_replace(self::defaults(), $input);
-        foreach (['enabled','per_person_price'] as $key) {
+        foreach (['enabled','native_tariffs','per_person_price'] as $key) {
             if (!is_bool($value[$key])) { throw new \InvalidArgumentException('Option invités invalide.'); }
         }
         if (!is_array($value['fields']) || !array_is_list($value['fields']) || count($value['fields']) > 8) { throw new \InvalidArgumentException('Maximum : 8 champs par invité.'); }
@@ -30,6 +31,7 @@ final class Options
             foreach ($choices as $choice) { if(!is_string($choice) || trim($choice)==='' || strlen($choice)>100 || strip_tags($choice)!==$choice) {throw new \InvalidArgumentException('Choix invalide.');} }
             $pricing=$field['pricing']??'none';
             if(!in_array($pricing,['none','add','replace'],true) || ($pricing!=='none' && !in_array($field['type'],['select','radio','checkbox'],true))) {throw new \InvalidArgumentException('Tarification du choix invalide.');}
+            if($value['native_tariffs'] && $pricing!=='none') {throw new \InvalidArgumentException('Les tarifs par personne viennent de FluentBooking. Retirez les prix des champs supplémentaires pour éviter un double calcul.');}
             if($pricing==='replace' && ++$replacements>1) {throw new \InvalidArgumentException('Un seul choix peut remplacer le tarif de l’invité ; les autres peuvent ajouter un supplément.');}
             $prices=$field['prices']??[];
             if(!is_array($prices) || !array_is_list($prices) || ($pricing!=='none' && count($prices)!==($field['type']==='checkbox'?1:count($choices)))) {throw new \InvalidArgumentException('Indiquez un prix pour chaque choix.');}

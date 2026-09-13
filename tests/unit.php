@@ -4,7 +4,7 @@ use WaasKit\FluentBooking\Guests\Options;
 use WaasKit\FluentBooking\Guests\Pricing;
 function check($ok,$name) {if(!$ok){throw new RuntimeException($name);}echo "PASS $name\n";}
 function rejects($test,$name) {try{$test();}catch(InvalidArgumentException $e){check(true,$name);return;}check(false,$name);}
-$options=Options::defaults();
+$options=Options::defaults();$options['native_tariffs']=false;
 check(!isset($options['max_participants'],$options['per_person_seats']),'no duplicate participant or seat setting');
 rejects(fn()=>Options::validate(['max_participants'=>2]),'native limits cannot be saved in guest options');
 rejects(fn()=>Options::validate(['per_person_seats'=>false]),'seat counting is not optional');

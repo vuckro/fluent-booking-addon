@@ -12,12 +12,6 @@ final class SettingsPage
     public function __construct(private ConfigurationStore $store) {}
     public function register(): void
     {
-        add_filter('plugin_action_links_' . plugin_basename(dirname(__DIR__, 2) . '/wk-fluent-multireservation.php'), static function (array $links): array {
-            if (current_user_can('read')) {
-                array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=waaskit-fluent-booking')) . '">' . esc_html__('Réglages', 'waaskit-fluent-booking') . '</a>');
-            }
-            return $links;
-        });
         add_action('admin_menu', function () {
             $hook = add_submenu_page('fluent-booking', 'Modules', 'Modules', 'read', 'waaskit-fluent-booking', [$this, 'render']);
             add_filter('admin_body_class', static function ($classes) use ($hook) {
@@ -124,14 +118,14 @@ final class SettingsPage
         $summary = [
             ['Invités supplémentaires', $guestsAllowed ? 'Autorisés' : 'Désactivés', 'Dans les questions FluentBooking'],
             ['Capacité du créneau', (int) $event->getMaxBookingPerSlot() . ' personnes', 'Toutes les réservations du créneau réunies'],
-            ['Maximum par réservation', $guestsAllowed ? (int) ($native['limit'] ?? 10) . ' personnes' : '1 personne', 'Dans la limite des places disponibles'],
+            ['Maximum par réservation', $guestsAllowed ? min((int) ($native['limit'] ?? 10), (int) $event->getMaxBookingPerSlot()) . ' personnes' : '1 personne', 'Maximum possible sur un créneau vide ; diminue avec les réservations'],
         ];
         if ($enabled) {
-            $summary[] = ['Prix de base', $options['per_person_price'] ? 'Par personne' : 'Par réservation', 'Les choix tarifaires s’appliquent ensuite'];
+            $summary[] = ['Prix de base', $options['native_tariffs'] ? 'Au choix, par personne' : ($options['per_person_price'] ? 'Par personne' : 'Par réservation'), $options['native_tariffs'] ? 'Un seul tarif pour vous et pour chaque invité' : 'Ancien calcul personnalisé'];
             $summary[] = ['Identité des invités', 'Nom ' . $modes[$options['name_mode']], 'Courriel ' . $modes[$options['email_mode']]];
             $summary[] = ['Champs supplémentaires', count($options['fields']) ? count($options['fields']) . ' configuré(s)' : 'Aucun', count($options['fields']) ? implode(' · ', array_column($options['fields'], 'label')) : 'Aucune information complémentaire demandée'];
         }
-        echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Résumé des réglages</h3><p>Configuration enregistrée. Les modifications du formulaire ne sont pas encore prises en compte.</p></div><span class="fba-summary-status">' . ($enabled ? 'Personnalisation activée' : 'Mode FluentBooking') . '</span></header><div class="fba-summary-body">';
+        echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Résumé des réglages</h3><p>Configuration enregistrée. Les modifications du formulaire ne sont pas encore prises en compte.</p></div><span class="fba-summary-status '.($enabled?'is-enabled':'is-disabled').'">' . ($enabled ? 'Personnalisation activée' : 'Mode FluentBooking') . '</span></header><div class="fba-summary-body">';
         if ($enabled && !$guestsAllowed) {
             echo '<p class="fba-summary-notice"><strong>Invités désactivés dans FluentBooking.</strong> Activez « Invités supplémentaires » dans les questions de l’événement pour utiliser ces options.</p>';
         }

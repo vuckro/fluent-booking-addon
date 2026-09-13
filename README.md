@@ -1,3 +1,5 @@
+> Nouveau : [tarifs FluentBooking au choix par personne](docs/tarifs-par-personne.md) (alpha.22).
+
 # Fluent Booking Addon
 
 Version **4.0.0-alpha.21**, pour FluentBooking 2.4.x et PHP 8.1+.

@@ -151,3 +151,9 @@ body.fba-admin .fba-settings input[type=checkbox]:focus-visible { outline:1px so
 body.fba-admin .fba-settings :is(.fba-add-field,.fba-remove-field,.fba-summary-links .button) { min-height:36px; padding:6px 12px; font-size:12px; }
 .fba-settings .fba-summary-links { padding-top:20px; border-top:1px solid var(--fba-line); }
 @media(max-width:480px) { .fba-settings .fba-identity-option { grid-template-columns:1fr; gap:8px; } .fba-settings .fba-header > a { white-space:normal; } }
+
+.fba-settings .fba-legacy-pricing[hidden] { display:none; }
+.fba-settings .fba-summary-status.is-enabled { background:#e8f5ee; color:#206441; }
+.fba-settings .fba-summary-status.is-disabled { background:#fcecec; color:#923333; }
+html.fba-dark .fba-settings .fba-summary-status.is-enabled { background:#193d30; color:#9edbb9; }
+html.fba-dark .fba-settings .fba-summary-status.is-disabled { background:#492a30; color:#f2b5b5; }

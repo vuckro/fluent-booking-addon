@@ -1,3 +1,11 @@
+## 4.0.0-alpha.22
+
+- Tarifs natifs exclusifs pour le réservant et chaque invité ; récapitulatif et commande par personne.
+- Chargement des ressources corrigé sur la landing page FluentBooking : suppression du champ technique apparent.
+- Nom invité configurable et courriel masqué conservés ; champs informatifs séparés des prix.
+- Résumé : capacité effective, état vert/rouge ; lien Réglages enregistré dès le chargement du plugin.
+- Compatibilité des anciens calculs conservée ; validation de choix périmés et tests de capacité/commande/DOM.
+
 # 4.0.0-alpha.18
 
 ## 4.0.0-alpha.21

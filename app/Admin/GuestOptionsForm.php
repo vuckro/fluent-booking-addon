@@ -9,7 +9,7 @@ final class GuestOptionsForm
         $raw=$post['guest_options']??[];
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
-        foreach(['enabled','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        foreach(['enabled','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}
@@ -28,7 +28,16 @@ final class GuestOptionsForm
         foreach(['enabled'=>['Personnaliser la réservation avec invités','Active les options ci-dessous pour cet événement de groupe.'],
             'per_person_price'=>['Multiplier le prix par le nombre de personnes','Coché : chaque personne part du tarif de base. Décoché : seul le réservant paie ce tarif. Les choix tarifaires des invités s’appliquent ensuite.']] as $key=>[$label,$help]) {
             if($key==='per_person_price') {echo '<div class="fba-guest-details"'.(!$options['enabled']?' hidden':'').'>'; }
-            echo '<label class="fba-choice"><input type="checkbox" name="guest_options['.esc_attr($key).']" value="1"'.checked($options[$key],true,false).'><span><strong>'.esc_html($label).'</strong><span class="description">'.esc_html($help).'</span></span></label>';
+            if($key==='per_person_price') {
+                if ($options['native_tariffs']) {
+                    echo '<input type="hidden" name="guest_options[native_tariffs]" value="1"><h3>Un tarif par personne</h3>';
+                } else {
+                    echo '<label class="fba-identity-option"><span>Tarification</span><select name="guest_options[native_tariffs]"><option value="1">Un tarif par personne</option><option value="0" selected>Ancien calcul personnalisé</option></select></label>';
+                }
+                echo '<p class="description">Le réservant et chaque invité choisissent parmi les tarifs FluentBooking. Le total additionne uniquement leurs choix. Avec un seul tarif, il s’applique automatiquement à chacun.</p>';
+            }
+            if ($key==='per_person_price' && $options['native_tariffs']) {continue;}
+            echo '<label class="fba-choice'.($key==='per_person_price'?' fba-legacy-pricing':'').'"><input type="checkbox" name="guest_options['.esc_attr($key).']" value="1"'.checked($options[$key],true,false).'><span><strong>'.esc_html($label).'</strong><span class="description">'.esc_html($help).'</span></span></label>';
         }
         foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
             echo '<label class="fba-identity-option"><span>'.esc_html($title).'</span><select name="guest_options['.$key.']">';
@@ -36,11 +45,11 @@ final class GuestOptionsForm
             echo '</select></label>';
         }
         echo '<p class="description">Chaque personne occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
-        echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez un choix de tarif, une option ou une information utile pour chaque invité.</p><div class="fba-guest-fields">';
+        echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez uniquement les informations complémentaires utiles : âge, préférence ou remarque. Les tarifs se configurent dans les paiements FluentBooking.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}
         echo '</div><button type="button" class="button fba-add-field">Ajouter un champ</button><template id="fba-field-template">';
         self::row('__INDEX__',['id'=>'','label'=>'','type'=>'select','required'=>false,'choices'=>[]]);
-        echo '</template><p class="description">Les réponses sont conservées avec la réservation. Le tarif du réservant reste inchangé. Pour chaque invité : tarif de base (si multiplication cochée), éventuellement remplacé par un choix, puis suppléments ajoutés. Un seul champ peut remplacer le tarif.</p></section></div></fieldset>';
+        echo '</template><p class="description">Les réponses sont conservées avec la réservation. En mode « Un tarif par personne », ces champs ne modifient pas le prix.</p></section></div></fieldset>';
     }
     private static function prices($text): array
     {
