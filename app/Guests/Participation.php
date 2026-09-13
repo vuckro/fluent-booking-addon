@@ -8,7 +8,7 @@ final class Participation
     {
         $participates=array_key_exists('holder_participates',$payload)?$payload['holder_participates']:true;
         if (!is_bool($participates)) {throw new \InvalidArgumentException('Choix de participation invalide.');}
-        if (!$participates && !$allowed) {throw new \InvalidArgumentException('Le réservant doit participer à cet événement.');}
+        if (!$participates && !$allowed) {throw new \InvalidArgumentException('La personne qui réserve doit participer à cet événement.');}
         return $participates;
     }
     public static function count(int $guests, bool $participates): int

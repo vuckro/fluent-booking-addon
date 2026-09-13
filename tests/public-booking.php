@@ -40,6 +40,8 @@ try {
     foreach ($fields as &$field) {if (($field['name'] ?? '') === 'guests') {$field['enabled']=true; $field['limit']=10;}}
     unset($field);
     $event->setBookingFields($fields);
+    // Keep the capacity scenario independent of the current admin settings.
+    $event->max_book_per_slot=5;
     $event->type='paid'; $event->save();
     $event->updateMeta('payment_settings', ['enabled'=>'yes', 'driver'=>'native', 'offline_enabled'=>'yes', 'items'=>[['title'=>'Adulte','value'=>70], ['title'=>'Enfant','value'=>55]]]);
     $options=Options::defaults();
@@ -88,7 +90,7 @@ try {
         $html=FluentBooking\App\Services\BookingService::getBookingConfirmationHtml($booking);
         check(!str_contains($html,'fba-booked-guests') && str_contains($html,'Réservation et participants') && str_contains($html,'Âge : 8'),'confirmation uses native sections with guest answers');
         check(str_contains($html,'Informations de facturation'),'confirmation uses billing heading');
-        if (!$attends) {check(str_contains($html,'ne participe pas au rendez-vous') && !str_contains($html,'Le réservant participe.'),'confirmation never presents nonparticipant as attending');}
+        if (!$attends) {check(str_contains($html,'ne participe pas au rendez-vous') && !str_contains($html,'La personne qui a réservé participe également.'),'confirmation never presents nonparticipant as attending');}
         if ($attends) {
             $seat=Booking::where('parent_id',$booking->id)->firstOrFail();
             do_action_ref_array('fluent_booking/format_booking_schedule',[&$seat]);

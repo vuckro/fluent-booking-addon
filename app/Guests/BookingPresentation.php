@@ -26,10 +26,10 @@ final class BookingPresentation
         $holder=$child ? Booking::find($booking->parent_id) : $booking;
         $holderSnapshot=$holder ? $holder->getMeta(BookingAdapter::META, []) : [];
         $attends=($holderSnapshot['holder_participates']??true)!==false;
-        $contact=$holder ? $this->name($holder) : 'Réservant indisponible';
+        $contact=$holder ? $this->name($holder) : 'Contact indisponible';
         $people=[];
         if (!$child && $attends) {
-            $people[]=['name'=>$contact, 'role'=>'Réservant et participant', 'tariff'=>$snapshot['holder_tariff']['title']??'', 'answers'=>[]];
+            $people[]=['name'=>$contact, 'role'=>'Contact principal et participant', 'tariff'=>$snapshot['holder_tariff']['title']??'', 'answers'=>[]];
         }
         $labels=array_column($snapshot['fields']??[], 'label', 'id');
         foreach ($snapshot['guests']??[] as $index=>$guest) {

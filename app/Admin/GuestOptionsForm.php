@@ -41,7 +41,7 @@ final class GuestOptionsForm
             foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
             echo '</select></label>';
         }
-        echo '<p class="description">Chaque participant occupe une place, quel que soit son tarif. Les invités sont rattachés au réservant, qui reçoit les communications du groupe.</p>';
+        echo '<p class="description">Chaque participant occupe une place, quel que soit son tarif. Les invités sont rattachés à la personne qui réserve, qui reçoit les communications du groupe.</p>';
         echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez uniquement les informations complémentaires utiles : âge, préférence ou remarque. Les tarifs se configurent dans les paiements FluentBooking.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}
         echo '</div><button type="button" class="button fba-add-field">Ajouter un champ</button><template id="fba-field-template">';

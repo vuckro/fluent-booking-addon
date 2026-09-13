@@ -138,7 +138,7 @@ final class BookingAdapter
             }
             $rows=Identity::request($data,$input,$options);
             if(!is_string($data['email']) || !is_email($data['email']) || !is_string($data['first_name']) || trim($data['first_name'])==='') {
-                throw new \RuntimeException('Le réservant doit indiquer un nom et un courriel valide.');
+                throw new \RuntimeException('La personne qui réserve doit indiquer un nom et un courriel valide.');
             }
             $answers=Options::answers($rows,$rows,$options['fields']);
             $count=Participation::count(count($answers),$holderParticipates);
@@ -167,7 +167,7 @@ final class BookingAdapter
             if ($options['native_tariffs']) {
                 $quantity=1;
                 $quote=['total'=>$tariffQuote['total']??0,'guests'=>array_column(array_slice($tariffQuote['people']??[],$holderParticipates?1:0),'cents')];
-                $items=array_map(static fn($person,$index)=>['title'=>($holderParticipates && $index===0?'Réservant':'Invité '.($index+($holderParticipates?0:1))).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
+                $items=array_map(static fn($person,$index)=>['title'=>($holderParticipates && $index===0?'Contact principal':'Invité '.($index+($holderParticipates?0:1))).' — '.$person['title'],'cents'=>$person['cents']],$tariffQuote['people']??[],array_keys($tariffQuote['people']??[]));
             }
             else {
                 $quote=Pricing::quote(array_sum(array_column($items,'cents')),$options,$answers);
