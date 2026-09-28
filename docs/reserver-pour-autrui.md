@@ -43,7 +43,7 @@ Le snapshot contient explicitement `holder_participates`, tous les participants 
 - Les tarifs et le choix de participation sont conservés sur les anciennes réservations ; changer l’option n’en modifie pas les montants.
 - Le report, la réactivation automatique et la modification partielle des participants restent hors périmètre, comme pour les autres réservations personnalisées.
 - Les anciens moteurs de suppléments/remplacements ne peuvent pas être associés à cette option. Utiliser les tarifs FluentBooking par personne ou conserver le paiement natif.
-- La compatibilité reste celle de l’alpha : FluentBooking 2.4.x, groupes sur créneau unique, paiement natif Stripe/hors ligne, sans coupons ni WooCommerce.
+- La compatibilité reste celle de l’alpha : FluentBooking 2.4.x et 2.5.x, groupes sur créneau unique, paiement natif Stripe/hors ligne, sans coupons ni WooCommerce.
 
 ## Recette
 

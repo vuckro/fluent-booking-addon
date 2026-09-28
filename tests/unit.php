@@ -49,3 +49,13 @@ rejects(fn()=>Participation::requested(['holder_participates'=>null],true),'null
 rejects(fn()=>Participation::count(0,false),'at least one actual participant required');
 check(Participation::count(5,false)===5 && Participation::count(4,true)===5,'one contact does not add an unwanted seat');
 check(\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[['tariff'=>'child']],false)['total']===5500,'nonattending holder has no tariff');
+
+use WaasKit\FluentBooking\Plugin;
+check(!Plugin::compatible(),'unloaded FluentBooking is incompatible');
+$compatCheck = static fn(string $v) => version_compare($v, '2.4.0', '>=') && version_compare($v, '2.6.0', '<');
+check($compatCheck('2.4.0'),'FluentBooking 2.4.0 in range');
+check($compatCheck('2.4.15'),'FluentBooking 2.4.15 in range');
+check($compatCheck('2.5.0'),'FluentBooking 2.5.0 in range');
+check($compatCheck('2.5.9'),'FluentBooking 2.5.9 in range');
+check(!$compatCheck('2.3.9'),'FluentBooking 2.3.9 rejected');
+check(!$compatCheck('2.6.0'),'FluentBooking 2.6.0 rejected');

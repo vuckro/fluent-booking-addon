@@ -44,7 +44,7 @@ Le résumé présente le maximum possible sur un créneau vide, soit le minimum 
 - Chaque invité crée une place native rattachée au réservant. Les invités sans courriel n’ont pas de faux e-mail. Le réservant reçoit les communications.
 - La page autonome FluentBooking ne passe pas par `wp_footer`. Les ressources sont imprimées via ses hooks `author_landing_head` et `author_landing_footer`, en conservant l’enqueue WordPress pour les pages ordinaires.
 - Le champ technique de transport est masqué ; l’interface propre au module conserve le moyen de paiement natif et remplace seulement le récapitulatif additif.
-- Support ciblé : FluentBooking 2.4.x, événement de groupe, durée unique, devises à deux décimales, Stripe natif et paiement hors ligne. Pas de coupons, WooCommerce, multi-durée, report ou réactivation automatique. Aucun encaissement Stripe réel n’a été réalisé durant cette recette.
+- Support ciblé : FluentBooking 2.4.x et 2.5.x, événement de groupe, durée unique, devises à deux décimales, Stripe natif et paiement hors ligne. Pas de coupons, WooCommerce, multi-durée, report ou réactivation automatique. Aucun encaissement Stripe réel n’a été réalisé durant cette recette.
 
 ## Vérification
 

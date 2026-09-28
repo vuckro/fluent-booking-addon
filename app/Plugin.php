@@ -6,11 +6,11 @@ use WaasKit\FluentBooking\Integrations\FluentBooking\ConfigurationStore;
 
 final class Plugin
 {
-    public const VERSION = '4.0.0-alpha.40';
+    public const VERSION = '4.0.0-alpha.41';
     public static function compatible(): bool
     {
         return defined('FLUENT_BOOKING_VERSION') && version_compare(FLUENT_BOOKING_VERSION, '2.4.0', '>=')
-            && version_compare(FLUENT_BOOKING_VERSION, '2.5.0', '<')
+            && version_compare(FLUENT_BOOKING_VERSION, '2.6.0', '<')
             && class_exists('FluentBooking\\App\\Services\\PermissionManager');
     }
     public function register(): void
@@ -21,7 +21,7 @@ final class Plugin
         if (!self::compatible()) {
             add_action('admin_notices', static function () {
                 if (current_user_can('manage_options')) {
-                    echo '<div class="notice notice-error"><p>' . esc_html__('Fluent Booking Addon nécessite FluentBooking 2.4.x. Vérifiez les événements dépendants avant de poursuivre.', 'waaskit-fluent-booking') . '</p></div>';
+                    echo '<div class="notice notice-error"><p>' . esc_html__('Fluent Booking Addon nécessite FluentBooking 2.4.x ou 2.5.x. Vérifiez les événements dépendants avant de poursuivre.', 'waaskit-fluent-booking') . '</p></div>';
                 }
             });
             // Fail closed when the native service is available, only for configured events.

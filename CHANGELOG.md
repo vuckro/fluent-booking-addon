@@ -1,3 +1,9 @@
+## 4.0.0-alpha.41
+
+- Prise en charge officielle de FluentBooking 2.5.x (compatibilité étendue à `< 2.6.0`).
+- Correction de l'erreur d'administration et de validation bloquante « Fluent Booking Addon nécessite FluentBooking 2.4.x ».
+- Validation des intégrations, hooks de réservation, devises et tarification avec FluentBooking 2.5.0 et FluentBooking Pro 2.4.0.
+
 ## 4.0.0-alpha.35
 
 - Raccourcis FluentBooking dans la carte Invités et tarifs, ouverts dans de nouveaux onglets ; libellé « Réglages des invités supplémentaires ».
