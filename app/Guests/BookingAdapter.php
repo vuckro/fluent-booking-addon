@@ -112,7 +112,7 @@ final class BookingAdapter
         }
         $price=0;
         foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
-        $config=['structuredPayload'=>$options['native_tariffs'] || $options['allow_nonparticipating'],'allowNonparticipating'=>$options['allow_nonparticipating'] && $this->guestsAllowed($event),'preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
+        $config=['structuredPayload'=>$options['native_tariffs'] || $options['allow_nonparticipating'],'allowNonparticipating'=>$options['allow_nonparticipating'] && $this->guestsAllowed($event),'preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'splitName'=>!empty($options['split_name']),'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
         $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
         wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.js'),true);
         wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.css'));

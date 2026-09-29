@@ -9,7 +9,7 @@ final class GuestOptionsForm
         $raw=$post['guest_options']??[];
         if(!is_array($raw)) {throw new \InvalidArgumentException('Réglages invités invalides.');}
         $value=[];
-        foreach(['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
+        foreach(['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price','split_name'] as $key) {$value[$key]=isset($raw[$key]) && $raw[$key]==='1';}
         foreach(['name_mode','email_mode'] as $key) {$value[$key]=$raw[$key]??'required';}
         $value['fields']=[];
         if(!is_array($raw['fields']??[])) {throw new \InvalidArgumentException('Liste de champs invalide.');}
@@ -36,11 +36,13 @@ final class GuestOptionsForm
         echo '<label class="fba-choice"><input type="checkbox" name="guest_options[allow_nonparticipating]" value="1"'.checked($options['allow_nonparticipating'],true,false).'><span><strong>Autoriser la réservation pour d’autres personnes</strong><span class="description">La personne qui réserve peut choisir de ne pas participer.<br>Elle reste le contact qui paie et reçoit les messages ; seuls les participants occupent des places.</span></span></label>';
         echo '<label class="fba-choice"><input type="checkbox" name="guest_options[customize_guests]" value="1"'.checked($options['customize_guests'],true,false).'><span><strong>Personnaliser les informations des invités</strong><span class="description">Choisissez les informations à demander à chaque invité, indépendamment du tarif.</span></span></label>';
         echo '<div class="fba-guest-details"'.(!$options['customize_guests']?' hidden':'').'>';
-        foreach(['name_mode'=>'Nom de l’invité','email_mode'=>'Courriel de l’invité'] as $key=>$title) {
-            echo '<label class="fba-identity-option"><span>'.esc_html($title).'</span><select name="guest_options['.$key.']">';
-            foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options[$key],$mode,false).'>'.$label.'</option>';}
-            echo '</select></label>';
-        }
+        echo '<label class="fba-identity-option"><span>Nom de l’invité</span><select name="guest_options[name_mode]">';
+        foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options['name_mode'],$mode,false).'>'.$label.'</option>';}
+        echo '</select></label>';
+        echo '<label class="fba-choice fba-split-name-option"'.($options['name_mode']==='hidden'?' hidden':'').'><input type="checkbox" name="guest_options[split_name]" value="1"'.checked(!empty($options['split_name']),true,false).'><span>Séparer le prénom et le nom<span class="description">Demander deux champs distincts : prénom et nom de famille.</span></span></label>';
+        echo '<label class="fba-identity-option"><span>Courriel de l’invité</span><select name="guest_options[email_mode]">';
+        foreach(['required'=>'Obligatoire','optional'=>'Facultatif','hidden'=>'Masqué'] as $mode=>$label) {echo '<option value="'.$mode.'"'.selected($options['email_mode'],$mode,false).'>'.$label.'</option>';}
+        echo '</select></label>';
         echo '<p class="description">Chaque participant occupe une place, quel que soit son tarif. Les invités sont rattachés à la personne qui réserve, qui reçoit les communications du groupe.</p>';
         echo '<section class="fba-field-section"><h3>Options et informations par invité</h3><p class="description">Ajoutez uniquement les informations complémentaires utiles : âge, préférence ou remarque. Les tarifs se configurent dans les paiements FluentBooking.</p><div class="fba-guest-fields">';
         foreach($options['fields'] as $index=>$field) {self::row((string)$index,$field);}

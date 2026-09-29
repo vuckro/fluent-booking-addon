@@ -6,7 +6,8 @@
 .fba-custom-guests :is(.fba-attached-guest > label,.fba-tariff-choice,.fba-guest-extra label) { display:flex; flex-direction:column; gap:8px; color:var(--fcal_dark); font-weight:500; }
 .fba-custom-guests .fba-tariff-choice { margin:20px 0; }
 .fba-custom-guests .fba-attached-guest > :is(.fba-tariff-choice,.fba-guest-extra) { grid-column:1 / -1; margin:0; }
-.fba-custom-guests .fba-attached-guest:has(> label[hidden]) > label:not([hidden]) { grid-column:1 / -1; }
+.fba-custom-guests:not(.fba-split-names) .fba-attached-guest:has(> label[hidden]) > label:not([hidden]) { grid-column:1 / -1; }
+.fba-split-names .fba-attached-guest > .fba-guest-email { grid-column:1 / -1; }
 .fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra) :is(input,select) { width:100%; min-width:0; min-height:40px; box-sizing:border-box; padding:10px 12px; border:1px solid var(--fcal_slot_border); border-radius:6px; background:var(--fcal_input_bg,var(--fcal_cal_bg)); color:var(--fcal_dark); font:inherit; line-height:1.4; box-shadow:none; }
 .fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice) :is(input,select):focus-visible { outline:1px solid var(--fcal_dark); outline-offset:2px; }
 .fba-custom-guests .fba-guest-extra { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; }

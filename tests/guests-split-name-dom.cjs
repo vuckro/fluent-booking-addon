@@ -1,0 +1,31 @@
+const {JSDOM}=require('jsdom'), fs=require('fs'), assert=require('assert');
+const dom=new JSDOM('<html lang="fr"><div class="fcal_booking_form_wrap"><div class="fcal_form_item"><input id="fcalInputIDfba_extra_2"></div></div></html>',{runScripts:'outside-only',url:'https://example.test'});
+const w=dom.window,d=w.document;
+w.fbaGuestForms={2:{limit:3,nameMode:'required',emailMode:'required',splitName:true,price:true,unit:100,currency:'EUR',fields:[]}};
+w.eval(fs.readFileSync('assets/public/guests.js','utf8'));
+try {
+ const root=d.querySelector('.fcal_booking_form_wrap');
+ assert(root.classList.contains('fba-split-names'),'root has fba-split-names class');
+ const add=d.querySelector('.fba-add-guest');
+ add.click();
+ const row=d.querySelector('.fba-attached-guest');
+ const firstNameInput=row.querySelector('[data-fba-identity=first_name]');
+ const lastNameInput=row.querySelector('[data-fba-identity=last_name]');
+ const emailInput=row.querySelector('[data-fba-identity=email]');
+ assert(firstNameInput && firstNameInput.required,'first_name input exists and is required');
+ assert(lastNameInput && lastNameInput.required,'last_name input exists and is required');
+ assert(emailInput && emailInput.required,'email input exists and is required');
+ assert.equal(row.querySelector('.fba-guest-first-name').textContent.trim(),'Prénom du participant *');
+ assert.equal(row.querySelector('.fba-guest-last-name').textContent.trim(),'Nom du participant *');
+ firstNameInput.value='Jean';
+ lastNameInput.value='Dupont';
+ emailInput.value='jean@example.test';
+ firstNameInput.dispatchEvent(new w.Event('input',{bubbles:true}));
+ const payload=JSON.parse(d.querySelector('#fcalInputIDfba_extra_2').value);
+ assert.equal(payload.length,1);
+ assert.equal(payload[0].first_name,'Jean');
+ assert.equal(payload[0].last_name,'Dupont');
+ assert.equal(payload[0].name,'Jean Dupont');
+ assert.equal(payload[0].email,'jean@example.test');
+ console.log('PASS split guest form: first_name, last_name, composite name in payload');
+} finally {w.dispatchEvent(new w.Event('pagehide'));w.close();}

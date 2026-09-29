@@ -1,3 +1,9 @@
+## 4.0.0-alpha.42
+
+- Nouvelle option « Séparer le prénom et le nom » dans les réglages des invités.
+- Champs distincts « Prénom du participant » et « Nom du participant » sur le formulaire public de réservation lorsque l'option est activée.
+- Stockage natif des attributs `first_name` et `last_name` sur les réservations de places rattachées (`AttachedSeats`), avec composition automatique du champ `name` pour la compatibilité avec les résumés, reçus, emails et exports RGPD.
+
 ## 4.0.0-alpha.41
 
 - Prise en charge officielle de FluentBooking 2.5.x (compatibilité étendue à `< 2.6.0`).

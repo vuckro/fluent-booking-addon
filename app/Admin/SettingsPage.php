@@ -127,7 +127,11 @@ final class SettingsPage
         if ($enabled) {
             $summary[] = ['Réservation pour autrui', $options['allow_nonparticipating'] ? 'Autorisée' : 'Désactivée', $options['allow_nonparticipating'] ? 'Le contact peut ne pas participer ; au moins un participant est requis' : 'La personne qui réserve participe toujours'];
             $summary[] = ['Prix de base', $options['native_tariffs'] ? 'Au choix, par personne' : ($options['per_person_price'] ? 'Par personne' : 'Par réservation'), $options['pricing_enabled'] ? ($options['native_tariffs'] ? 'Un seul tarif pour vous et pour chaque invité' : 'Ancien calcul personnalisé') : 'Calcul natif FluentBooking conservé'];
-            $summary[] = ['Identité des invités', 'Nom ' . $modes[$options['name_mode']], 'Courriel ' . $modes[$options['email_mode']]];
+            $nameModeSummary = 'Nom ' . $modes[$options['name_mode']];
+            if ($options['name_mode'] !== 'hidden' && !empty($options['split_name'])) {
+                $nameModeSummary .= ' (prénom et nom séparés)';
+            }
+            $summary[] = ['Identité des invités', $nameModeSummary, 'Courriel ' . $modes[$options['email_mode']]];
             $summary[] = ['Champs supplémentaires', count($options['fields']) ? count($options['fields']) . ' configuré(s)' : 'Aucun', count($options['fields']) ? implode(' · ', array_column($options['fields'], 'label')) : 'Aucune information complémentaire demandée'];
         }
         echo '<section class="fba-card fba-native-guide"><header class="fba-card-header"><div><h3>Résumé des réglages</h3><p>Valeurs enregistrées. Ce résumé est actualisé après chaque enregistrement.</p></div><span class="fba-summary-status '.($enabled?'is-enabled':'is-disabled').'">' . ($enabled ? 'Personnalisation activée' : 'Mode FluentBooking') . '</span></header><div class="fba-summary-body">';

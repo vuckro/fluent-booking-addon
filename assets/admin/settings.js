@@ -25,6 +25,9 @@
         enabled.setAttribute('aria-expanded', String(enabled.checked));
         const native = root.querySelector('[name="guest_options[native_tariffs]"]')?.value === '1';
         root.querySelector('.fba-legacy-pricing')?.toggleAttribute('hidden', native);
+        const nameMode = root.querySelector('[name="guest_options[name_mode]"]')?.value;
+        const splitOption = root.querySelector('.fba-split-name-option');
+        if (splitOption) splitOption.hidden = nameMode === 'hidden';
         list.querySelectorAll('.fba-extra-field').forEach(row => {
             const type = row.querySelector('select').value;
             row.querySelector('.fba-field-choices').hidden = !['select','radio'].includes(type);

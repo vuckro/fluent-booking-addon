@@ -6,7 +6,7 @@ final class Options
 {
     public static function defaults(): array
     {
-        return ['enabled'=>false, 'allow_nonparticipating'=>false, 'customize_guests'=>null, 'native_tariffs'=>true, 'per_person_price'=>true, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
+        return ['enabled'=>false, 'allow_nonparticipating'=>false, 'customize_guests'=>null, 'native_tariffs'=>true, 'per_person_price'=>true, 'split_name'=>false, 'fields'=>[], 'name_mode'=>'required', 'email_mode'=>'required'];
     }
     public static function validate(array $input): array
     {
@@ -15,7 +15,7 @@ final class Options
         $value = array_replace(self::defaults(), $input);
         // Existing configurations customized identity and pricing with one switch.
         if ($value['customize_guests'] === null) {$value['customize_guests']=$value['enabled'];}
-        foreach (['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price'] as $key) {
+        foreach (['enabled','allow_nonparticipating','customize_guests','native_tariffs','per_person_price','split_name'] as $key) {
             if (!is_bool($value[$key])) { throw new \InvalidArgumentException('Option invités invalide.'); }
         }
         if ($value['allow_nonparticipating'] && $value['enabled'] && !$value['native_tariffs']) {throw new \InvalidArgumentException('La réservation pour autrui nécessite les tarifs natifs par personne, ou le calcul natif sans personnalisation du prix.');}
@@ -57,7 +57,7 @@ final class Options
         $value['native_tariffs']=$value['native_tariffs'] && $value['enabled'];
         if (!$value['enabled']) {$value['per_person_price']=false;}
         if (!$value['customize_guests']) {
-            $value['name_mode']='required';$value['email_mode']='required';$value['fields']=[];
+            $value['name_mode']='required';$value['email_mode']='required';$value['split_name']=false;$value['fields']=[];
         } elseif (!$value['enabled']) {
             foreach($value['fields'] as &$field) {$field['pricing']='none';$field['prices']=[];} unset($field);
         }
@@ -89,7 +89,10 @@ final class Options
                 if($field['type']==='checkbox' && !in_array($v,['','1'],true)) {throw new \InvalidArgumentException('Case invalide.');}
                 $clean[$field['id']]=$v;
             }
-            $result[]=['name'=>$guest['name'],'email'=>$guest['email'],'fields'=>$clean];
+            $item=['name'=>$guest['name'],'email'=>$guest['email'],'fields'=>$clean];
+            if(isset($guest['first_name'])) {$item['first_name']=$guest['first_name'];}
+            if(isset($guest['last_name'])) {$item['last_name']=$guest['last_name'];}
+            $result[]=$item;
         }
         return $result;
     }

@@ -59,3 +59,22 @@ check($compatCheck('2.5.0'),'FluentBooking 2.5.0 in range');
 check($compatCheck('2.5.9'),'FluentBooking 2.5.9 in range');
 check(!$compatCheck('2.3.9'),'FluentBooking 2.3.9 rejected');
 check(!$compatCheck('2.6.0'),'FluentBooking 2.6.0 rejected');
+
+if(!function_exists('is_email')) {function is_email($e) {return (bool)filter_var($e,FILTER_VALIDATE_EMAIL);}}
+
+use WaasKit\FluentBooking\Guests\Identity;
+check(Options::defaults()['split_name']===false,'split_name is disabled by default');
+check(Options::validate(['split_name'=>true])['split_name']===true,'split_name accepted as boolean');
+rejects(fn()=>Options::validate(['split_name'=>'oui']),'invalid split_name rejected');
+check(Options::effective(['split_name'=>true,'customize_guests'=>false])['split_name']===false,'split_name disabled when customization collapsed');
+$splitIdentity=Identity::rows(json_encode([['first_name'=>'Jean','last_name'=>'Dupont','email'=>'jean@example.invalid']]),array_replace(Options::defaults(),['split_name'=>true,'email_mode'=>'optional']));
+check($splitIdentity[0]['name']==='Jean Dupont' && $splitIdentity[0]['first_name']==='Jean' && $splitIdentity[0]['last_name']==='Dupont','split names parsed and combined');
+rejects(fn()=>Identity::rows(json_encode([['first_name'=>'','last_name'=>'Dupont','email'=>'jean@example.invalid']]),array_replace(Options::defaults(),['split_name'=>true,'email_mode'=>'optional'])),'missing first_name rejected when required');
+rejects(fn()=>Identity::rows(json_encode([['first_name'=>'Jean','last_name'=>'','email'=>'jean@example.invalid']]),array_replace(Options::defaults(),['split_name'=>true,'email_mode'=>'optional'])),'missing last_name rejected when required');
+$optIdentity=Identity::rows(json_encode([['first_name'=>'','last_name'=>'','email'=>'jean@example.invalid']]),array_replace(Options::defaults(),['split_name'=>true,'name_mode'=>'optional','email_mode'=>'optional']));
+check($optIdentity[0]['name']==='' && $optIdentity[0]['first_name']==='' && $optIdentity[0]['last_name']==='','optional split names can be empty');
+$hidIdentity=Identity::rows(json_encode([['first_name'=>'Jean','last_name'=>'Dupont','email'=>'jean@example.invalid']]),array_replace(Options::defaults(),['split_name'=>true,'name_mode'=>'hidden','email_mode'=>'optional']));
+check($hidIdentity[0]['name']==='' && $hidIdentity[0]['first_name']==='' && $hidIdentity[0]['last_name']==='','hidden split names are stripped');
+$ansPreserved=Options::answers([['email'=>'test@example.invalid','fields'=>[]]],[['first_name'=>'Jean','last_name'=>'Dupont','name'=>'Jean Dupont','email'=>'test@example.invalid']],[]);
+check($ansPreserved[0]['first_name']==='Jean' && $ansPreserved[0]['last_name']==='Dupont' && $ansPreserved[0]['name']==='Jean Dupont','first_name and last_name preserved in answers');
+

@@ -127,6 +127,8 @@ body.fba-admin .fba-settings input[type=checkbox]:focus-visible { outline:1px so
 .fba-settings .fba-guest-details[hidden], .fba-settings .fba-field-pricing[hidden] { display:none; }
 .fba-settings .fba-identity-option { display:grid; grid-template-columns:160px minmax(0,220px); align-items:center; gap:16px; margin:16px 0; }
 .fba-settings .fba-identity-option select { width:100%; }
+.fba-settings .fba-split-name-option { margin:4px 0 16px; padding:0; }
+.fba-settings .fba-split-name-option[hidden] { display:none; }
 
 /* Saved configuration: short values first, explanations second. */
 .fba-settings .fba-summary-status { flex-shrink:0; padding:6px 10px; border-radius:6px; background:var(--fba-wash); color:var(--fba-text); font-size:12px; font-weight:600; }

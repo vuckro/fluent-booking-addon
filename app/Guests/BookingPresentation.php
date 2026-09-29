@@ -37,7 +37,11 @@ final class BookingPresentation
             foreach ($guest['fields']??[] as $key=>$value) {
                 if ($value!=='' && $value!==null) {$answers[]=($labels[$key]??$key).' : '.(is_array($value)?implode(', ', $value):$value);}
             }
-            $people[]=['name'=>$guest['name']?:'Participant '.($index+1), 'role'=>'Participant', 'tariff'=>$guest['tariff']['title']??'', 'answers'=>$answers];
+            $displayName=$guest['name']??'';
+            if($displayName==='' && (!empty($guest['first_name']) || !empty($guest['last_name']))) {
+                $displayName=trim(($guest['first_name']??'').' '.($guest['last_name']??''));
+            }
+            $people[]=['name'=>$displayName?:'Participant '.($index+1), 'role'=>'Participant', 'tariff'=>$guest['tariff']['title']??'', 'answers'=>$answers];
         }
         return ['contact'=>$contact, 'holder_id'=>$holder ? (int)$holder->id : 0, 'attends'=>$attends, 'child'=>$child, 'people'=>$people];
     }

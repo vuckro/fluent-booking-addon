@@ -1,9 +1,15 @@
 const {JSDOM}=require('jsdom'),fs=require('fs'),assert=require('assert');
-const dom=new JSDOM(`<div class="fba-guest-options"><input name="guest_options[enabled]" type="checkbox" checked><input name="guest_options[customize_guests]" type="checkbox"><div class="fba-guest-details"><div class="fba-guest-fields"><fieldset class="fba-extra-field"><select><option value="select">Liste</option><option value="text">Texte</option></select><label class="fba-field-choices"></label><div class="fba-field-pricing"><select><option value="none">Aucun</option><option value="add">Supplément</option></select><label class="fba-field-prices"></label></div></fieldset></div><button class="fba-add-field"></button><template></template></div></div>`,{runScripts:'outside-only'});
+const dom=new JSDOM(`<div class="fba-guest-options"><input name="guest_options[enabled]" type="checkbox" checked><input name="guest_options[customize_guests]" type="checkbox"><div class="fba-guest-details"><select name="guest_options[name_mode]"><option value="required">Obligatoire</option><option value="hidden">Masqué</option></select><label class="fba-choice fba-split-name-option"><input type="checkbox" name="guest_options[split_name]" value="1"></label><div class="fba-guest-fields"><fieldset class="fba-extra-field"><select><option value="select">Liste</option><option value="text">Texte</option></select><label class="fba-field-choices"></label><div class="fba-field-pricing"><select><option value="none">Aucun</option><option value="add">Supplément</option></select><label class="fba-field-prices"></label></div></fieldset></div><button class="fba-add-field"></button><template></template></div></div>`,{runScripts:'outside-only'});
 const w=dom.window,d=w.document;
 w.eval(fs.readFileSync('assets/admin/settings.js','utf8'));
 const toggle=d.querySelector('[name="guest_options[customize_guests]"]'),panel=d.querySelector('.fba-guest-details');
 assert(panel.hidden);d.querySelector('[name="guest_options[enabled]"]').click();assert(panel.hidden);toggle.click();assert(!panel.hidden);
+const nameMode=d.querySelector('[name="guest_options[name_mode]"]'),splitOpt=d.querySelector('.fba-split-name-option');
+assert(!splitOpt.hidden);
+nameMode.value='hidden';nameMode.dispatchEvent(new w.Event('change',{bubbles:true}));
+assert(splitOpt.hidden);
+nameMode.value='required';nameMode.dispatchEvent(new w.Event('change',{bubbles:true}));
+assert(!splitOpt.hidden);
 const pricing=d.querySelector('.fba-field-pricing select');pricing.value='add';pricing.dispatchEvent(new w.Event('change',{bubbles:true}));assert(!d.querySelector('.fba-field-prices').hidden);
 toggle.click();assert(panel.hidden);assert.equal(pricing.value,'add');
 console.log('PASS admin: options hidden until enabled and selections preserved while collapsed');w.close();

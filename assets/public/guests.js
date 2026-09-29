@@ -24,6 +24,7 @@
         transportItem.hidden = true;
         root.classList.add('fba-custom-guests');
         root.classList.toggle('fba-custom-pricing', !config.preservePayments);
+        root.classList.toggle('fba-split-names', !!config.splitName);
         if (config.error) {
             const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
             transportItem.before(message); root.querySelectorAll('[type=submit]').forEach(button => button.disabled = true); return;
@@ -71,10 +72,16 @@
                 if (checkoutLocked || rows().length + (attends() ? 1 : 0) >= config.limit) return;
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
                 const heading = document.createElement('strong'); heading.className = 'fba-guest-label'; row.append(heading);
-                ['name','email'].forEach(key => {
-                    const label = document.createElement('label'); label.textContent = (key === 'name' ? 'Nom du participant' : 'Email du participant') + (config[key+'Mode'] === 'required' ? ' *' : '');
+                const identityKeys = config.splitName ? ['first_name','last_name','email'] : ['name','email'];
+                identityKeys.forEach(key => {
+                    const isName = key === 'name' || key === 'first_name' || key === 'last_name';
+                    const mode = isName ? config.nameMode : config.emailMode;
+                    const title = key === 'first_name' ? 'Prénom du participant' : (key === 'last_name' || key === 'name' ? 'Nom du participant' : 'Email du participant');
+                    const label = document.createElement('label');
+                    label.className = 'fba-guest-' + (key === 'first_name' ? 'first-name' : (key === 'last_name' ? 'last-name' : key));
+                    label.textContent = title + (mode === 'required' ? ' *' : '');
                     const input = document.createElement('input'); input.type = key === 'email' ? 'email' : 'text'; input.maxLength = 200; input.dataset.fbaIdentity = key;
-                    input.required = config[key+'Mode'] === 'required'; input.disabled = config[key+'Mode'] === 'hidden'; label.hidden = config[key+'Mode'] === 'hidden'; label.append(input); row.append(label);
+                    input.required = mode === 'required'; input.disabled = mode === 'hidden'; label.hidden = mode === 'hidden'; label.append(input); row.append(label);
                 });
                 if (nativeTariffs && config.tariffs.length) row.append(tariffControl('Tarif de ce participant'));
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.className = 'fba-remove-guest'; remove.setAttribute('aria-label', 'Supprimer ce participant'); remove.title = 'Supprimer ce participant';
@@ -213,7 +220,19 @@
                 });
                 row.append(panel);
             });
-            const payload = guests.map(row => ({name: row.querySelector('[data-fba-identity=name]')?.value || '', email: row.querySelector('[data-fba-identity=email]')?.value || '', fields: read(row), ...(nativeTariffs ? {tariff: row.querySelector('[data-fba-tariff]')?.value || ''} : {})}));
+            const payload = guests.map(row => {
+                const email = row.querySelector('[data-fba-identity=email]')?.value || '';
+                const fields = read(row);
+                const tariff = nativeTariffs ? (row.querySelector('[data-fba-tariff]')?.value || '') : undefined;
+                if (config.splitName) {
+                    const firstName = row.querySelector('[data-fba-identity=first_name]')?.value || '';
+                    const lastName = row.querySelector('[data-fba-identity=last_name]')?.value || '';
+                    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+                    return {first_name: firstName, last_name: lastName, name: fullName, email, fields, ...(tariff !== undefined ? {tariff} : {})};
+                }
+                const name = row.querySelector('[data-fba-identity=name]')?.value || '';
+                return {name, email, fields, ...(tariff !== undefined ? {tariff} : {})};
+            });
             const serialized = JSON.stringify(structuredPayload ? {holder_participates: attends(), holder_tariff: attends() ? holder?.querySelector('select').value || '' : '', guests: payload} : payload);
             if (!restoring && transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
             const people = guests.length + (attends() ? 1 : 0);
@@ -275,7 +294,22 @@
             if (holder && typeof saved.holder_tariff === 'string') holder.querySelector('select').value = saved.holder_tariff;
             if (Array.isArray(savedGuests)) savedGuests.slice(0, config.limit - (attends() ? 1 : 0)).forEach(guest => {
                 add.click(); const row = rows().at(-1); if (!row) return;
-                ['name','email'].forEach(key => { const input = row.querySelector('[data-fba-identity='+key+']'); if (input && typeof guest[key] === 'string') input.value = guest[key]; });
+                const identityKeys = config.splitName ? ['first_name','last_name','email'] : ['name','email'];
+                identityKeys.forEach(key => {
+                    const input = row.querySelector('[data-fba-identity='+key+']');
+                    if (!input) return;
+                    if (typeof guest[key] === 'string') {
+                        input.value = guest[key];
+                    } else if (key === 'name' && (guest.first_name || guest.last_name)) {
+                        input.value = [guest.first_name, guest.last_name].filter(Boolean).join(' ');
+                    } else if (key === 'first_name' && typeof guest.name === 'string') {
+                        const parts = guest.name.trim().split(/\s+/);
+                        input.value = parts[0] || '';
+                    } else if (key === 'last_name' && typeof guest.name === 'string') {
+                        const parts = guest.name.trim().split(/\s+/);
+                        input.value = parts.slice(1).join(' ');
+                    }
+                });
                 const tariff = row.querySelector('[data-fba-tariff]'); if (tariff && typeof guest.tariff === 'string') tariff.value = guest.tariff;
                 row.querySelectorAll('[data-fba-answer]').forEach(input => {
                     const value = guest.fields?.[input.dataset.fbaAnswer] || '';

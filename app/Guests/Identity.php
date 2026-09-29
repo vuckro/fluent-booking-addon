@@ -36,16 +36,31 @@ final class Identity
     private static function clean(array $rows,array $options): array
     {
         if(!is_array($rows) || !array_is_list($rows) || count($rows)>999) {throw new \InvalidArgumentException('Liste des invités invalide.');}
+        $split = !empty($options['split_name']);
         foreach($rows as &$row) {
             if(!is_array($row)) {throw new \InvalidArgumentException('Invité invalide.');}
-            foreach(['name','email'] as $key) {
-                $v=$row[$key]??'';
+            if ($split) {
+                foreach(['first_name'=>'prénom','last_name'=>'nom'] as $key=>$label) {
+                    $v=$row[$key]??'';
+                    if(!is_string($v) || strlen($v)>200 || strip_tags($v)!==$v) {throw new \InvalidArgumentException('Identité invalide.');}
+                    $v=$options['name_mode']==='hidden'?'':trim($v);
+                    if($options['name_mode']==='required' && $v==='') {throw new \InvalidArgumentException('Complétez le '.$label.' de chaque invité.');}
+                    $row[$key]=$v;
+                }
+                $row['name']=trim(($row['first_name']??'').' '.($row['last_name']??''));
+            } else {
+                $v=$row['name']??'';
                 if(!is_string($v) || strlen($v)>200 || strip_tags($v)!==$v) {throw new \InvalidArgumentException('Identité invalide.');}
-                $v=$options[$key.'_mode']==='hidden'?'':trim($v);
-                if($options[$key.'_mode']==='required' && $v==='') {throw new \InvalidArgumentException('Complétez le '.$key.' de chaque invité.');}
-                if($key==='email' && $v!=='' && !is_email($v)) {throw new \InvalidArgumentException('Courriel invité invalide.');}
-                $row[$key]=$v;
+                $v=$options['name_mode']==='hidden'?'':trim($v);
+                if($options['name_mode']==='required' && $v==='') {throw new \InvalidArgumentException('Complétez le name de chaque invité.');}
+                $row['name']=$v;$row['first_name']='';$row['last_name']='';
             }
+            $email=$row['email']??'';
+            if(!is_string($email) || strlen($email)>200 || strip_tags($email)!==$email) {throw new \InvalidArgumentException('Identité invalide.');}
+            $email=$options['email_mode']==='hidden'?'':trim($email);
+            if($options['email_mode']==='required' && $email==='') {throw new \InvalidArgumentException('Complétez le email de chaque invité.');}
+            if($email!=='' && !is_email($email)) {throw new \InvalidArgumentException('Courriel invité invalide.');}
+            $row['email']=$email;
         }
         return $rows;
     }
