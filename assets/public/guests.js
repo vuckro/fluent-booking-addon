@@ -1,6 +1,7 @@
 /* One guest form; FluentBooking still owns holder details, submission and payment. */
 (() => {
     const mounted = new WeakSet();
+    const mountedNodes = new Map();
     const checkoutObservers = new Map();
     const checkoutHandlers = new WeakMap();
     // Capture runs before FluentBooking mounts Stripe Elements.
@@ -12,13 +13,16 @@
         checkoutObservers.forEach((root, item) => {
             if (!root.isConnected) { item.disconnect(); checkoutObservers.delete(item); }
         });
-        document.querySelectorAll('input[id^="fcalInputIDfba_extra_"]').forEach(transport => {
+        mountedNodes.forEach((nodes, item) => {
+            if (!item.isConnected) { nodes.forEach(node => node?.remove()); mountedNodes.delete(item); }
+        });
+        document.querySelectorAll('input[id^="fcalInputIDfba_extra_"], .fcal_new_booking input[placeholder^="fba_extra_"]').forEach(transport => {
         if (mounted.has(transport)) return;
-        const id = transport.id.replace('fcalInputIDfba_extra_', '');
+        const id = transport.id ? transport.id.replace('fcalInputIDfba_extra_', '') : (transport.getAttribute('placeholder') || '').replace('fba_extra_', '');
         const config = window.fbaGuestForms?.[id];
-        const root = transport.closest('.fcal_booking_form_wrap');
+        const root = transport.closest('.fcal_booking_form_wrap, .fcal_new_booking');
         if (!config || !root) return;
-        const transportItem = transport.closest('.fcal_form_item');
+        const transportItem = transport.closest('.fcal_form_item, .el-form-item');
         if (!transportItem) return;
         mounted.add(transport);
         transportItem.hidden = true;
@@ -27,7 +31,8 @@
         root.classList.toggle('fba-split-names', !!config.splitName);
         if (config.error) {
             const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
-            transportItem.before(message); root.querySelectorAll('[type=submit]').forEach(button => button.disabled = true); return;
+            transportItem.before(message); mountedNodes.set(transport, [message]);
+            root.querySelectorAll('[type=submit], .fcal_primary_btn').forEach(button => button.disabled = true); return;
         }
         const format = cents => new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
         const nativeTariffs = Array.isArray(config.tariffs);
@@ -93,6 +98,7 @@
         const lines = document.createElement('dl'); recap.append(title, lines, summary); guestWrap.after(recap);
         if (!nativeTariffs) title.hidden = true;
         if (config.preservePayments) recap.hidden = true;
+        mountedNodes.set(transport, [holder, participationLabel, participationHelp, guestWrap, recap]);
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         let checkoutLocked = false;
         let checkoutReady = false;
@@ -122,6 +128,18 @@
             // Native validation can reject before starting an HTTP request.
             setTimeout(() => { if (!root.querySelector('.fcal_btn_submitting')) unfreeze(); }, 0);
         }, true);
+        if (root.classList.contains('fcal_new_booking')) {
+            root.addEventListener('click', event => {
+                if (!transport.isConnected || !event.target.closest?.('.fcal_primary_btn')) return;
+                update();
+                transport.dispatchEvent(new Event('input', {bubbles: true}));
+                if (form && !form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    form.reportValidity();
+                }
+            }, true);
+        }
         const settleSubmission = () => {
             if (!root.querySelector('.fcal_btn_submitting')) unfreeze();
         };
@@ -282,8 +300,8 @@
             }
             if (summary.textContent !== message) summary.textContent = message;
         };
-        root.addEventListener('input', event => { if (event.target !== transport) update(); });
-        root.addEventListener('change', update);
+        root.addEventListener('input', event => { if (transport.isConnected && event.target !== transport) update(); });
+        root.addEventListener('change', () => { if (transport.isConnected) update(); });
         participation?.addEventListener('change', () => {
             if (!attends() && !rows().length) add.click();
             update();

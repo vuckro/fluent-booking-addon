@@ -43,9 +43,10 @@ final class BookingAdapter
         },100,2);
         add_action('fluent_booking/author_landing_head', static function () { wp_print_styles(['fba-guests']); });
         add_action('fluent_booking/author_landing_footer', static function () { wp_print_scripts(['fba-guests']); });
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
         add_filter('fluent_booking/public_event_vars',[$this,'publicVars'],110,2);
         add_filter('fluent_booking/initialize_booking_data',function($data,$posted,$event){
-            $extras=$posted['fba_extra_'.$event->id]??'[]';
+            $extras=$posted['fba_extra_'.$event->id]??($posted['custom_fields']['fba_extra_'.$event->id]??'[]');
             // The public AJAX handler passes raw, WP-slashed $_REQUEST. The REST
             // controller already cleans its request. Unslash only the public boundary,
             // exactly once, so JSON escapes in names and answers remain intact.
@@ -58,6 +59,11 @@ final class BookingAdapter
         },110,3);
         add_filter('fluent_booking/schedule_validation_rules_data', function($rules,$posted,$event) {if($this->options((int)$event->id)['enabled']) {unset($rules['rules']['guests']);} return $rules;},100,3);
         add_filter('fluent_booking/booking_data',[$this,'validate'],200,4);
+        add_action('fluent_booking/after_creating_schedule',static function($booking){
+            if(is_wp_error($booking)) {
+                throw new \Exception($booking->get_error_message(),422);
+            }
+        },1);
         add_action('fluent_booking/after_booking_meta_update',[$this,'persist'],1,4);
         add_filter('fluent_booking/create_draft_order',[$this,'order'],100,4);
         add_action('fluent_booking/after_order_items_created',[$this,'orderItems'],100,4);
@@ -90,15 +96,39 @@ final class BookingAdapter
         if (!isset($snapshot['items']) || !is_array($snapshot['items'])) {return;}
         $this->paymentContext=['event_id'=>(int)$booking->event_id,'items'=>$snapshot['items']];
     }
+    private function clientConfig($event, array $options, ?array &$catalogueOut=null): array
+    {
+        $catalogue=null;$configurationError='';
+        try {$catalogue=$options['native_tariffs']?NativeTariffs::catalogue($event):null;}
+        catch (\InvalidArgumentException $error) {$configurationError=$error->getMessage();}
+        $catalogueOut=$catalogue;
+        $price=0;
+        foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
+        return ['structuredPayload'=>$options['native_tariffs'] || $options['allow_nonparticipating'],'allowNonparticipating'=>$options['allow_nonparticipating'] && $this->guestsAllowed($event),'preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'splitName'=>!empty($options['split_name']),'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
+    }
+    public function enqueueAdminAssets(): void
+    {
+        if (($_GET['page']??'')!=='fluent-booking' || !class_exists('FluentBooking\\App\\Models\\CalendarSlot')) {return;}
+        $configs=[];
+        foreach (\FluentBooking\App\Models\CalendarSlot::query()->get() as $event) {
+            $options=$this->options((int)$event->id);
+            if ($options['enabled']) {$configs[(int)$event->id]=$this->clientConfig($event,$options);}
+        }
+        if (!$configs) {return;}
+        $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
+        wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.js'),true);
+        wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.css'));
+        wp_add_inline_script('fba-guests','window.fbaGuestForms=Object.assign(window.fbaGuestForms||{},'.wp_json_encode($configs).');','before');
+    }
     public function publicVars(array $vars,$event): array
     {
         $options=$this->options((int)$event->id);
         if(!$options['enabled']) {return $vars;}
         foreach($vars['form_fields'] as &$field) {if(($field['name']??'')==='guests') {$field['enabled']=false;$field['required']=false;}} unset($field);
-        $vars['form_fields'][]=['name'=>'fba_extra_'.$event->id,'type'=>'text','label'=>'','required'=>false,'enabled'=>true,'system_defined'=>true];
-        $catalogue=null;$configurationError='';
-        try {$catalogue=$options['native_tariffs']?NativeTariffs::catalogue($event):null;}
-        catch (\InvalidArgumentException $error) {$configurationError=$error->getMessage();}
+        $isRest=defined('REST_REQUEST') && REST_REQUEST;
+        $vars['form_fields'][]=['name'=>'fba_extra_'.$event->id,'type'=>'text','label'=>'','placeholder'=>'fba_extra_'.$event->id,'required'=>false,'enabled'=>true,'system_defined'=>!$isRest];
+        $catalogue=null;
+        $config=$this->clientConfig($event,$options,$catalogue);
         if ($catalogue) {
             // FluentBooking's Stripe component reads both payment_items and
             // the payment field. Keep its initial Payment Element aligned
@@ -110,9 +140,6 @@ final class BookingAdapter
                 if (($field['type']??'')==='payment') {$field['payment_items']=[$initialItem];}
             } unset($field);
         }
-        $price=0;
-        foreach($event->getPaymentItems() as $item) {$price+=(float)$item['value'];}
-        $config=['structuredPayload'=>$options['native_tariffs'] || $options['allow_nonparticipating'],'allowNonparticipating'=>$options['allow_nonparticipating'] && $this->guestsAllowed($event),'preservePayments'=>!$options['pricing_enabled'],'error'=>$configurationError,'tariffs'=>$catalogue,'limit'=>$this->guestLimit($event),'nameMode'=>$options['name_mode'],'emailMode'=>$options['email_mode'],'splitName'=>!empty($options['split_name']),'fields'=>$options['fields'],'price'=>$options['per_person_price'], 'unit'=>$price,'currency'=>\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency()];
         $entry=dirname(__DIR__,2).'/wk-fluent-multireservation.php';
         wp_enqueue_script('fba-guests',plugins_url('assets/public/guests.js',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.js'),true);
         wp_enqueue_style('fba-guests',plugins_url('assets/public/guests.css',$entry),[],Plugin::VERSION.'.'.filemtime(dirname(__DIR__,2).'/assets/public/guests.css'));
@@ -144,7 +171,8 @@ final class BookingAdapter
             if(\FluentBooking\App\Services\CurrenciesHelper::isZeroDecimal(\FluentBooking\App\Services\CurrenciesHelper::getGlobalCurrency())) {throw new \RuntimeException('Ce mode utilise pour le moment les devises à deux décimales.');}
             if(($event->getPaymentSettings()['multi_payment_enabled']??'no')==='yes') {throw new \RuntimeException('Utilisez un tarif de base unique pour ces options invités.');}
             if(($event->getPaymentSettings()['driver']??'native')!=='native') {throw new \RuntimeException('Ces options utilisent les paiements natifs FluentBooking, pas WooCommerce.');}
-            if($event->isPaymentEnabled($data['slot_minutes']??null) && !in_array($data['payment_method']??'', ['stripe','offline'],true)) {throw new \RuntimeException('Ce mode prend en charge Stripe et le paiement hors ligne.');}
+            $isAdmin=($data['source']??'')==='admin';
+            if(!$isAdmin && $event->isPaymentEnabled($data['slot_minutes']??null) && !in_array($data['payment_method']??'', ['stripe','offline'],true)) {throw new \RuntimeException('Ce mode prend en charge Stripe et le paiement hors ligne.');}
             if(!empty($input['coupon_codes']) || !empty($data['applied_coupons'])) {throw new \RuntimeException('Les coupons ne sont pas encore pris en charge avec ces options invités.');}
             $priced=(bool)array_filter($options['fields'],static fn($field)=>($field['pricing']??'none')!=='none');
             $paymentItems=$event->getPaymentItems();
@@ -155,6 +183,9 @@ final class BookingAdapter
             $holderTariff='';$holderParticipates=true;
             if ($options['native_tariffs'] || $options['allow_nonparticipating']) {
                 $raw=$input['_fba_extras']??'';
+                if ($isAdmin && $raw==='[]') {
+                    $raw=wp_json_encode(['holder_participates'=>true,'holder_tariff'=>$catalogue[0]['id']??'','guests'=>[]]);
+                }
                 if (!is_string($raw) || strlen($raw)>30000) {throw new \InvalidArgumentException('Informations de réservation invalides.');}
                 $payload=json_decode($raw,true,16,JSON_THROW_ON_ERROR);
                 if (!is_array($payload) || !is_array($payload['guests']??null) || !array_is_list($payload['guests'])) {throw new \InvalidArgumentException('Complétez les participants.');}

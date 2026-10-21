@@ -1,4 +1,5 @@
 /* Inherit FluentBooking's own light/dark palette; style only add-on controls. */
+.fcal_new_booking.fba-custom-guests { --fcal_dark:var(--fcal-primary-text,var(--el-text-color-primary,#2f3448)); --fcal_slot_border:var(--el-border-color,#dcdfe6); --fcal_input_bg:var(--el-fill-color-blank,#fff); --fcal_cal_bg:var(--el-bg-color,#fff); --fcal_thBG:var(--el-fill-color-light,#f5f7fa); }
 .fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra,.fba-payment-recap) { color:var(--fcal_dark); font-family:inherit; font-size:14px; line-height:1.5; }
 .fba-custom-guests [hidden] { display:none !important; }
 .fba-custom-guests .fba-attached-guest { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:16px 0; padding:16px; border:1px solid var(--fcal_slot_border); border-radius:6px; }

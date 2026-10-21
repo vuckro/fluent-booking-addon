@@ -1,3 +1,9 @@
+## 4.0.0-alpha.43
+
+- Prise en charge de la création manuelle de réservations depuis la modale d'administration FluentBooking (`AddNewBookingModal`).
+- Chargement des scripts et configurations d'invités dans l'interface d'administration (`admin.php?page=fluent-booking`) et synchronisation du champ `custom_fields.fba_extra_{id}`.
+- Autorisation des réservations créées par l'administrateur (`source === 'admin'`) sans `payment_method` frontal et remontée d'une erreur HTTP 422 explicite en cas de données invalides.
+
 ## 4.0.0-alpha.42
 
 - Nouvelle option « Séparer le prénom et le nom » dans les réglages des invités.

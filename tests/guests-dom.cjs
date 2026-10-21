@@ -20,3 +20,36 @@ try {
  assert.match(d.querySelector('.fba-guest-summary').textContent,/200/);
  console.log('PASS single guest form: 100/200/300, required identity, capacity limit and stable answers after removal');
 } finally {w.dispatchEvent(new w.Event('pagehide'));w.close();}
+
+const adminDom=new JSDOM('<html lang="fr"><div class="el-dialog fcal_dialog fcal_Modal fcal_new_booking"><div class="el-dialog__body"><form class="el-form"><div class="el-form-item"><input placeholder="fba_extra_2"></div></form></div><div class="el-dialog__footer"><div class="dialog-footer"><button type="button" class="el-button fcal_primary_btn">Create Booking</button></div></div></div></html>',{runScripts:'outside-only',url:'https://example.test'});
+const aw=adminDom.window,ad=aw.document;
+aw.fbaGuestForms={2:{allowNonparticipating:true,splitName:true,tariffs:[{id:'adult',title:'Adulte',cents:7000},{id:'child',title:'Enfant',cents:5500}],limit:5,nameMode:'required',emailMode:'hidden',price:true,unit:125,currency:'EUR',fields:[{id:'age',label:'Âge du participant',type:'number',required:true,choices:[],min:8,max:99}]}};
+aw.eval(fs.readFileSync('assets/public/guests.js','utf8'));
+try {
+ const transport=ad.querySelector('input[placeholder="fba_extra_2"]');
+ assert(transport.closest('.el-form-item').hidden,'admin transport field hidden');
+ const toggle=ad.querySelector('.fba-holder-participates');
+ toggle.click();
+ const guest=ad.querySelector('.fba-attached-guest');
+ guest.querySelector('[data-fba-identity=first_name]').value='Léo';
+ guest.querySelector('[data-fba-identity=last_name]').value='Martin';
+ guest.querySelector('[data-fba-tariff]').value='child';
+ const ageInput=guest.querySelector('[data-fba-answer=age]');
+ ageInput.value='6';
+ let submitted=false;
+ const btn=ad.querySelector('.fcal_primary_btn');
+ btn.addEventListener('click',()=>{submitted=true;});
+ btn.click();
+ assert(!submitted,'admin submit button blocked when participant age < min');
+ ageInput.value='11';
+ btn.click();
+ assert(submitted,'admin submit button proceeds when participant fields are valid');
+ const payload=JSON.parse(transport.value);
+ assert.equal(payload.holder_participates,false);
+ assert.equal(payload.guests.length,1);
+ assert.equal(payload.guests[0].first_name,'Léo');
+ assert.equal(payload.guests[0].last_name,'Martin');
+ assert.equal(payload.guests[0].tariff,'child');
+ assert.equal(payload.guests[0].fields.age,'11');
+ console.log('PASS admin modal guest form: placeholder transport, nonparticipating holder, split name, tariff, age validation on .fcal_primary_btn');
+} finally {aw.dispatchEvent(new aw.Event('pagehide'));aw.close();}
