@@ -40,8 +40,37 @@ final class AttachedSeats
     public static function sync($holder): void
     {
         if(!$holder->isDirty('status')) {return;}
+        $cancelled=in_array($holder->status,['cancelled','rejected'],true);
+        if ($cancelled && empty($holder->parent_id)) {
+            self::syncCancelledOrder($holder);
+        }
         if(empty($holder->getMeta(BookingAdapter::META,[])['attached'])) {return;}
         // The holder owns these seats; children have no separate email or payment flow.
-        Booking::where('parent_id',$holder->id)->update(['status'=>$holder->status]);
+        $update=['status'=>$holder->status];
+        if ($cancelled) {$update['payment_status']='';}
+        Booking::where('parent_id',$holder->id)->update($update);
+    }
+
+    private static function syncCancelledOrder($holder): void
+    {
+        $order=$holder->payment_order ?? null;
+        if (!$order) {return;}
+        if ($order->status==='draft' && (int)$order->total_paid===0) {
+            $order->status='failed';
+            $order->save();
+            if (method_exists($order,'transaction') && $order->transaction && $order->transaction->status==='pending') {
+                $order->transaction->status='failed';
+                $order->transaction->save();
+            }
+            if ($holder->payment_status==='pending') {
+                Booking::where('id',$holder->id)->update(['payment_status'=>'']);
+                $holder->payment_status='';
+            }
+            return;
+        }
+        if ($order->status==='paid') {
+            $order->status='canceled';
+            $order->save();
+        }
     }
 }

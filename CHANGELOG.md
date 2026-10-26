@@ -1,3 +1,7 @@
+## 4.0.0-alpha.44
+
+- Synchronisation du statut des commandes (`fcal_orders`) lors de l'annulation ou du rejet d'une réservation : déduction automatique des réservations annulées du « Montant total » du tableau de bord et nettoyage des commandes brouillon non payées.
+
 ## 4.0.0-alpha.43
 
 - Prise en charge de la création manuelle de réservations depuis la modale d'administration FluentBooking (`AddNewBookingModal`).
