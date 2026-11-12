@@ -1,3 +1,10 @@
+## 4.0.0-alpha.45
+
+- Prise en charge officielle de FluentBooking 2.6.x (compatibilité étendue à `< 2.7.0`).
+- Autorisation des assets de l'extension dans le filtre sans conflit `fluent_booking/asset_listed_slugs` afin de charger le formulaire des participants dans la modale « Ajouter une nouvelle réservation » du back-office.
+- Clarification de la modale d'administration (`AddNewBookingModal`) : distinction explicite entre « Coordonnées du réservant (contact) » et « Participants à l’événement », suppression du doublon de champ « Votre nom » lorsque le formulaire public sépare prénom/nom du réservant, et synchronisation automatique du nom de famille sur l'enregistrement.
+- Prise en charge complète du report (`?type=reschedule` et API REST d'administration) sans repaiement : désactivation de l'injection tarifaire sur l'écran de reprogrammation, contrôle atomique de la capacité multi-places sur le nouveau créneau, filtrage des créneaux insuffisants et déplacement synchronisé des places rattachées (`AttachedSeats`).
+
 ## 4.0.0-alpha.44
 
 - Synchronisation du statut des commandes (`fcal_orders`) lors de l'annulation ou du rejet d'une réservation : déduction automatique des réservations annulées du « Montant total » du tableau de bord et nettoyage des commandes brouillon non payées.

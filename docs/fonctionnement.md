@@ -41,8 +41,9 @@ L’annulation ou la suppression du réservant libère également les places rat
 
 ## Limites actuelles
 
-- FluentBooking 2.4.x et 2.5.x ; événements de groupe sur un créneau unique.
+- FluentBooking 2.4.x à 2.6.x ; événements de groupe sur un créneau unique.
 - Choix payants : tarif de base unique, paiement natif activé, devise à deux décimales, Stripe ou paiement hors ligne.
-- Coupons, WooCommerce, autres passerelles, récurrence, reports et réactivations non pris en charge dans le mode personnalisé.
+- Le report sur un autre créneau du même événement conserve le paiement existant et déplace l’ensemble des participants rattachés.
+- Coupons, WooCommerce, autres passerelles, récurrence et réactivations non pris en charge dans le mode personnalisé.
 - Pas de calcul automatique selon l’âge ni de règles conditionnelles entre champs.
 - Tests serveur et DOM effectués ; recette du véritable formulaire et de Stripe en mode test encore nécessaire avant production.

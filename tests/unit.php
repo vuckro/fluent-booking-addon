@@ -52,13 +52,15 @@ check(\WaasKit\FluentBooking\Guests\NativeTariffs::quote($catalogue,'adult',[['t
 
 use WaasKit\FluentBooking\Plugin;
 check(!Plugin::compatible(),'unloaded FluentBooking is incompatible');
-$compatCheck = static fn(string $v) => version_compare($v, '2.4.0', '>=') && version_compare($v, '2.6.0', '<');
+$compatCheck = static fn(string $v) => version_compare($v, '2.4.0', '>=') && version_compare($v, '2.7.0', '<');
 check($compatCheck('2.4.0'),'FluentBooking 2.4.0 in range');
 check($compatCheck('2.4.15'),'FluentBooking 2.4.15 in range');
 check($compatCheck('2.5.0'),'FluentBooking 2.5.0 in range');
 check($compatCheck('2.5.9'),'FluentBooking 2.5.9 in range');
+check($compatCheck('2.6.0'),'FluentBooking 2.6.0 in range');
+check($compatCheck('2.6.9'),'FluentBooking 2.6.9 in range');
 check(!$compatCheck('2.3.9'),'FluentBooking 2.3.9 rejected');
-check(!$compatCheck('2.6.0'),'FluentBooking 2.6.0 rejected');
+check(!$compatCheck('2.7.0'),'FluentBooking 2.7.0 rejected');
 
 if(!function_exists('is_email')) {function is_email($e) {return (bool)filter_var($e,FILTER_VALIDATE_EMAIL);}}
 

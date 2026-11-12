@@ -25,15 +25,21 @@ final class BookingProtection
 
     private function refuseDelete(): void
     {
-        throw new \RuntimeException('La suppression native effacerait le groupe du créneau. Annulez la réservation principale concernée pour libérer ses places et conserver son historique.');
+        throw new \RuntimeException('La suppression native effacerait le groupe du créneau. Annulez la réservation principale concernée pour libérer ses places et conserver son historique.', 422);
     }
 
     public function beforeUpdate($booking): void
     {
-        if (!$booking->isDirty('status') || empty($booking->getMeta(BookingAdapter::META, [])['attached_seat'])) {return;}
+        if (empty($booking->getMeta(BookingAdapter::META, [])['attached_seat'])) {return;}
         $parent=Booking::find($booking->parent_id);
-        if ($parent && $booking->status!==$parent->status) {
-            throw new \RuntimeException('Cet invité appartient à une réservation de groupe. Modifiez le statut depuis la réservation principale.');
+        if (!$parent) {return;}
+        if ($booking->isDirty('status') && $booking->status!==$parent->status) {
+            throw new \RuntimeException('Cet invité appartient à une réservation de groupe. Modifiez le statut depuis la réservation principale.', 422);
+        }
+        foreach (['start_time', 'end_time', 'calendar_id', 'event_id'] as $key) {
+            if ($booking->isDirty($key) && (string)$booking->$key!==(string)$parent->$key) {
+                throw new \RuntimeException('Cet invité appartient à une réservation de groupe. Reportez la réservation depuis la réservation principale.', 422);
+            }
         }
     }
 }

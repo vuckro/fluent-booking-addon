@@ -1,53 +1,56 @@
 /* Inherit FluentBooking's own light/dark palette; style only add-on controls. */
 .fcal_new_booking.fba-custom-guests { --fcal_dark:var(--fcal-primary-text,var(--el-text-color-primary,#2f3448)); --fcal_slot_border:var(--el-border-color,#dcdfe6); --fcal_input_bg:var(--el-fill-color-blank,#fff); --fcal_cal_bg:var(--el-bg-color,#fff); --fcal_thBG:var(--el-fill-color-light,#f5f7fa); }
-.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra,.fba-payment-recap) { color:var(--fcal_dark); font-family:inherit; font-size:14px; line-height:1.5; }
+.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra,.fba-payment-recap,.fba-section-heading) { color:var(--fcal_dark); font-family:inherit; font-size:14px; line-height:1.5; }
+.fba-custom-guests .fba-section-heading { margin:24px 0 12px; padding-top:16px; border-top:1px solid var(--fcal_slot_border); font-size:15px; font-weight:600; line-height:1.35; text-wrap:balance; }
 .fba-custom-guests [hidden] { display:none !important; }
 .fba-custom-guests .fba-attached-guest { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:16px 0; padding:16px; border:1px solid var(--fcal_slot_border); border-radius:6px; }
 .fba-custom-guests .fba-guest-label { grid-column:1; grid-row:1; align-self:center; font-weight:600; color:var(--fcal_dark); }
 .fba-custom-guests :is(.fba-attached-guest > label,.fba-tariff-choice,.fba-guest-extra label) { display:flex; flex-direction:column; gap:8px; color:var(--fcal_dark); font-weight:500; }
-.fba-custom-guests .fba-tariff-choice { margin:20px 0; }
+.fba-custom-guests .fba-tariff-choice { margin:16px 0; }
 .fba-custom-guests .fba-attached-guest > :is(.fba-tariff-choice,.fba-guest-extra) { grid-column:1 / -1; margin:0; }
 .fba-custom-guests:not(.fba-split-names) .fba-attached-guest:has(> label[hidden]) > label:not([hidden]) { grid-column:1 / -1; }
 .fba-split-names .fba-attached-guest > .fba-guest-email { grid-column:1 / -1; }
-.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra) :is(input,select) { width:100%; min-width:0; min-height:40px; box-sizing:border-box; padding:10px 12px; border:1px solid var(--fcal_slot_border); border-radius:6px; background:var(--fcal_input_bg,var(--fcal_cal_bg)); color:var(--fcal_dark); font:inherit; line-height:1.4; box-shadow:none; }
-.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice) :is(input,select):focus-visible { outline:1px solid var(--fcal_dark); outline-offset:2px; }
+.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra) :is(input,select) { width:100%; min-width:0; min-height:40px; box-sizing:border-box; padding:10px 12px; border:1px solid var(--fcal_slot_border); border-radius:6px; background:var(--fcal_input_bg,var(--fcal_cal_bg)); color:var(--fcal_dark); font:inherit; line-height:1.4; box-shadow:none; caret-color:var(--fcal_dark); }
+.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra) input::placeholder { color:color-mix(in srgb,var(--fcal_dark) 62%,transparent); }
+.fba-custom-guests :is(.fba-attached-guest,.fba-tariff-choice,.fba-guest-extra) :is(input,select):focus-visible { outline:2px solid var(--fcal_dark); outline-offset:2px; }
 .fba-custom-guests .fba-guest-extra { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; }
 .fba-custom-guests .fba-guest-extra:empty { display:none; }
 .fba-custom-guests .fba-guest-extra fieldset { border:0; padding:0; margin:0; min-width:0; }
 .fba-custom-guests .fba-guest-extra fieldset label { flex-direction:row; align-items:center; margin:8px 0; }
 .fba-custom-guests .fba-guest-extra :is(input[type=radio],input[type=checkbox]) { width:18px; min-height:18px; height:18px; margin:0; padding:0; accent-color:var(--fcal_dark); }
 .fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest) { width:auto; min-height:36px; border:0; border-radius:6px; color:var(--fcal_dark); background:transparent; font:inherit; font-size:14px; font-weight:500; line-height:1.4; box-shadow:none; cursor:pointer; }
-.fba-custom-guests button.fba-add-guest { padding:8px 4px; margin:4px 0 12px; }
-.fba-custom-guests button.fba-remove-guest { grid-column:2; grid-row:1; justify-self:end; padding:0; width:36px; height:36px; background:var(--fcal_thBG); font-size:22px; }
-.fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):hover { background:var(--fcal_thBG); color:var(--fcal_dark); }
-.fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):focus-visible { outline:1px solid var(--fcal_dark); outline-offset:2px; }
+.fba-custom-guests button.fba-add-guest { padding:8px 10px; margin:4px 0 12px; border:1px dashed var(--fcal_slot_border); }
+.fba-custom-guests button.fba-remove-guest { grid-column:2; grid-row:1; justify-self:end; padding:0; width:36px; height:36px; background:var(--fcal_thBG); font-size:20px; }
+.fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):hover:not(:disabled) { background:var(--fcal_thBG); color:var(--fcal_dark); }
+.fba-custom-guests button:is(.fba-add-guest,.fba-remove-guest):focus-visible { outline:2px solid var(--fcal_dark); outline-offset:2px; }
 .fba-custom-guests button.fba-add-guest:disabled { opacity:.5; cursor:not-allowed; }
 .fba-custom-pricing :is(.fcal_payment_items_table,.fcal_payment_items,.fcal_payment_coupon),.fba-custom-pricing .fba-payment-methods > .fcal_input_content > .fcal_input_label { display:none; }
 .fba-payment-locked-notice { margin:16px 0; padding:12px 14px; border-radius:6px; background:var(--fcal_thBG,#f6f7f8); color:var(--fcal_dark,#253247); font-size:13px; line-height:1.5; }
-.fba-custom-guests .fba-payment-recap { margin:24px 0; }
-.fba-custom-guests .fba-payment-recap h3 { margin:0 0 12px; font-size:16px; font-weight:600; color:var(--fcal_dark); }
+.fba-custom-guests .fba-payment-recap { margin:20px 0; }
+.fba-custom-guests .fba-payment-recap h3 { margin:0 0 10px; font-size:15px; font-weight:600; color:var(--fcal_dark); text-wrap:balance; }
 .fba-custom-guests .fba-payment-recap dl:empty { display:none; }
 .fba-custom-guests .fba-payment-recap dl { margin:0; border:1px solid var(--fcal_slot_border); border-radius:6px; padding:0 16px; }
 .fba-custom-guests .fba-payment-recap dl > div { display:flex; justify-content:space-between; gap:16px; padding:12px 0; }
 .fba-custom-guests .fba-payment-recap dl > div + div { border-top:1px solid var(--fcal_slot_border); }
 .fba-custom-guests .fba-payment-recap dt { overflow-wrap:anywhere; }
-.fba-custom-guests .fba-payment-recap dd { margin:0; white-space:nowrap; }
-.fba-custom-guests .fba-guest-summary { margin:12px 0 0; color:var(--fcal_dark); font-size:13px; line-height:1.6; }
+.fba-custom-guests .fba-payment-recap dd { margin:0; white-space:nowrap; font-variant-numeric:tabular-nums; font-weight:500; }
+.fba-custom-guests .fba-guest-summary { margin:12px 0 0; color:var(--fcal_dark); font-size:13px; line-height:1.6; font-variant-numeric:tabular-nums; }
 .fluent_booking_app.fba-priced-event .fcal_slot_payment_item { display:none; }
-.fba-sidebar-total { color:var(--fcal_dark); margin:12px 0; }
+.fba-sidebar-total { color:var(--fcal_dark); margin:12px 0; font-variant-numeric:tabular-nums; }
 .fcal-dark-mode .fba-custom-guests { color-scheme:dark; }
 @media(max-width:600px) {
  .fba-custom-guests .fba-attached-guest > label,.fba-custom-guests .fba-guest-extra { grid-column:1 / -1; }
  .fba-custom-guests .fba-guest-extra { grid-template-columns:1fr; }
 }
 
-.fba-custom-guests .fba-participation-choice { display:flex; align-items:center; gap:10px; margin:20px 0 8px; color:var(--fcal_dark); font-size:14px; font-weight:600; }
+.fba-custom-guests .fba-participation-choice { display:flex; align-items:center; gap:10px; margin:16px 0 6px; color:var(--fcal_dark); font-size:14px; font-weight:600; cursor:pointer; }
 .fba-custom-guests .fba-holder-participates { width:18px; height:18px; margin:0; accent-color:var(--fcal_dark); flex-shrink:0; }
-.fba-custom-guests .fba-participation-help { color:var(--fcal_dark); font-size:13px; line-height:1.5; margin:0 0 16px; }
+.fba-custom-guests .fba-holder-participates:focus-visible { outline:2px solid var(--fcal_dark); outline-offset:2px; }
+.fba-custom-guests .fba-participation-help { color:var(--fcal_dark); font-size:13px; line-height:1.5; margin:0 0 16px; max-width:68ch; }
 .fba-custom-guests .fba-remove-guest:disabled { opacity:.35; cursor:not-allowed; }
 
 .fba-verified-checkout > .label { display:none; }
-.fba-stripe-total { margin:0 0 12px; font-size:16px; color:var(--fcal_dark); }
+.fba-stripe-total { margin:0 0 12px; font-size:16px; color:var(--fcal_dark); font-variant-numeric:tabular-nums; }
 
-.fba-restart-checkout { border:0; padding:2px 6px; background:transparent; color:inherit; font:inherit; text-decoration:underline; cursor:pointer; }
-.fba-restart-checkout:focus-visible { outline:1px solid currentColor; outline-offset:2px; }
+.fba-restart-checkout { border:0; padding:2px 6px; background:transparent; color:inherit; font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.fba-restart-checkout:focus-visible { outline:2px solid currentColor; outline-offset:2px; }

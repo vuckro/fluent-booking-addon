@@ -39,16 +39,36 @@ final class AttachedSeats
     }
     public static function sync($holder): void
     {
-        if(!$holder->isDirty('status')) {return;}
-        $cancelled=in_array($holder->status,['cancelled','rejected'],true);
+        $statusDirty=$holder->isDirty('status');
+        $scheduleKeys=array_values(array_filter(['start_time','end_time','person_time_zone','group_id','host_user_id','slot_minutes'],static fn(string $key)=>$holder->isDirty($key)));
+        if(!$statusDirty && !$scheduleKeys) {return;}
+        $cancelled=$statusDirty && in_array($holder->status,['cancelled','rejected'],true);
         if ($cancelled && empty($holder->parent_id)) {
             self::syncCancelledOrder($holder);
         }
         if(empty($holder->getMeta(BookingAdapter::META,[])['attached'])) {return;}
         // The holder owns these seats; children have no separate email or payment flow.
-        $update=['status'=>$holder->status];
-        if ($cancelled) {$update['payment_status']='';}
+        $update=[];
+        if ($statusDirty) {
+            $update['status']=$holder->status;
+            if ($cancelled) {$update['payment_status']='';}
+        }
+        foreach ($scheduleKeys as $key) {$update[$key]=$holder->$key;}
         Booking::where('parent_id',$holder->id)->update($update);
+        if (!$scheduleKeys) {return;}
+        $hostChanged=in_array('host_user_id',$scheduleKeys,true);
+        $slotChanged=in_array('start_time',$scheduleKeys,true) || in_array('group_id',$scheduleKeys,true);
+        if (!$hostChanged && !$slotChanged) {return;}
+        foreach (Booking::where('parent_id',$holder->id)->get() as $seat) {
+            if (empty($seat->getMeta(BookingAdapter::META,[])['attached_seat'])) {continue;}
+            if ($hostChanged) {$seat->hosts()->sync([$holder->host_user_id=>['status'=>'confirmed']]);}
+            if ($slotChanged) {
+                foreach (['google','outlook','apple_calendar','next_cloud_calendar'] as $driver) {
+                    $metaKey='__'.$driver.'_calendar_event';
+                    if ($seat->getMeta($metaKey,[])) {$seat->updateMeta($metaKey,[]);}
+                }
+            }
+        }
     }
 
     private static function syncCancelledOrder($holder): void

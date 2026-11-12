@@ -101,7 +101,7 @@ final class SettingsPage
         }
         GuestOptionsForm::render(\WaasKit\FluentBooking\Guests\Options::validate($stored['values']['guest_options'] ?? []));
         if (Plugin::compatible()) { submit_button('Enregistrer les réglages'); }
-        echo '</form><footer class="fba-card-footer">Ces options s’appliquent aux nouvelles réservations. Les réservations existantes conservent leur tarif ; leur report n’est pas pris en charge dans ce mode.</footer></section>';
+        echo '</form><footer class="fba-card-footer">Ces options s’appliquent aux nouvelles réservations. Les réservations existantes conservent leur tarif et leurs participants lors d’un report.</footer></section>';
         $this->guestGuidance($scope, $id);
         if (current_user_can('manage_options')) {
             echo '<details><summary>Diagnostics</summary>'; $this->diagnostics(); echo '</details>';
@@ -183,7 +183,7 @@ final class SettingsPage
     private function diagnostics(): void
     {
         echo '<div class="fba-diagnostics"><section><h3>État de l’installation</h3><p>Versions installées et compatibilité de l’extension.</p><dl class="fba-system-list">';
-        foreach (['WordPress' => get_bloginfo('version'), 'PHP' => PHP_VERSION, 'FluentBooking' => defined('FLUENT_BOOKING_VERSION') ? FLUENT_BOOKING_VERSION : 'absent', 'Pro' => defined('FLUENT_BOOKING_PRO_VERSION') ? FLUENT_BOOKING_PRO_VERSION : 'absent', 'Compatibilité du socle' => Plugin::compatible() ? '2.4.x / 2.5.x détectée' : 'non prise en charge'] as $name => $value) {
+        foreach (['WordPress' => get_bloginfo('version'), 'PHP' => PHP_VERSION, 'FluentBooking' => defined('FLUENT_BOOKING_VERSION') ? FLUENT_BOOKING_VERSION : 'absent', 'Pro' => defined('FLUENT_BOOKING_PRO_VERSION') ? FLUENT_BOOKING_PRO_VERSION : 'absent', 'Compatibilité du socle' => Plugin::compatible() ? '2.4.x à 2.6.x détectée' : 'non prise en charge'] as $name => $value) {
             echo '<div><dt>' . esc_html($name) . '</dt><dd>' . esc_html($value) . '</dd></div>';
         }
         echo '<div><dt>Modules disponibles</dt><dd>Informations et tarifs par invité</dd></div>';

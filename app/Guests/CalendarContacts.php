@@ -37,6 +37,16 @@ final class CalendarContacts
         if ($group) {
             // A new collection preserves the native stock query and other listeners.
             $args[2]=$args[2]->filter(static fn($booking)=>!self::isSeat($booking));
+            $driver=(string)($args[0]['driver']??'');
+            if ($driver!=='' && $driver!=='google' && ($args[1]->status??'')==='scheduled') {
+                $hasRemote=false;
+                foreach ($args[2] as $member) {
+                    if (!empty($member->getMeta('__'.$driver.'_calendar_event', []))) {$hasRemote=true; break;}
+                }
+                if (!$hasRemote && method_exists($callback[0], 'createEvent')) {
+                    return $callback[0]->createEvent($args[0], $args[1]);
+                }
+            }
         }
         return $callback(...$args);
     }

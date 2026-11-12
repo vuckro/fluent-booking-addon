@@ -1,9 +1,12 @@
 /* One guest form; FluentBooking still owns holder details, submission and payment. */
 (() => {
-    const mounted = new WeakSet();
-    const mountedNodes = new Map();
+    const mountedState = new Map();
     const checkoutObservers = new Map();
     const checkoutHandlers = new WeakMap();
+    const setInputValue = (input, value) => {
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement?.prototype || {}, 'value')?.set;
+        if (setter) setter.call(input, value); else input.value = value;
+    };
     // Capture runs before FluentBooking mounts Stripe Elements.
     window.addEventListener('fluent_booking_payment_next_action_stripe', event => {
         const root = event.detail?.form?.closest('.fcal_booking_form_wrap');
@@ -13,26 +16,81 @@
         checkoutObservers.forEach((root, item) => {
             if (!root.isConnected) { item.disconnect(); checkoutObservers.delete(item); }
         });
-        mountedNodes.forEach((nodes, item) => {
-            if (!item.isConnected) { nodes.forEach(node => node?.remove()); mountedNodes.delete(item); }
+        mountedState.forEach((entry, item) => {
+            const currentId = item.id ? item.id.replace('fcalInputIDfba_extra_', '') : (item.getAttribute('placeholder') || '').replace('fba_extra_', '');
+            if (!item.isConnected || currentId !== entry.id) {
+                entry.nodes.forEach(node => node?.remove());
+                entry.restore?.();
+                mountedState.delete(item);
+            }
         });
         document.querySelectorAll('input[id^="fcalInputIDfba_extra_"], .fcal_new_booking input[placeholder^="fba_extra_"]').forEach(transport => {
-        if (mounted.has(transport)) return;
         const id = transport.id ? transport.id.replace('fcalInputIDfba_extra_', '') : (transport.getAttribute('placeholder') || '').replace('fba_extra_', '');
+        if (mountedState.get(transport)?.id === id) return;
         const config = window.fbaGuestForms?.[id];
         const root = transport.closest('.fcal_booking_form_wrap, .fcal_new_booking');
         if (!config || !root) return;
         const transportItem = transport.closest('.fcal_form_item, .el-form-item');
         if (!transportItem) return;
-        mounted.add(transport);
+        const isAdmin = root.classList.contains('fcal_new_booking');
+        const cleanups = [];
+        const restore = () => {
+            transportItem.hidden = false;
+            root.classList.remove('fba-custom-guests', 'fba-custom-pricing', 'fba-split-names');
+            cleanups.forEach(fn => fn());
+        };
         transportItem.hidden = true;
         root.classList.add('fba-custom-guests');
         root.classList.toggle('fba-custom-pricing', !config.preservePayments);
         root.classList.toggle('fba-split-names', !!config.splitName);
         if (config.error) {
             const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
-            transportItem.before(message); mountedNodes.set(transport, [message]);
-            root.querySelectorAll('[type=submit], .fcal_primary_btn').forEach(button => button.disabled = true); return;
+            transportItem.before(message);
+            const disabledButtons = [];
+            root.querySelectorAll('[type=submit], .fcal_primary_btn').forEach(button => {
+                disabledButtons.push([button, button.disabled]);
+                button.disabled = true;
+            });
+            cleanups.push(() => disabledButtons.forEach(([button, wasDisabled]) => { button.disabled = wasDisabled; }));
+            mountedState.set(transport, {id, nodes: [message], restore});
+            return;
+        }
+        const extraNodes = [];
+        if (isAdmin) {
+            const formEl = transport.closest('form');
+            const directItems = formEl ? [...formEl.children].filter(el => el.classList?.contains('el-form-item') && !el.querySelector('.fcal_event_date')) : [];
+            const nameItem = directItems.find(item => item.querySelector('input[type="text"]:not([readonly]):not([placeholder^="fba_extra_"])'))
+                || [...root.querySelectorAll('.el-form-item')].find(item => /^(nom du participant|attendee'?s name)\s*\*?$/i.test((item.querySelector('.el-form-item__label')?.textContent || '').trim()));
+            const emailItem = (nameItem?.nextElementSibling?.classList?.contains('el-form-item') ? nameItem.nextElementSibling : null)
+                || [...root.querySelectorAll('.el-form-item')].find(item => /^(email du participant|attendee'?s email)\s*\*?$/i.test((item.querySelector('.el-form-item__label')?.textContent || '').trim()));
+            const relabelItem = (item, nextLabel, placeholderText) => {
+                const labelEl = item?.querySelector('.el-form-item__label');
+                if (labelEl) {
+                    const prevText = labelEl.textContent;
+                    labelEl.textContent = nextLabel;
+                    cleanups.push(() => { labelEl.textContent = prevText; });
+                }
+                if (placeholderText) {
+                    const inputEl = item?.querySelector('input[type="text"]');
+                    if (inputEl) {
+                        const prevPlaceholder = inputEl.getAttribute('placeholder');
+                        inputEl.setAttribute('placeholder', placeholderText);
+                        cleanups.push(() => {
+                            if (prevPlaceholder === null) inputEl.removeAttribute('placeholder');
+                            else inputEl.setAttribute('placeholder', prevPlaceholder);
+                        });
+                    }
+                }
+            };
+            if (nameItem) {
+                const contactHeading = document.createElement('h3');
+                contactHeading.className = 'fba-section-heading';
+                contactHeading.textContent = 'Coordonnées du réservant (contact)';
+                nameItem.before(contactHeading);
+                extraNodes.push(contactHeading);
+                relabelItem(nameItem, 'Nom complet du réservant *', 'Prénom et nom (ex. Francine Sauser)');
+            }
+            if (emailItem) relabelItem(emailItem, 'Email du réservant *');
         }
         const format = cents => new Intl.NumberFormat(document.documentElement.lang || 'fr', {style:'currency',currency:config.currency}).format(cents / 100);
         const nativeTariffs = Array.isArray(config.tariffs);
@@ -46,7 +104,7 @@
             config.tariffs.forEach(tariff => { const option = document.createElement('option'); option.value = tariff.id; option.textContent = tariff.title + ' — ' + format(tariff.cents); select.append(option); });
             label.append(select); return label;
         };
-        const holder = nativeTariffs && config.tariffs.length ? tariffControl('Votre tarif') : null;
+        const holder = nativeTariffs && config.tariffs.length ? tariffControl(isAdmin ? 'Tarif du réservant' : 'Votre tarif') : null;
         const participation = config.allowNonparticipating ? document.createElement('input') : null;
         const participationLabel = document.createElement('label');
         const participationHelp = document.createElement('p'); participationHelp.className = 'fba-participation-help';
@@ -55,14 +113,14 @@
             participation.type = 'checkbox'; participation.checked = saved?.holder_participates !== false;
             participation.className = 'fba-holder-participates';
             participationLabel.className = 'fba-participation-choice';
-            participationLabel.append(participation, document.createTextNode('Je participe également'));
+            participationLabel.append(participation, document.createTextNode(isAdmin ? 'Le réservant participe également' : 'Je participe également'));
         }
         const attends = () => !participation || participation.checked;
         const summary = document.createElement('p');
         summary.className = 'fba-guest-summary';
         summary.setAttribute('aria-live', 'polite');
         const guestWrap = document.createElement('div'); guestWrap.className = 'fcal_input_multi_guests_wrap';
-            const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Ajouter une personne'; add.className = 'fba-add-guest';
+            const add = document.createElement('button'); add.type = 'button'; add.textContent = isAdmin ? '+ Ajouter un participant' : '+ Ajouter une personne'; add.className = 'fba-add-guest';
             guestWrap.append(add);
             const payment = root.querySelector('.fcal_payment_items');
             const paymentItem = payment?.closest('.fcal_form_item');
@@ -70,9 +128,17 @@
                 paymentItem.classList.add('fba-payment-methods');
                 paymentItem.querySelector('.fcal_input_content')?.setAttribute('aria-label','Moyen de paiement');
             }
-            (paymentItem || transportItem).before(guestWrap);
+            const participantsHeading = isAdmin ? document.createElement('h3') : null;
+            if (participantsHeading) {
+                participantsHeading.className = 'fba-section-heading';
+                participantsHeading.textContent = 'Participants à l’événement';
+                extraNodes.push(participantsHeading);
+            }
+            const anchor = paymentItem || transportItem;
+            anchor.before(guestWrap);
             if (holder) guestWrap.before(holder);
             if (participation) { (holder || guestWrap).before(participationLabel, participationHelp); }
+            if (participantsHeading) { (participation ? participationLabel : (holder || guestWrap)).before(participantsHeading); }
             add.addEventListener('click', () => {
                 if (checkoutLocked || rows().length + (attends() ? 1 : 0) >= config.limit) return;
                 const row = document.createElement('div'); row.className = 'fcal_multi_guest_input fba-attached-guest';
@@ -94,11 +160,11 @@
                 guestWrap.insertBefore(row, add); update(); row.querySelector('label:not([hidden]) input, .fba-guest-extra input, .fba-guest-extra select, button')?.focus();
             });
         const recap = document.createElement('div'); recap.className = 'fba-payment-recap';
-        const title = document.createElement('h3'); title.textContent = 'Récapitulatif des paiements';
+        const title = document.createElement('h3'); title.textContent = isAdmin ? 'Récapitulatif des tarifs' : 'Récapitulatif des paiements';
         const lines = document.createElement('dl'); recap.append(title, lines, summary); guestWrap.after(recap);
         if (!nativeTariffs) title.hidden = true;
         if (config.preservePayments) recap.hidden = true;
-        mountedNodes.set(transport, [holder, participationLabel, participationHelp, guestWrap, recap]);
+        mountedState.set(transport, {id, nodes: [...extraNodes, holder, participationLabel, participationHelp, guestWrap, recap], restore});
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         let checkoutLocked = false;
         let checkoutReady = false;
@@ -120,25 +186,31 @@
             previousDisabled.forEach((disabled, control) => { control.disabled = disabled; });
             previousDisabled.clear();
         };
-        form?.addEventListener('submit', event => {
+        const onFormSubmit = event => {
+            if (!transport.isConnected || mountedState.get(transport)?.id !== id) return;
             if (checkoutLocked) { event.preventDefault(); event.stopImmediatePropagation(); return; }
             update();
             if (!form.checkValidity()) { event.preventDefault(); event.stopImmediatePropagation(); form.reportValidity(); return; }
             freeze();
             // Native validation can reject before starting an HTTP request.
             setTimeout(() => { if (!root.querySelector('.fcal_btn_submitting')) unfreeze(); }, 0);
-        }, true);
-        if (root.classList.contains('fcal_new_booking')) {
-            root.addEventListener('click', event => {
-                if (!transport.isConnected || !event.target.closest?.('.fcal_primary_btn')) return;
+        };
+        form?.addEventListener('submit', onFormSubmit, true);
+        if (form) cleanups.push(() => form.removeEventListener('submit', onFormSubmit, true));
+        if (isAdmin) {
+            const onAdminPrimaryClick = event => {
+                if (!transport.isConnected || mountedState.get(transport)?.id !== id || !event.target.closest?.('.fcal_primary_btn')) return;
                 update();
+                setInputValue(transport, transport.value);
                 transport.dispatchEvent(new Event('input', {bubbles: true}));
                 if (form && !form.checkValidity()) {
                     event.preventDefault();
                     event.stopImmediatePropagation();
                     form.reportValidity();
                 }
-            }, true);
+            };
+            root.addEventListener('click', onAdminPrimaryClick, true);
+            cleanups.push(() => root.removeEventListener('click', onAdminPrimaryClick, true));
         }
         const settleSubmission = () => {
             if (!root.querySelector('.fcal_btn_submitting')) unfreeze();
@@ -146,6 +218,7 @@
         const checkoutObserver = new MutationObserver(settleSubmission);
         checkoutObserver.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['class']});
         checkoutObservers.set(checkoutObserver, root);
+        cleanups.push(() => { checkoutObserver.disconnect(); checkoutObservers.delete(checkoutObserver); });
         checkoutHandlers.set(root, event => {
             if (checkoutReady) { event.stopImmediatePropagation(); return; }
             freeze();
@@ -203,7 +276,9 @@
                 const count = guests.length + (attends() ? 1 : 0);
                 const error = count < 1 ? 'Ajoutez au moins un participant.' : count > config.limit ? 'Retirez un participant pour participer également : le maximum serait dépassé.' : '';
                 participation.setCustomValidity(error);
-                participationHelp.textContent = error || (attends() ? 'Vous comptez parmi les participants.' : 'Vous réservez pour les personnes ci-dessous. Vous restez le contact pour le paiement et les messages.');
+                participationHelp.textContent = error || (attends()
+                    ? (isAdmin ? 'Le réservant compte parmi les participants.' : 'Vous comptez parmi les participants.')
+                    : (isAdmin ? 'Le réservant ne participe pas (ex. parent réservant pour un enfant). Il reste le contact pour les e-mails et le suivi.' : 'Vous réservez pour les personnes ci-dessous. Vous restez le contact pour le paiement et les messages.'));
             }
             guests.forEach((row, index) => {
                 const heading = row.querySelector('.fba-guest-label');
@@ -252,7 +327,7 @@
                 return {name, email, fields, ...(tariff !== undefined ? {tariff} : {})};
             });
             const serialized = JSON.stringify(structuredPayload ? {holder_participates: attends(), holder_tariff: attends() ? holder?.querySelector('select').value || '' : '', guests: payload} : payload);
-            if (!restoring && transport.value !== serialized) { transport.value = serialized; transport.dispatchEvent(new Event('input', {bubbles: true})); }
+            if (!restoring && transport.value !== serialized) { setInputValue(transport, serialized); transport.dispatchEvent(new Event('input', {bubbles: true})); }
             const people = guests.length + (attends() ? 1 : 0);
             guestWrap.querySelector('.fba-add-guest').disabled = people >= config.limit;
             const base = Math.round(config.unit * 100);
@@ -277,7 +352,7 @@
                     cents += tariff.cents;
                     const line = document.createElement('div'); const label = document.createElement('dt'); const value = document.createElement('dd');
                     const guestIndex = index - (attends() ? 1 : 0);
-                    label.textContent = (guestIndex < 0 ? 'Vous' : payload[guestIndex].name || 'Participant ' + (guestIndex + 1)) + ' · ' + tariff.title;
+                    label.textContent = (guestIndex < 0 ? (isAdmin ? 'Réservant' : 'Vous') : payload[guestIndex].name || 'Participant ' + (guestIndex + 1)) + ' · ' + tariff.title;
                     value.textContent = format(tariff.cents); line.append(label, value); fragment.append(line);
                 });
                 lines.replaceChildren(fragment);
@@ -300,8 +375,11 @@
             }
             if (summary.textContent !== message) summary.textContent = message;
         };
-        root.addEventListener('input', event => { if (transport.isConnected && event.target !== transport) update(); });
-        root.addEventListener('change', () => { if (transport.isConnected) update(); });
+        const onRootInput = event => { if (transport.isConnected && event.target !== transport) update(); };
+        const onRootChange = () => { if (transport.isConnected) update(); };
+        root.addEventListener('input', onRootInput);
+        root.addEventListener('change', onRootChange);
+        cleanups.push(() => { root.removeEventListener('input', onRootInput); root.removeEventListener('change', onRootChange); });
         participation?.addEventListener('change', () => {
             if (!attends() && !rows().length) add.click();
             update();
