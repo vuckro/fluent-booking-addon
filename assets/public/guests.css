@@ -38,7 +38,7 @@
 .fluent_booking_app.fba-priced-event .fcal_slot_payment_item { display:none; }
 .fba-sidebar-total { color:var(--fcal_dark); margin:12px 0; font-variant-numeric:tabular-nums; }
 :is(.fcal-dark-mode, html.dark, body.fluent_theme_dark, [data-adminkit-theme="dark"]) :is(.fba-custom-guests, .fba-reschedule-summary) { color-scheme:dark; }
-.fba-reschedule-summary { box-sizing:border-box; max-width:680px; margin:0 auto 20px; padding:14px 18px; border:1px solid var(--fcal_slot_border,#dcdfe6); border-radius:8px; background:var(--fcal_thBG,#f5f7fa); color:var(--fcal_dark,#1b2533); font-size:14px; line-height:1.55; }
+.fba-reschedule-summary { box-sizing:border-box; max-width:752px; margin:0 auto 20px; padding:14px 18px; border:1px solid var(--fcal_slot_border,#dcdfe6); border-radius:8px; background:var(--fcal_thBG,#f5f7fa); color:var(--fcal_dark,#1b2533); font-size:14px; line-height:1.55; }
 .fba-reschedule-summary p { margin:0; }
 .fba-reschedule-summary .fba-reschedule-contact { margin-top:8px; font-weight:500; }
 .fba-reschedule-summary .fba-reschedule-people { margin:8px 0 0; padding-left:20px; }

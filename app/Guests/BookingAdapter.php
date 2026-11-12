@@ -20,7 +20,10 @@ final class BookingAdapter
     public function __construct(private ConfigurationStore $store)
     {
         $this->slotLock = new SlotLock();
-        $this->reschedule = new RescheduleCoordinator($this->slotLock);
+        $this->reschedule = new RescheduleCoordinator(
+            $this->slotLock,
+            fn(int $id): bool => $this->options($id)['enabled']
+        );
     }
 
     public function options(int $id): array
@@ -82,6 +85,9 @@ final class BookingAdapter
         add_filter('fluent_booking/public_event_vars', [$this, 'publicVars'], 110, 2);
         add_filter('rest_request_before_callbacks', [$this, 'beforeRestCallbacks'], 10, 3);
         add_filter('fluent_booking/initialize_booking_data', function ($data, $posted, $event) {
+            if (!empty($posted['rescheduling_hash'])) {
+                return $this->reschedule->normalizePublicRescheduleData($data, $posted, $event);
+            }
             $extras = $posted['fba_extra_' . $event->id] ?? ($posted['custom_fields']['fba_extra_' . $event->id] ?? '[]');
             // The public AJAX handler passes raw, WP-slashed $_REQUEST. The REST
             // controller already cleans its request. Unslash only the public boundary,
@@ -304,13 +310,47 @@ final class BookingAdapter
         $this->enqueueGuestAssets('window.fbaGuestForms=Object.assign(window.fbaGuestForms||{},' . wp_json_encode($configs) . ');');
     }
 
+    public static function normalizeReschedulePublicVars(array $vars, bool $isPaidEvent, string $confirmLabel, string $noPaymentHelpText): array
+    {
+        unset(
+            $vars['payment_items'],
+            $vars['payment_methods'],
+            $vars['multi_payment_items'],
+            $vars['multi_payment_woo_ids'],
+            $vars['multi_payment_cart_ids']
+        );
+        if (isset($vars['slot']) && is_array($vars['slot'])) {
+            $vars['slot']['total_payment'] = '';
+            $vars['slot']['settings'] = is_array($vars['slot']['settings'] ?? null) ? $vars['slot']['settings'] : [];
+            $vars['slot']['settings']['submit_button_text'] = $confirmLabel;
+        }
+        $vars['i18n'] = is_array($vars['i18n'] ?? null) ? $vars['i18n'] : [];
+        $vars['i18'] = is_array($vars['i18'] ?? null) ? $vars['i18'] : [];
+        foreach (['Schedule_Meeting', 'Continue_to_Payments', 'Confirm_Payment'] as $key) {
+            $vars['i18n'][$key] = $confirmLabel;
+            $vars['i18'][$key] = $confirmLabel;
+        }
+        if ($isPaidEvent && isset($vars['form_fields']) && is_array($vars['form_fields'])) {
+            foreach ($vars['form_fields'] as &$field) {
+                if (is_array($field) && ($field['name'] ?? '') === 'rescheduling_reason' && trim((string) ($field['help_text'] ?? '')) === '') {
+                    $field['help_text'] = $noPaymentHelpText;
+                }
+            }
+            unset($field);
+        }
+        return $vars;
+    }
+
     public function publicVars(array $vars, $event): array
     {
         if (!empty($vars['rescheduling']) || (($_REQUEST['type'] ?? '') === 'reschedule' && !empty($_REQUEST['meeting_hash']))) {
-            unset($vars['payment_items'], $vars['payment_methods']);
-            if (isset($vars['slot']) && is_array($vars['slot'])) {
-                $vars['slot']['total_payment'] = '';
-            }
+            $isPaid = is_object($event) && (($event->type ?? '') === 'paid');
+            $vars = self::normalizeReschedulePublicVars(
+                $vars,
+                $isPaid,
+                __('Confirm Reschedule', 'fluent-booking'),
+                __('Report sans nouveau paiement : votre règlement initial est conservé.', 'waaskit-fluent-booking')
+            );
             if ($this->options((int) $event->id)['enabled']) {
                 $this->enqueueGuestAssets();
             }
@@ -589,6 +629,9 @@ final class BookingAdapter
 
     public function unlock(?string $one = null): void
     {
+        if ($one === null) {
+            $this->reschedule->rollbackStagedDurations();
+        }
         $this->slotLock->release($one);
     }
 }

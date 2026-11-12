@@ -101,4 +101,48 @@ $coordinator=new RescheduleCoordinator(new SlotLock());
 $summaryHtml=$coordinator->buildRescheduleSummaryHtml(1,['contact'=>'Francine Sauser','attends'=>false,'people'=>[['name'=>'Clara Sauser','role'=>'Participant','tariff'=>'Enfant','answers'=>['Âge du participant : 12']]]]);
 check(str_contains($summaryHtml,'class="fba-reschedule-summary"') && str_contains($summaryHtml,'Francine Sauser (ne participe pas)') && str_contains($summaryHtml,'Clara Sauser') && str_contains($summaryHtml,'Participant · Enfant · Âge du participant : 12') && !str_contains($summaryHtml,'style='),'reschedule summary renders contact & participants cleanly without inline styles');
 
+$fixedEvent=new class {
+    public int $duration=90;
+    public function getDuration($d=null): int {return $this->duration;}
+};
+$multiEventKeep=new class {
+    public int $duration=90;
+    public function getDuration($d=null): int {return in_array((int)$d,[60,120],true)?(int)$d:90;}
+};
+$multiEventFallback=new class {
+    public int $duration=90;
+    public function getDuration($d=null): int {return in_array((int)$d,[60,90],true)?(int)$d:90;}
+};
+$legacyBooking=(object)['slot_minutes'=>120];
+check(RescheduleCoordinator::effectiveSlotMinutes($legacyBooking,$fixedEvent)===90,'legacy 120m booking resolves to current 90m fixed event duration');
+check(RescheduleCoordinator::effectiveSlotMinutes($legacyBooking,$multiEventKeep)===120,'120m booking stays 120m when 120m is still valid multi-duration');
+check(RescheduleCoordinator::effectiveSlotMinutes($legacyBooking,$multiEventFallback)===90,'120m booking resolves to default 90m when 120m is removed from multi-duration');
+
+$normalizedSingle=RescheduleCoordinator::applyEffectiveDurationToBookingData(['start_time'=>'2026-12-02 12:30:00','end_time'=>'2026-12-02 14:30:00','slot_minutes'=>120],90);
+check($normalizedSingle['slot_minutes']===90 && $normalizedSingle['end_time']==='2026-12-02 14:00:00','applyEffectiveDurationToBookingData aligns scalar end_time and slot_minutes to 90m');
+$normalizedArray=RescheduleCoordinator::applyEffectiveDurationToBookingData(['start_time'=>['2026-12-02 12:30:00'],'end_time'=>['2026-12-02 14:30:00'],'slot_minutes'=>120],90);
+check($normalizedArray['slot_minutes']===90 && $normalizedArray['end_time']===['2026-12-02 14:00:00'],'applyEffectiveDurationToBookingData aligns array end_time and slot_minutes to 90m');
+
+use WaasKit\FluentBooking\Guests\BookingAdapter;
+$rawVars=[
+    'slot'=>['total_payment'=>'55','settings'=>['submit_button_text'=>'Régler la réservation →']],
+    'payment_items'=>[['title'=>'Enfant','value'=>55]],
+    'payment_methods'=>['stripe'=>[]],
+    'multi_payment_items'=>[['title'=>'Enfant','value'=>55]],
+    'i18n'=>['Schedule_Meeting'=>'Réserver un rendez-vous','Continue_to_Payments'=>'Passer au paiement','Confirm_Payment'=>'Confirmer le paiement'],
+    'i18'=>['Schedule_Meeting'=>'Confirmer le report'],
+    'form_fields'=>[['name'=>'rescheduling_reason','help_text'=>'']],
+];
+$cleanVars=BookingAdapter::normalizeReschedulePublicVars($rawVars,true,'Confirmer le report','Report sans nouveau paiement : votre règlement initial est conservé.');
+check(!isset($cleanVars['payment_items'],$cleanVars['payment_methods'],$cleanVars['multi_payment_items'])
+    && $cleanVars['slot']['total_payment']===''
+    && $cleanVars['slot']['settings']['submit_button_text']==='Confirmer le report'
+    && $cleanVars['i18n']['Schedule_Meeting']==='Confirmer le report'
+    && $cleanVars['i18n']['Continue_to_Payments']==='Confirmer le report'
+    && $cleanVars['i18n']['Confirm_Payment']==='Confirmer le report'
+    && $cleanVars['form_fields'][0]['help_text']==='Report sans nouveau paiement : votre règlement initial est conservé.',
+    'normalizeReschedulePublicVars replaces payment CTA with Confirmer le report and injects no-payment help text');
+$customHelpVars=BookingAdapter::normalizeReschedulePublicVars(['form_fields'=>[['name'=>'rescheduling_reason','help_text'=>'Custom']]],false,'Confirmer le report','Report sans nouveau paiement');
+check($customHelpVars['form_fields'][0]['help_text']==='Custom','existing custom help_text on rescheduling_reason is preserved');
+
 

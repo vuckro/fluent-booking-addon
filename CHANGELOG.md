@@ -1,3 +1,8 @@
+## 4.0.0-alpha.47
+
+- Correction du libellé du bouton sur l’écran de report (`?type=reschedule`) : remplacement de `slot.settings.submit_button_text` (ex. « Régler la réservation → ») et de `$vars['i18n']` (contournement du bogue `i18` de FluentBooking 2.6) par « Confirmer le report », avec rappel « Report sans nouveau paiement : votre règlement initial est conservé. » sous le champ motif sur les événements payants et alignement de `.fba-reschedule-summary` sur `752px`.
+- Alignement automatique de `slot_minutes` et `end_time` lors du report (public et REST d’administration) d’une réservation créée avec une ancienne durée (ex. `120 min`) vers la durée actuelle du créneau (`90 min`), évitant le faux refus HTTP `422` (« La plage horaire sélectionnée n'est pas disponible ») et l’erreur `duration_mismatch`, avec restauration automatique en cas d’échec et synchronisation de `slot_minutes` sur les places rattachées (`AttachedSeats`).
+
 ## 4.0.0-alpha.46
 
 - Correction du ciblage DOM Element Plus dans `AddNewBookingModal` : exclusion des `<el-select filterable>` (événement, fuseau horaire, durée, statut) lors du renommage des champs réservant, masquage complet du conteneur `fba_extra_{id}` et insertion directe au niveau du formulaire entre « Téléphone * » et « Lieu * ».

@@ -54,6 +54,7 @@ final class AttachedSeats
             if ($cancelled) {$update['payment_status']='';}
         }
         foreach ($scheduleKeys as $key) {$update[$key]=$holder->$key;}
+        $update['slot_minutes'] = $holder->slot_minutes;
         Booking::where('parent_id',$holder->id)->update($update);
         if (!$scheduleKeys) {return;}
         $hostChanged=in_array('host_user_id',$scheduleKeys,true);

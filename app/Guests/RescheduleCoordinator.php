@@ -10,8 +10,12 @@ final class RescheduleCoordinator
 {
     private array $ignoreAvailabilityBookingIds = [];
     private ?int $reschedulingBookingId = null;
+    private array $stagedDurations = [];
 
-    public function __construct(private SlotLock $slotLock) {}
+    public function __construct(
+        private SlotLock $slotLock,
+        private ?\Closure $eventEnabled = null
+    ) {}
 
     public function register(): void
     {
@@ -27,7 +31,89 @@ final class RescheduleCoordinator
     public function resetRestState($response)
     {
         $this->reschedulingBookingId = null;
+        $this->rollbackStagedDurations();
         return $response;
+    }
+
+    public static function effectiveSlotMinutes($booking, $event): int
+    {
+        $bookedMinutes = (int) ($booking->slot_minutes ?? 0);
+        $resolved = is_object($event) && method_exists($event, 'getDuration')
+            ? (int) $event->getDuration($bookedMinutes > 0 ? $bookedMinutes : null)
+            : (int) ($event->duration ?? $bookedMinutes);
+        return $resolved > 0 ? $resolved : $bookedMinutes;
+    }
+
+    public static function applyEffectiveDurationToBookingData(array $data, int $effectiveMinutes): array
+    {
+        if ($effectiveMinutes <= 0) {
+            return $data;
+        }
+        $data['slot_minutes'] = $effectiveMinutes;
+        $start = $data['start_time'] ?? null;
+        if (is_string($start) && $start !== '' && strtotime($start) !== false) {
+            $data['end_time'] = gmdate('Y-m-d H:i:s', strtotime($start) + ($effectiveMinutes * 60));
+        } elseif (is_array($start)) {
+            $data['end_time'] = array_map(
+                static fn($dt) => (is_string($dt) && strtotime($dt) !== false)
+                    ? gmdate('Y-m-d H:i:s', strtotime($dt) + ($effectiveMinutes * 60))
+                    : $dt,
+                $start
+            );
+        }
+        return $data;
+    }
+
+    private function appliesToBooking($booking, $event): bool
+    {
+        if (!empty($booking->getMeta(BookingAdapter::META, []))) {
+            return true;
+        }
+        return $this->eventEnabled !== null && ($this->eventEnabled)((int) $event->id);
+    }
+
+    private function stageEffectiveDuration(Booking $booking, int $effectiveMinutes): void
+    {
+        if ($effectiveMinutes <= 0 || (int) $booking->slot_minutes === $effectiveMinutes) {
+            return;
+        }
+        $bookingId = (int) $booking->id;
+        if (!isset($this->stagedDurations[$bookingId])) {
+            $this->stagedDurations[$bookingId] = [
+                'slot_minutes' => (int) $booking->slot_minutes,
+                'start_time'   => (string) $booking->start_time,
+            ];
+        }
+        Booking::where('id', $bookingId)->update(['slot_minutes' => $effectiveMinutes]);
+        $booking->slot_minutes = $effectiveMinutes;
+    }
+
+    public function rollbackStagedDurations(): void
+    {
+        foreach ($this->stagedDurations as $bookingId => $orig) {
+            Booking::where('id', $bookingId)
+                ->where('start_time', $orig['start_time'])
+                ->update(['slot_minutes' => $orig['slot_minutes']]);
+        }
+        $this->stagedDurations = [];
+    }
+
+    public function normalizePublicRescheduleData(array $data, array $posted, $event): array
+    {
+        if (empty($posted['rescheduling_hash']) || !is_object($event)) {
+            return $data;
+        }
+        $existing = Booking::where('hash', sanitize_text_field((string) $posted['rescheduling_hash']))
+            ->where('event_id', $event->id)
+            ->first();
+        if (!$existing || !$this->appliesToBooking($existing, $event)) {
+            return $data;
+        }
+        $effective = self::effectiveSlotMinutes($existing, $event);
+        if ($effective > 0 && (int) $existing->slot_minutes !== $effective) {
+            return self::applyEffectiveDurationToBookingData($data, $effective);
+        }
+        return $data;
     }
 
     public function beginRestRescheduleSlots(int $bookingId): void
@@ -197,44 +283,59 @@ final class RescheduleCoordinator
 
     public function beforePublicReschedule($bookingData, $postedData, $calendarEvent): void
     {
-        if (empty($postedData['rescheduling_hash'])) {
+        if (empty($postedData['rescheduling_hash']) || !is_object($calendarEvent)) {
             return;
         }
         $existing = Booking::where('hash', sanitize_text_field((string) $postedData['rescheduling_hash']))->first();
-        if (!$existing || !$existing->getMeta(BookingAdapter::META, [])) {
+        if (!$existing || (int) $existing->event_id !== (int) $calendarEvent->id || !$this->appliesToBooking($existing, $calendarEvent)) {
             return;
         }
-        try {
-            $this->guardCapacity($existing, $calendarEvent, (string) ($bookingData['start_time'] ?? ''), false);
-        } catch (\Throwable $error) {
-            wp_send_json(['message' => $error->getMessage()], 422);
+        if ($existing->getMeta(BookingAdapter::META, [])) {
+            try {
+                $this->guardCapacity($existing, $calendarEvent, (string) ($bookingData['start_time'] ?? ''), false);
+            } catch (\Throwable $error) {
+                wp_send_json(['message' => $error->getMessage()], 422);
+            }
+        }
+        $startTime = $bookingData['start_time'] ?? '';
+        if (is_string($startTime) && $startTime !== '' && $startTime !== (string) $existing->start_time) {
+            $this->stageEffectiveDuration($existing, self::effectiveSlotMinutes($existing, $calendarEvent));
         }
     }
 
     public function beforeRestReschedule($booking, $event, $request): ?\WP_Error
     {
-        if (!$booking || !$event || !$booking->getMeta(BookingAdapter::META, [])) {
+        if (!$booking || !$event || (int) $booking->event_id !== (int) $event->id || !$this->appliesToBooking($booking, $event)) {
             return null;
         }
         $snapshot = $booking->getMeta(BookingAdapter::META, []);
-        if (!empty($snapshot['attached_seat'])) {
-            $msg = 'Cet invité appartient à une réservation de groupe. Reportez la réservation depuis la réservation principale'
-                . ($booking->parent_id ? ' (#' . (int) $booking->parent_id . ')' : '') . '.';
-            return new \WP_Error('fba_reschedule_refused', $msg, ['status' => 422]);
-        }
         $ignore = filter_var($request->get_param('ignore_availability'), FILTER_VALIDATE_BOOLEAN);
-        if ($ignore) {
-            $this->ignoreAvailabilityBookingIds[(int) $booking->id] = true;
+        if ($snapshot) {
+            if (!empty($snapshot['attached_seat'])) {
+                $msg = 'Cet invité appartient à une réservation de groupe. Reportez la réservation depuis la réservation principale'
+                    . ($booking->parent_id ? ' (#' . (int) $booking->parent_id . ')' : '') . '.';
+                return new \WP_Error('fba_reschedule_refused', $msg, ['status' => 422]);
+            }
+            if ($ignore) {
+                $this->ignoreAvailabilityBookingIds[(int) $booking->id] = true;
+            }
         }
         $eventTime = sanitize_text_field((string) ($request->get_param('event_time') ?? ''));
         $timezone = sanitize_text_field((string) ($request->get_param('timezone') ?? ''));
         if ($eventTime !== '' && in_array($timezone, \DateTimeZone::listIdentifiers(), true) && \DateTime::createFromFormat('Y-m-d H:i:s', $eventTime)) {
             $startTime = \FluentBooking\App\Services\DateTimeHelper::convertToUtc($eventTime, $timezone);
-            try {
-                $this->guardCapacity($booking, $event, $startTime, $ignore);
-            } catch (\Throwable $error) {
-                unset($this->ignoreAvailabilityBookingIds[(int) $booking->id]);
-                return new \WP_Error('fba_reschedule_refused', $error->getMessage(), ['status' => 422]);
+            if ($snapshot) {
+                try {
+                    $this->guardCapacity($booking, $event, $startTime, $ignore);
+                } catch (\Throwable $error) {
+                    unset($this->ignoreAvailabilityBookingIds[(int) $booking->id]);
+                    return new \WP_Error('fba_reschedule_refused', $error->getMessage(), ['status' => 422]);
+                }
+            }
+            if (in_array($booking->status, ['scheduled', 'pending', 'approved', 'rescheduled'], true)
+                && $startTime !== ''
+                && $startTime !== (string) $booking->start_time) {
+                $this->stageEffectiveDuration($booking, self::effectiveSlotMinutes($booking, $event));
             }
         }
         return null;
@@ -242,7 +343,7 @@ final class RescheduleCoordinator
 
     public function afterBookingRescheduled($booking): void
     {
-        unset($this->ignoreAvailabilityBookingIds[(int) $booking->id]);
+        unset($this->stagedDurations[(int) $booking->id], $this->ignoreAvailabilityBookingIds[(int) $booking->id]);
         $this->slotLock->release();
         $snapshot = $booking->getMeta(BookingAdapter::META, []);
         if (!$snapshot || !empty($snapshot['attached_seat'])) {
