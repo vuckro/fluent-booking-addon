@@ -33,19 +33,31 @@
         const transportItem = transport.closest('.fcal_form_item, .el-form-item');
         if (!transportItem) return;
         const isAdmin = root.classList.contains('fcal_new_booking');
+        const formEl = transport.closest('form');
+        const transportBlock = isAdmin && formEl
+            ? ([...formEl.children].find(child => child.contains(transport)) || transportItem)
+            : transportItem;
+        const prevItemDisplay = transportItem.style.display;
+        const prevBlockDisplay = transportBlock.style.display;
         const cleanups = [];
         const restore = () => {
             transportItem.hidden = false;
+            transportItem.style.display = prevItemDisplay;
+            transportBlock.hidden = false;
+            transportBlock.style.display = prevBlockDisplay;
             root.classList.remove('fba-custom-guests', 'fba-custom-pricing', 'fba-split-names');
             cleanups.forEach(fn => fn());
         };
         transportItem.hidden = true;
+        transportItem.style.display = 'none';
+        transportBlock.hidden = true;
+        transportBlock.style.display = 'none';
         root.classList.add('fba-custom-guests');
         root.classList.toggle('fba-custom-pricing', !config.preservePayments);
         root.classList.toggle('fba-split-names', !!config.splitName);
         if (config.error) {
             const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = config.error;
-            transportItem.before(message);
+            transportBlock.before(message);
             const disabledButtons = [];
             root.querySelectorAll('[type=submit], .fcal_primary_btn').forEach(button => {
                 disabledButtons.push([button, button.disabled]);
@@ -57,12 +69,19 @@
         }
         const extraNodes = [];
         if (isAdmin) {
-            const formEl = transport.closest('form');
+            const allItems = [...root.querySelectorAll('.el-form-item')];
             const directItems = formEl ? [...formEl.children].filter(el => el.classList?.contains('el-form-item') && !el.querySelector('.fcal_event_date')) : [];
-            const nameItem = directItems.find(item => item.querySelector('input[type="text"]:not([readonly]):not([placeholder^="fba_extra_"])'))
-                || [...root.querySelectorAll('.el-form-item')].find(item => /^(nom du participant|attendee'?s name)\s*\*?$/i.test((item.querySelector('.el-form-item__label')?.textContent || '').trim()));
-            const emailItem = (nameItem?.nextElementSibling?.classList?.contains('el-form-item') ? nameItem.nextElementSibling : null)
-                || [...root.querySelectorAll('.el-form-item')].find(item => /^(email du participant|attendee'?s email)\s*\*?$/i.test((item.querySelector('.el-form-item__label')?.textContent || '').trim()));
+            const labelText = item => (item.querySelector('.el-form-item__label')?.textContent || '').trim();
+            const namePattern = /^(nom du participant|attendee'?s name)\s*\*?$/i;
+            const emailPattern = /^(email du participant|attendee'?s email)\s*\*?$/i;
+            const isPlainTextItem = item => !item.querySelector('.el-select, .fcal_event_date, .el-date-editor, .el-radio-group, .el-checkbox')
+                && !!item.querySelector('input[type="text"]:not(.el-select__input):not([readonly]):not([placeholder^="fba_extra_"])');
+            const nameItem = directItems.find(item => namePattern.test(labelText(item)))
+                || allItems.find(item => namePattern.test(labelText(item)))
+                || directItems.find(isPlainTextItem);
+            const emailItem = directItems.find(item => emailPattern.test(labelText(item)))
+                || allItems.find(item => emailPattern.test(labelText(item)))
+                || (nameItem?.nextElementSibling?.classList?.contains('el-form-item') ? nameItem.nextElementSibling : null);
             const relabelItem = (item, nextLabel, placeholderText) => {
                 const labelEl = item?.querySelector('.el-form-item__label');
                 if (labelEl) {
@@ -71,7 +90,7 @@
                     cleanups.push(() => { labelEl.textContent = prevText; });
                 }
                 if (placeholderText) {
-                    const inputEl = item?.querySelector('input[type="text"]');
+                    const inputEl = item?.querySelector('input[type="text"]:not(.el-select__input)');
                     if (inputEl) {
                         const prevPlaceholder = inputEl.getAttribute('placeholder');
                         inputEl.setAttribute('placeholder', placeholderText);
@@ -134,7 +153,7 @@
                 participantsHeading.textContent = 'Participants à l’événement';
                 extraNodes.push(participantsHeading);
             }
-            const anchor = paymentItem || transportItem;
+            const anchor = paymentItem || transportBlock;
             anchor.before(guestWrap);
             if (holder) guestWrap.before(holder);
             if (participation) { (holder || guestWrap).before(participationLabel, participationHelp); }
@@ -164,7 +183,7 @@
         const lines = document.createElement('dl'); recap.append(title, lines, summary); guestWrap.after(recap);
         if (!nativeTariffs) title.hidden = true;
         if (config.preservePayments) recap.hidden = true;
-        mountedState.set(transport, {id, nodes: [...extraNodes, holder, participationLabel, participationHelp, guestWrap, recap], restore});
+        mountedState.set(transport, {id, nodes: [...extraNodes, holder, participation ? participationLabel : null, participation ? participationHelp : null, guestWrap, recap].filter(Boolean), restore});
         const rows = () => [...guestWrap.querySelectorAll('.fba-attached-guest')];
         let checkoutLocked = false;
         let checkoutReady = false;

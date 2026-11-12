@@ -1,3 +1,10 @@
+## 4.0.0-alpha.46
+
+- Correction du ciblage DOM Element Plus dans `AddNewBookingModal` : exclusion des `<el-select filterable>` (événement, fuseau horaire, durée, statut) lors du renommage des champs réservant, masquage complet du conteneur `fba_extra_{id}` et insertion directe au niveau du formulaire entre « Téléphone * » et « Lieu * ».
+- Parité complète entre l’agenda back-office (`wp-admin`) et le portail front-end FluentBooking Pro (`fluent_booking_loading_app` et `[fluent_booking_panel]`), ainsi que les pages d’atterrissage auteur (`main_landing`) et iframes `?embedded=1`.
+- Filtrage multi-places des créneaux et garde-fous de capacité dans la modale de reprogrammation (`GET /fluent-booking/v2/bookings/reschedule/{event_id}/{id}/slots` et `POST /fluent-booking/v2/bookings/reschedule/{event_id}/{id}`), suppression du chargement inutile du SDK Stripe sur `?type=reschedule` et affichage détaillé des participants/tarifs conservés (`.fba-reschedule-summary`).
+- Refactorisation modulaire (`SlotLock`, `RescheduleCoordinator`) et harmonisation CSS clair/sombre/mobile (AdminKit, FluentToolkit, boutons mobiles).
+
 ## 4.0.0-alpha.45
 
 - Prise en charge officielle de FluentBooking 2.6.x (compatibilité étendue à `< 2.7.0`).

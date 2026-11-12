@@ -80,3 +80,25 @@ check($hidIdentity[0]['name']==='' && $hidIdentity[0]['first_name']==='' && $hid
 $ansPreserved=Options::answers([['email'=>'test@example.invalid','fields'=>[]]],[['first_name'=>'Jean','last_name'=>'Dupont','name'=>'Jean Dupont','email'=>'test@example.invalid']],[]);
 check($ansPreserved[0]['first_name']==='Jean' && $ansPreserved[0]['last_name']==='Dupont' && $ansPreserved[0]['name']==='Jean Dupont','first_name and last_name preserved in answers');
 
+if(!function_exists('esc_html')) {function esc_html($s) {return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}}
+if(!function_exists('esc_attr')) {function esc_attr($s) {return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}}
+if(!function_exists('esc_html__')) {function esc_html__($s,$d='') {return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}}
+if(!function_exists('esc_attr__')) {function esc_attr__($s,$d='') {return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}}
+
+use WaasKit\FluentBooking\Guests\RescheduleCoordinator;
+use WaasKit\FluentBooking\Guests\SlotLock;
+check(RescheduleCoordinator::matchRestRescheduleRoute('GET','/fluent-booking/v2/bookings/reschedule/2/210/slots')===['action'=>'slots','event_id'=>2,'booking_id'=>210],'FluentBooking 2.6 reschedule slots route matched');
+check(RescheduleCoordinator::matchRestRescheduleRoute('POST','/fluent-booking/v2/bookings/reschedule/2/210')===['action'=>'reschedule','event_id'=>2,'booking_id'=>210],'FluentBooking 2.6 reschedule submit route matched');
+check(RescheduleCoordinator::matchRestRescheduleRoute('GET','/fluent-booking/v2/bookings/2/reschedule/210/slots')===['action'=>'slots','event_id'=>2,'booking_id'=>210],'legacy reschedule slots route fallback matched');
+check(RescheduleCoordinator::matchRestRescheduleRoute('POST','/fluent-booking/v2/bookings/2/reschedule/210')===['action'=>'reschedule','event_id'=>2,'booking_id'=>210],'legacy reschedule submit route fallback matched');
+check(RescheduleCoordinator::matchRestRescheduleRoute('POST','/fluent-booking/v2/bookings/create/2')===null,'create route excluded from reschedule matcher');
+
+$spots=['2026-11-18'=>[['time'=>'10:00','remaining'=>1]],'2026-11-21'=>[['time'=>'10:00','remaining'=>1],['time'=>'14:00','remaining'=>3]]];
+$filteredSpots=RescheduleCoordinator::filterSpotsByRequiredSeats($spots,2);
+check(!isset($filteredSpots['2026-11-18']) && count($filteredSpots['2026-11-21'])===1 && $filteredSpots['2026-11-21'][0]['time']==='14:00','multi-seat reschedule removes insufficient slots and empty days');
+
+$coordinator=new RescheduleCoordinator(new SlotLock());
+$summaryHtml=$coordinator->buildRescheduleSummaryHtml(1,['contact'=>'Francine Sauser','attends'=>false,'people'=>[['name'=>'Clara Sauser','role'=>'Participant','tariff'=>'Enfant','answers'=>['Âge du participant : 12']]]]);
+check(str_contains($summaryHtml,'class="fba-reschedule-summary"') && str_contains($summaryHtml,'Francine Sauser (ne participe pas)') && str_contains($summaryHtml,'Clara Sauser') && str_contains($summaryHtml,'Participant · Enfant · Âge du participant : 12') && !str_contains($summaryHtml,'style='),'reschedule summary renders contact & participants cleanly without inline styles');
+
+

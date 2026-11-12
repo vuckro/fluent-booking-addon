@@ -42,8 +42,9 @@ L’annulation ou la suppression du réservant libère également les places rat
 ## Limites actuelles
 
 - FluentBooking 2.4.x à 2.6.x ; événements de groupe sur un créneau unique.
+- Parité front-end et back-office : les mêmes options d’invités, de tarifs et de contrôle des places s’appliquent sur les calendriers publics, le portail front-end FluentBooking Pro (`[fluent_booking_panel]`) et l’agenda d’administration.
 - Choix payants : tarif de base unique, paiement natif activé, devise à deux décimales, Stripe ou paiement hors ligne.
-- Le report sur un autre créneau du même événement conserve le paiement existant et déplace l’ensemble des participants rattachés.
+- Le report sur un autre créneau du même événement (lien public `?type=reschedule` ou modale de report back-office/portail) conserve le paiement existant, déplace l’ensemble des participants rattachés et filtre les créneaux selon le nombre de places requises.
 - Coupons, WooCommerce, autres passerelles, récurrence et réactivations non pris en charge dans le mode personnalisé.
 - Pas de calcul automatique selon l’âge ni de règles conditionnelles entre champs.
 - Tests serveur et DOM effectués ; recette du véritable formulaire et de Stripe en mode test encore nécessaire avant production.
